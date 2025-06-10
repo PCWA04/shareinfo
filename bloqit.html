@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloq.it 互動式分析報告</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Tech Corporate Blue -->
+    <!-- Application Structure Plan: The application is designed as a non-linear, exploratory journey. It starts with a high-impact hero section with key stats. It then moves to thematic sections: 'The Bloq.it Difference' (core strategy via interactive tabs), 'Interactive Product Showcase' (visual deep-dive into software and hardware), 'Growth Story' (data visualization with charts), 'Impact & Partnerships' (interactive case study cards), and 'Market Position' (comparative analysis). This structure guides the user from the "what" and "why" to the "how" and "how well," making a complex report digestible and engaging, prioritizing user understanding over the original document's linear format. -->
+    <!-- Visualization & Content Choices: Hero Stats -> Inform -> Large numbers for immediate impact. Core Strategy -> Organize -> Tabs to segment complex strategies. Bloq.it OS -> Organize/Inform -> Clickable cards (HTML/JS) to simulate a diagram and reveal details without clutter. Growth Metrics -> Change/Compare -> Bar charts (Chart.js/Canvas) to visually represent impressive growth trends. Case Studies -> Inform -> Accordion-style cards (HTML/JS) to show real-world impact without overwhelming the user initially. Competitive Table -> Compare -> A styled HTML table for a clear, direct comparison of features. These choices are made to maximize clarity and engagement within the designed non-linear flow. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8fafc;
+            color: #1f2937;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 384px;
+            }
+        }
+        .smooth-transition {
+            transition: all 0.3s ease-in-out;
+        }
+        .tab-active {
+            border-color: #2563eb;
+            color: #2563eb;
+            font-weight: 600;
+        }
+        .tab-inactive {
+            border-color: transparent;
+            color: #6b7280;
+        }
+        .card-icon {
+            font-size: 2.5rem;
+            line-height: 1;
+        }
+        .stat-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            padding: 1.5rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-blue-600">Bloq.it</span>
+                    <span class="ml-2 text-xl font-semibold text-gray-700">互動式分析報告</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="#strategy" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">核心戰略</a>
+                    <a href="#products" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">產品生態</a>
+                    <a href="#growth" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">增長故事</a>
+                    <a href="#impact" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">市場影響</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero" class="py-16 sm:py-20 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-4xl md:text-5xl font-extrabold text-gray-800 tracking-tight">
+                    <span class="block">軟體驅動，重塑未來</span>
+                    <span class="block text-blue-600 mt-2">智慧儲物櫃的平台革命</span>
+                </h1>
+                <p class="mt-6 max-w-2xl mx-auto text-lg text-gray-600">
+                    Bloq.it 正以其「軟體優先」的平台策略，顛覆傳統由硬體主導的物流末端配送市場。本報告將帶您深入了解這家迅速崛起的科技新創，如何透過整合軟硬體、AI 技術與開放生態，成為行業的遊戲規則改變者。
+                </p>
+                <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                    <div class="stat-card">
+                        <p class="text-4xl font-bold text-blue-600">73,083%</p>
+                        <p class="mt-2 text-sm font-medium text-gray-500">累計營收增長 (自2021)</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="text-4xl font-bold text-blue-600">€2,800萬</p>
+                        <p class="mt-2 text-sm font-medium text-gray-500">2025年B輪融資金額</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="text-4xl font-bold text-blue-600">5,000+</p>
+                        <p class="mt-2 text-sm font-medium text-gray-500">2024年新增儲物櫃</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="strategy" class="py-16 sm:py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-gray-800">Bloq.it 的致勝之道</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
+                        Bloq.it 的成功並非偶然。其獨特的價值主張建立在三大戰略支柱之上，使其在競爭中脫穎而出，並重新定義了市場標準。點擊下方頁籤，探索其核心競爭力。
+                    </p>
+                </div>
+
+                <div class="mt-12 max-w-4xl mx-auto">
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-4 justify-center" aria-label="Tabs">
+                            <button id="tab-btn-software" class="strategy-tab tab-active whitespace-nowrap py-4 px-1 border-b-2 text-sm font-medium">軟體優先</button>
+                            <button id="tab-btn-e2e" class="strategy-tab tab-inactive whitespace-nowrap py-4 px-1 border-b-2 text-sm font-medium">端到端解決方案</button>
+                            <button id="tab-btn-agnostic" class="strategy-tab tab-inactive whitespace-nowrap py-4 px-1 border-b-2 text-sm font-medium">開放與無關性</button>
+                        </nav>
+                    </div>
+                    <div class="mt-8">
+                        <div id="tab-content-software" class="strategy-content">
+                            <div class="bg-white p-8 rounded-lg shadow-md">
+                                <h3 class="text-2xl font-bold text-gray-800">軟體優先 (Software-First)</h3>
+                                <p class="mt-4 text-gray-600">
+                                    與傳統從硬體出發的競爭者根本不同，Bloq.it 的核心是其強大的軟體生態系統 Bloq.it OS。這種策略使其擺脫硬體限制，提供無與倫比的靈活性、客製化能力和可擴展性。軟體不僅是功能，更是驅動整個業務模式和客戶價值的引擎，使其能夠快速創新並適應多變的市場需求。
+                                </p>
+                            </div>
+                        </div>
+                        <div id="tab-content-e2e" class="strategy-content hidden">
+                           <div class="bg-white p-8 rounded-lg shadow-md">
+                                <h3 class="text-2xl font-bold text-gray-800">端到端解決方案 (End-to-End)</h3>
+                                <p class="mt-4 text-gray-600">
+                                    Bloq.it 提供涵蓋智慧儲物櫃網絡整個生命週期的「一站式」服務 — 從硬體設計、生產、軟體整合，到現場部署與後續的維護支援。這種全面的服務模式確保了軟硬體的完美協同，為客戶簡化了營運複雜性，並保證了高品質和高達 99.6% 的網絡可用性。
+                                </p>
+                            </div>
+                        </div>
+                        <div id="tab-content-agnostic" class="strategy-content hidden">
+                           <div class="bg-white p-8 rounded-lg shadow-md">
+                                <h3 class="text-2xl font-bold text-gray-800">開放與無關性 (Open & Agnostic)</h3>
+                                <p class="mt-4 text-gray-600">
+                                    Bloq.it OS 的設計核心是「硬體無關性」，它可以安裝在任何製造商的儲物櫃硬體上，將現有設備「智慧化」。同時，它也支持「快遞公司無關」的開放網絡模式，允許多家物流業者共享同一個儲物櫃網絡。這種平台策略極大地擴展了其市場潛力，旨在成為整個行業的基礎作業系統。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="products" class="py-16 sm:py-20 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-gray-800">產品生態系統：軟硬體的完美協同</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
+                        Bloq.it 的產品組合是其戰略的具體體現。強大的軟體核心 (Bloq.it OS) 與創新耐用的硬體緊密結合，為市場提供了最全面的解決方案。
+                    </p>
+                </div>
+                <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-gray-700 text-center mb-6">Bloq.it OS: 智慧網絡的大腦</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="os-card bg-gray-50 p-6 rounded-lg cursor-pointer hover:shadow-lg hover:bg-blue-50 smooth-transition" data-content="os-front">
+                                <div class="card-icon text-blue-500">🎨</div>
+                                <h4 class="mt-4 text-lg font-bold">Bloq.it Front</h4>
+                                <p class="mt-2 text-sm text-gray-600">完全客製化的使用者介面，強化品牌一致性。</p>
+                            </div>
+                            <div class="os-card bg-gray-50 p-6 rounded-lg cursor-pointer hover:shadow-lg hover:bg-green-50 smooth-transition" data-content="os-vitals">
+                                <div class="card-icon text-green-500">❤️</div>
+                                <h4 class="mt-4 text-lg font-bold">Bloq.it Vitals</h4>
+                                <p class="mt-2 text-sm text-gray-600">AI驅動的健康監控與預測性維護。</p>
+                            </div>
+                            <div class="os-card bg-gray-50 p-6 rounded-lg cursor-pointer hover:shadow-lg hover:bg-indigo-50 smooth-transition" data-content="os-dashboard">
+                                <div class="card-icon text-indigo-500">📊</div>
+                                <h4 class="mt-4 text-lg font-bold">Bloq.it Dashboard</h4>
+                                <p class="mt-2 text-sm text-gray-600">中央化的網絡管理與數據分析平台。</p>
+                            </div>
+                            <div class="os-card bg-gray-50 p-6 rounded-lg cursor-pointer hover:shadow-lg hover:bg-yellow-50 smooth-transition" data-content="os-api">
+                                <div class="card-icon text-yellow-500">🔌</div>
+                                <h4 class="mt-4 text-lg font-bold">Bloq.it API</h4>
+                                <p class="mt-2 text-sm text-gray-600">強大的 REST API，實現無縫系統整合。</p>
+                            </div>
+                        </div>
+                        <div id="os-content-display" class="mt-6 bg-white p-6 rounded-lg shadow-inner min-h-[150px]">
+                            <div id="os-front" class="os-content hidden">
+                                <h4 class="font-bold text-gray-800">前端客製化 (Front)</h4>
+                                <p class="mt-2 text-gray-600">允許企業上傳自己的UI設計，從顏色主題、品牌標誌到操作流程，完全根據品牌需求調整，確保終端用戶獲得一致的品牌體驗。</p>
+                            </div>
+                             <div id="os-vitals" class="os-content hidden">
+                                <h4 class="font-bold text-gray-800">健康監控 (Vitals)</h4>
+                                <p class="mt-2 text-gray-600">利用AI進行24/7全天候監控，不僅能即時偵測異常，更能預測潛在的組件故障，將維護從「被動修復」轉變為「主動管理」，大幅降低營運成本。</p>
+                            </div>
+                             <div id="os-dashboard" class="os-content hidden">
+                                <h4 class="font-bold text-gray-800">管理儀表板 (Dashboard)</h4>
+                                <p class="mt-2 text-gray-600">提供基於網頁的中央管理介面，可追溯所有包裹事件，分析詳細的營運數據，幫助管理者做出更精準的決策，提升網絡透明度。</p>
+                            </div>
+                             <div id="os-api" class="os-content hidden">
+                                <h4 class="font-bold text-gray-800">開放介面 (API)</h4>
+                                <p class="mt-2 text-gray-600">基於REST的雲端API，讓開發者能完全控制服務邏輯，輕鬆將儲物櫃系統與企業現有的ERP、物流管理系統或自有App進行深度整合。</p>
+                            </div>
+                            <div id="os-default" class="os-content">
+                                <p class="text-gray-500">點擊上方任一模組，查看詳細功能說明。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold text-gray-700 text-center mb-6">硬體創新: 智慧儲物櫃的實體</h3>
+                        <div class="space-y-8">
+                            <div class="bg-gray-50 p-6 rounded-lg">
+                                <h4 class="text-lg font-bold text-gray-800">通用型智慧儲物櫃</h4>
+                                <p class="mt-2 text-gray-600">專為高強度使用和惡劣環境打造，具備高度適應性與可擴展性。模組化設計確保了快速部署和低總體擁有成本(TCO)。</p>
+                            </div>
+                            <div class="bg-blue-50 p-6 rounded-lg border-2 border-blue-500 shadow-lg">
+                                <h4 class="text-lg font-bold text-blue-700 flex items-center">
+                                    <span class="mr-2">🚀</span> NEXT 自主儲物櫃 (革命性創新)
+                                </h4>
+                                <p class="mt-2 text-blue-800">一款完全離網運行的智慧儲物櫃，由長效電池供電。它「零妥協」地保留了所有智慧功能，包括10吋觸控螢幕和AI喚醒，並能在15分鐘內完成安裝，徹底改變部署的可能性。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="growth" class="py-16 sm:py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-gray-800">指數級增長的故事</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
+                        自成立以來，Bloq.it 展現了驚人的增長速度，無論是財務表現還是市場擴張，都證明了其商業模式的強大潛力。
+                    </p>
+                </div>
+                <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-700 text-center mb-4">財務與融資增長</h3>
+                         <div class="chart-container">
+                            <canvas id="financialGrowthChart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-700 text-center mb-4">網絡與營運擴張</h3>
+                        <div class="chart-container">
+                            <canvas id="networkGrowthChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="impact" class="py-16 sm:py-20 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-gray-800">市場影響力：合作夥伴的成功故事</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
+                        Bloq.it 的技術正在為全球領先的物流和電商企業賦能。以下是幾個關鍵的合作案例，展示了其解決方案的實際價值。
+                    </p>
+                </div>
+                <div class="mt-12 max-w-4xl mx-auto space-y-4">
+                    <div class="case-study-item border border-gray-200 rounded-lg">
+                        <button class="case-study-header w-full flex justify-between items-center text-left p-4 bg-gray-50 hover:bg-gray-100">
+                            <span class="text-lg font-semibold text-gray-700">Vinted Go: 歐洲最大二手電商的物流網絡</span>
+                            <span class="case-study-chevron text-blue-500 transform transition-transform">▼</span>
+                        </button>
+                        <div class="case-study-content hidden p-6 border-t border-gray-200">
+                            <p class="text-gray-600">作為 Vinted Go 的獨家軟硬體供應商，Bloq.it 協助其在法國、西班牙等地快速部署超過5,000座儲物櫃，打造了高效、便捷的包裹自提網絡，成為其核心物流基礎設施。</p>
+                        </div>
+                    </div>
+                     <div class="case-study-item border border-gray-200 rounded-lg">
+                        <button class="case-study-header w-full flex justify-between items-center text-left p-4 bg-gray-50 hover:bg-gray-100">
+                            <span class="text-lg font-semibold text-gray-700">DHL eCommerce: 整合碎片化的歐洲網絡</span>
+                            <span class="case-study-chevron text-blue-500 transform transition-transform">▼</span>
+                        </button>
+                        <div class="case-study-content hidden p-6 border-t border-gray-200">
+                            <p class="text-gray-600">DHL 利用 Bloq.it OS 的「硬體無關性」，啟動了一項跨國平台統一專案，將歐洲多國、不同品牌的舊有櫃機全部整合到同一個管理後台，消除了系統分散的痛點，實現了標準化和集中化管理。</p>
+                        </div>
+                    </div>
+                    <div class="case-study-item border border-gray-200 rounded-lg">
+                        <button class="case-study-header w-full flex justify-between items-center text-left p-4 bg-gray-50 hover:bg-gray-100">
+                            <span class="text-lg font-semibold text-gray-700">DeinFach: 打造德國首個開放儲物櫃網絡</span>
+                            <span class="case-study-chevron text-blue-500 transform transition-transform">▼</span>
+                        </button>
+                        <div class="case-study-content hidden p-6 border-t border-gray-200">
+                            <p class="text-gray-600">Bloq.it 作為技術夥伴，支持 DeinFach 建立德國首個對所有物流業者開放的包裹自提網絡。這展現了其產品的前瞻性，能夠支持創新的「快遞公司無關」商業模式。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <footer class="bg-gray-800 text-white">
+            <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center">
+                <p>這是一份基於公開研究報告生成的互動式分析。所有數據與內容均來自原始報告。</p>
+                <p class="mt-2 text-sm text-gray-400">© 2025 互動式報告生成</p>
+            </div>
+        </footer>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Strategy Tabs
+            const strategyTabs = document.querySelectorAll('.strategy-tab');
+            const strategyContents = document.querySelectorAll('.strategy-content');
+
+            strategyTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    strategyTabs.forEach(t => {
+                        t.classList.remove('tab-active');
+                        t.classList.add('tab-inactive');
+                    });
+                    tab.classList.add('tab-active');
+                    tab.classList.remove('tab-inactive');
+
+                    const targetId = tab.id.replace('tab-btn-', 'tab-content-');
+                    strategyContents.forEach(content => {
+                        if (content.id === targetId) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            // OS Cards
+            const osCards = document.querySelectorAll('.os-card');
+            const osContents = document.querySelectorAll('.os-content');
+            const osDefaultContent = document.getElementById('os-default');
+
+            osCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const contentId = card.getAttribute('data-content');
+                    osDefaultContent.classList.add('hidden');
+                    
+                    osContents.forEach(content => {
+                         if (content.id === contentId) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+
+                    osCards.forEach(c => c.classList.remove('ring-2', 'ring-blue-500'));
+                    card.classList.add('ring-2', 'ring-blue-500');
+                });
+            });
+
+            // Case Studies Accordion
+            const caseStudyHeaders = document.querySelectorAll('.case-study-header');
+            caseStudyHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const chevron = header.querySelector('.case-study-chevron');
+                    
+                    const isVisible = !content.classList.contains('hidden');
+                    content.classList.toggle('hidden');
+                    chevron.classList.toggle('rotate-180', !isVisible);
+
+                    if (!isVisible) {
+                        // Close other open items
+                        caseStudyHeaders.forEach(otherHeader => {
+                            if (otherHeader !== header) {
+                                otherHeader.nextElementSibling.classList.add('hidden');
+                                otherHeader.querySelector('.case-study-chevron').classList.remove('rotate-180');
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Chart.js Configuration
+            const chartOptions = {
+                maintainAspectRatio: false,
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#1f2937',
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 12 },
+                        padding: 10,
+                        cornerRadius: 4,
+                        displayColors: false,
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#e5e7eb'
+                        },
+                        ticks: {
+                           callback: function(value) {
+                                if (value >= 10000) return value / 10000 + '萬';
+                                if (value >= 1000) return value / 1000 + '千';
+                                return value;
+                           },
+                           color: '#6b7280',
+                           font: { size: 12 }
+                        }
+                    },
+                    x: {
+                         grid: {
+                            display: false
+                        },
+                        ticks: {
+                           color: '#6b7280',
+                           font: { size: 12 }
+                        }
+                    }
+                }
+            };
+            
+            // Financial Growth Chart
+            const financialCtx = document.getElementById('financialGrowthChart').getContext('2d');
+            new Chart(financialCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['營收增長率(2024)', '櫃機產量增長(2023 vs 22)', 'B輪融資(百萬歐元)'],
+                    datasets: [{
+                        label: '增長指標',
+                        data: [100, 1200, 28],
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    plugins: {
+                        ...chartOptions.plugins,
+                        tooltip: {
+                             ...chartOptions.plugins.tooltip,
+                             callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        if (context.label.includes('融資')) {
+                                           label += '€' + context.parsed.y + '百萬';
+                                        } else {
+                                           label += context.parsed.y + '%';
+                                        }
+                                    }
+                                    return label;
+                                }
+                             }
+                        }
+                    },
+                    scales: {
+                        ...chartOptions.scales,
+                        y: {
+                             ...chartOptions.scales.y,
+                              ticks: {
+                                   ...chartOptions.scales.y.ticks,
+                                   callback: function(value) {
+                                        return value + '%';
+                                   }
+                               }
+                        }
+                    }
+                }
+            });
+
+            // Network Growth Chart
+            const networkCtx = document.getElementById('networkGrowthChart').getContext('2d');
+            new Chart(networkCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['年增儲物櫃(2024)', '年處理包裹(百萬)', '總交易量(百萬)'],
+                    datasets: [{
+                        label: '營運指標',
+                        data: [5000, 50, 4],
+                        backgroundColor: ['#6366f1', '#8b5cf6', '#ec4899'],
+                        borderRadius: 4,
+                    }]
+                },
+                 options: {
+                    ...chartOptions,
+                    plugins: {
+                        ...chartOptions.plugins,
+                        tooltip: {
+                             ...chartOptions.plugins.tooltip,
+                             callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        if (context.label.includes('儲物櫃')) {
+                                           label += context.parsed.y.toLocaleString() + '個';
+                                        } else {
+                                           label += context.parsed.y + '百萬';
+                                        }
+                                    }
+                                    return label;
+                                }
+                             }
+                        }
+                    }
+                }
+            });
+
+        });
+    </script>
+
+</body>
+</html>
