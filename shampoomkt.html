@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>亞洲洗髮精市場互動儀表板</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: 該應用程式採用基於主題的儀表板結構，設有頂部導航欄，分為「市場概覽」、「核心趨勢」、「區域洞察」和「品牌格局」四個主要部分。這種結構旨在將冗長的報告分解為邏輯清晰、易於消化的模組。用戶可以根據自身興趣直接跳轉至特定部分，例如，市場分析師可能首先關注「市場概覽」的宏觀數據，而區域經理則可能直接進入「區域洞察」查看特定國家的情況。此設計透過互動式圖表和可點擊的卡片鼓勵用戶主動探索，而非被動閱讀，從而提升資訊吸收效率和用戶參與度。 -->
+    <!-- Visualization & Content Choices: 1. 市場概覽 (甜甜圈圖, Chart.js): 目標-告知。用於直觀展示亞太地區在全球市場中的份額。互動-滑鼠懸停顯示詳細資訊。理由-甜甜圈圖是呈現部分與整體關係的最佳選擇。2. 區域洞察 (動態長條圖, Chart.js): 目標-比較。用於比較各區域主要品牌的市場佔有率。互動-點擊區域標籤後，圖表和文字內容會動態更新。理由-長條圖適合比較不同類別的數值大小，動態更新則使其在單一頁面中高效利用空間。3. 核心趨勢 (互動卡片, HTML/CSS/JS): 目標-組織與告知。以卡片形式呈現關鍵趨勢，避免資訊過載。互動-點擊卡片可展開查看詳細說明。理由-採用「漸進式揭露」的設計，保持介面簡潔，讓用戶能專注於感興趣的主題。4. 品牌格局 (清單, HTML/CSS/JS): 目標-組織與探索。以清晰的列表展示主要企業及其旗下品牌。理由-提供直接、有條理的品牌關係視圖。 -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F8F9FA;
+            color: #343A40;
+        }
+        .nav-link {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .nav-link.active, .nav-link:hover {
+            background-color: #4A5568;
+            color: #FFFFFF;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .stat-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background-color: #3B82F6;
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(0, 118, 255, 0.39);
+        }
+        .trend-card {
+            cursor: pointer;
+        }
+        .trend-card-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .trend-card.open .trend-card-details {
+            max-height: 500px;
+        }
+        .brand-logo {
+            width: 100px;
+            height: 50px;
+            object-fit: contain;
+        }
+        .fade-in {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800">亞洲洗髮精市場互動儀表板</h1>
+            <p class="mt-2 text-lg text-gray-600">深入解析市場份額、消費者偏好與產品趨勢</p>
+        </header>
+
+        <nav class="flex justify-center bg-white p-2 rounded-lg shadow-md mb-10 sticky top-4 z-10">
+            <a href="#overview" class="nav-link active">市場概覽</a>
+            <a href="#trends" class="nav-link">核心趨勢</a>
+            <a href="#regional" class="nav-link">區域洞察</a>
+            <a href="#brands" class="nav-link">品牌格局</a>
+        </nav>
+
+        <main id="main-content">
+            <section id="overview" class="content-section active fade-in">
+                <div class="text-center mb-12">
+                     <h2 class="text-3xl font-bold mb-2">市場宏觀視角</h2>
+                     <p class="text-gray-600 max-w-3xl mx-auto">本節提供亞洲洗髮精市場的整體規模、增長預測以及在全球市場中的地位。透過關鍵數據與圖表，您可以快速了解市場的宏觀潛力與發展動能。</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-6 mb-12">
+                    <div class="stat-card text-center">
+                        <h3 class="text-lg font-semibold text-gray-500">2024年亞太市場規模</h3>
+                        <p class="text-4xl font-bold text-blue-600 mt-2">182.2億美元</p>
+                    </div>
+                    <div class="stat-card text-center">
+                        <h3 class="text-lg font-semibold text-gray-500">2029年預計規模</h3>
+                        <p class="text-4xl font-bold text-green-600 mt-2">261.2億美元</p>
+                    </div>
+                    <div class="stat-card text-center">
+                        <h3 class="text-lg font-semibold text-gray-500">年均複合增長率 (CAGR)</h3>
+                        <p class="text-4xl font-bold text-purple-600 mt-2">7.47%</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-2xl font-bold text-center mb-4">亞太地區在全球市場的地位 (2024)</h3>
+                    <div class="chart-container">
+                        <canvas id="globalMarketShareChart"></canvas>
+                    </div>
+                    <p class="text-center text-gray-600 mt-4">亞太地區以超過三分之一的市場份額，主導全球洗髮精市場，顯示其巨大的市場體量和增長潛力。</p>
+                </div>
+            </section>
+            
+            <section id="trends" class="content-section fade-in">
+                <div class="text-center mb-12">
+                     <h2 class="text-3xl font-bold mb-2">核心趨勢與消費者偏好</h2>
+                     <p class="text-gray-600 max-w-3xl mx-auto">此部分剖析驅動市場變革的核心趨勢。從成分選擇到永續發展，了解亞洲消費者最重視的產品特色。點擊下方卡片可展開查看詳細內容。</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="trend-card stat-card">
+                        <div class="flex items-center text-xl font-bold">
+                           <span class="text-3xl mr-3">🌿</span> 天然、有機與草本
+                        </div>
+                        <div class="trend-card-details mt-2">
+                           <p class="text-gray-700">這是亞洲市場最顯著的趨勢。消費者認為天然成分更安全、溫和，並有效解決頭髮問題。印度市場對草本和阿育吠陀產品有深厚文化淵源。常見成分包括椰子油、蘆薈、薑、茶樹油、椿油、氨基酸等。</p>
+                        </div>
+                    </div>
+                    <div class="trend-card stat-card">
+                        <div class="flex items-center text-xl font-bold">
+                           <span class="text-3xl mr-3">💆‍♀️</span> 頭皮護理與問題解決
+                        </div>
+                        <div class="trend-card-details mt-2">
+                           <p class="text-gray-700">消費者關注點從頭髮延伸至頭皮健康。對滋養修護、蓬鬆、固髮生髮、控油、去屑、止癢等功效需求增加。中國市場防脫髮產品備案數大幅增長，韓國市場則以抗頭皮屑和脫髮治療為增長點。</p>
+                        </div>
+                    </div>
+                    <div class="trend-card stat-card">
+                        <div class="flex items-center text-xl font-bold">
+                           <span class="text-3xl mr-3">♻️</span> 永續性與環保意識
+                        </div>
+                         <div class="trend-card-details mt-2">
+                           <p class="text-gray-700">對永續產品和環保包裝（如補充包）的偏好日益增強。可回收材料、純素配方、無動物實驗認證等成為重要考量。泰國市場尤其重視永續性和環保產品。</p>
+                        </div>
+                    </div>
+                    <div class="trend-card stat-card">
+                        <div class="flex items-center text-xl font-bold">
+                           <span class="text-3xl mr-3">💎</span> 高端化與專業級產品
+                        </div>
+                         <div class="trend-card-details mt-2">
+                           <p class="text-gray-700">隨著可支配所得增加，消費者願意為專業級、高品質的洗護產品支付更高價格。此趨勢在中國、韓國及菲律賓等市場尤為明顯，帶動了奢華護髮產品線的發展。</p>
+                        </div>
+                    </div>
+                    <div class="trend-card stat-card">
+                         <div class="flex items-center text-xl font-bold">
+                           <span class="text-3xl mr-3">🌸</span> 香氛與感官體驗
+                        </div>
+                         <div class="trend-card-details mt-2">
+                           <p class="text-gray-700">除了功效，洗髮精的香氣成為重要購買因素。消費者偏好持久且令人愉悅的香氛。韓國與越南市場特別強調產品的香氣層次和持久性。</p>
+                        </div>
+                    </div>
+                    <div class="trend-card stat-card">
+                        <div class="flex items-center text-xl font-bold">
+                           <span class="text-3xl mr-3">✨</span> 無硫酸鹽與溫和配方
+                        </div>
+                         <div class="trend-card-details mt-2">
+                           <p class="text-gray-700">越來越多消費者轉向無硫酸鹽(Sulfate-Free)洗髮精，反映對更溫和、刺激性更低的產品配方的明確偏好。這一趨勢在印度和日本市場尤其受到關注。</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="regional" class="content-section fade-in">
+                <div class="text-center mb-12">
+                     <h2 class="text-3xl font-bold mb-2">區域市場深度洞察</h2>
+                     <p class="text-gray-600 max-w-3xl mx-auto">亞洲市場並非鐵板一塊，各地區因文化、氣候和消費習慣的差異而呈現獨特面貌。選擇一個地區，深入了解其市場份額、主要品牌和獨特的消費者需求。</p>
+                </div>
+                <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8" id="region-tabs">
+                    <button class="tab-button py-2 px-4 rounded-full font-semibold bg-white shadow active" data-region="china">中國</button>
+                    <button class="tab-button py-2 px-4 rounded-full font-semibold bg-white shadow" data-region="india">印度</button>
+                    <button class="tab-button py-2 px-4 rounded-full font-semibold bg-white shadow" data-region="japan">日本</button>
+                    <button class="tab-button py-2 px-4 rounded-full font-semibold bg-white shadow" data-region="korea">韓國</button>
+                    <button class="tab-button py-2 px-4 rounded-full font-semibold bg-white shadow" data-region="sea">東南亞</button>
+                </div>
+
+                <div id="regional-content" class="bg-white p-6 rounded-lg shadow-lg min-h-[400px]">
+                    <div class="grid lg:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 id="region-title" class="text-2xl font-bold mb-4"></h3>
+                            <div id="region-description" class="text-gray-700 space-y-2"></div>
+                        </div>
+                        <div class="chart-container h-80 md:h-96">
+                            <canvas id="regionalBrandShareChart"></canvas>
+                        </div>
+                    </div>
+                     <div id="sea-details" class="mt-6 hidden">
+                         <h4 class="text-xl font-bold mb-4">東南亞各國市場特色：</h4>
+                         <div class="space-y-4">
+                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <h5 class="font-bold text-lg">🇲🇾 馬來西亞</h5>
+                                <p>偏好本土與日系品牌，重視天然、清真認證(Halal)成分。「柔軟」效果是關鍵訴求，同時因氣候炎熱，對控油、去屑、鎖水功能需求高。</p>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <h5 class="font-bold text-lg">🇮🇩 印尼</h5>
+                                <p>草本與有機需求增長迅速，電子商務是主要銷售渠道。頭皮護理是市場焦點，但農村地區的分銷仍是挑戰。</p>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <h5 class="font-bold text-lg">🇵🇭 菲律賓</h5>
+                                <p>消費者對價格敏感，但對天然、有機產品的需求仍在增長。市場競爭激烈，品牌需平衡價格與價值。</p>
+                            </div>
+                             <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <h5 class="font-bold text-lg">🇻🇳 越南</h5>
+                                <p>年輕人口推動市場，偏好天然草本與持久花香。炎熱氣候使清涼、控油、抗頭皮屑功能備受歡迎。</p>
+                            </div>
+                             <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <h5 class="font-bold text-lg">🇹🇭 泰國</h5>
+                                <p>「極簡護膚」趨勢影響，多功能產品受歡迎。重視天然有機與永續性，頭皮護理是市場重點。</p>
+                            </div>
+                         </div>
+                     </div>
+                </div>
+            </section>
+
+            <section id="brands" class="content-section fade-in">
+                <div class="text-center mb-12">
+                     <h2 class="text-3xl font-bold mb-2">主要品牌格局</h2>
+                     <p class="text-gray-600 max-w-3xl mx-auto">市場由幾大國際巨頭主導，但本土品牌也正憑藉其獨特定位迅速崛起。本節將展示主要參與者及其在亞洲市場上活躍的知名品牌。</p>
+                </div>
+                <div class="space-y-8">
+                    <div class="brand-card bg-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-2xl font-bold border-b pb-2 mb-4">Procter & Gamble (P&G)</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div><p class="font-semibold">海飛絲 (Head & Shoulders)</p><p class="text-sm text-gray-500">主打去屑</p></div>
+                            <div><p class="font-semibold">潘婷 (Pantene)</p><p class="text-sm text-gray-500">專注修護</p></div>
+                            <div><p class="font-semibold">飄柔 (Rejoice)</p><p class="text-sm text-gray-500">洗護二合一</p></div>
+                            <div><p class="font-semibold">沙宣 (VS Sassoon)</p><p class="text-sm text-gray-500">沙龍級護理</p></div>
+                        </div>
+                    </div>
+                    <div class="brand-card bg-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-2xl font-bold border-b pb-2 mb-4">Unilever</h3>
+                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div><p class="font-semibold">清揚 (Clear)</p><p class="text-sm text-gray-500">男女去屑專家</p></div>
+                            <div><p class="font-semibold">力士 (Lux)</p><p class="text-sm text-gray-500">香氛護理</p></div>
+                            <div><p class="font-semibold">夏士蓮 (Hazeline)</p><p class="text-sm text-gray-500">天然成分</p></div>
+                             <div><p class="font-semibold">Sunsilk</p><p class="text-sm text-gray-500">大眾市場</p></div>
+                        </div>
+                    </div>
+                     <div class="brand-card bg-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-2xl font-bold border-b pb-2 mb-4">L'Oréal</h3>
+                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div><p class="font-semibold">L'Oréal Paris</p><p class="text-sm text-gray-500">全面護理</p></div>
+                            <div><p class="font-semibold">卡詩 (Kérastase)</p><p class="text-sm text-gray-500">高端專業沙龍</p></div>
+                        </div>
+                    </div>
+                     <div class="brand-card bg-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-2xl font-bold border-b pb-2 mb-4">亞洲本土力量</h3>
+                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div><p class="font-semibold">花王 (Kao) - 日本</p><p class="text-sm text-gray-500">技術創新</p></div>
+                            <div><p class="font-semibold">呂 (RYO) - 韓國</p><p class="text-sm text-gray-500">韓方草本</p></div>
+                            <div><p class="font-semibold">Mamaearth - 印度</p><p class="text-sm text-gray-500">無毒天然</p></div>
+                            <div><p class="font-semibold">蜂花 - 中國</p><p class="text-sm text-gray-500">國民經典</p></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const navLinks = document.querySelectorAll('.nav-link');
+    const contentSections = document.querySelectorAll('.content-section');
+
+    const regionalData = {
+        china: {
+            title: "中國市場",
+            description: `
+                <p>市場由P&G、聯合利華、萊雅三大外資品牌主導，合計市佔率超過50%。</p>
+                <p class="mt-2"><strong>消費者偏好：</strong></p>
+                <ul class="list-disc list-inside mt-1">
+                    <li>功效性強：特別是去屑、修護、柔順。</li>
+                    <li>國潮興起：本土品牌如阿道夫、霸王、蜂花等正迅速擴張。</li>
+                    <li>高端化趨勢：消費者願意為沙龍級、高科技產品付費。</li>
+                </ul>
+            `,
+            chartData: {
+                labels: ['P&G, Unilever, L\'Oréal', '國貨品牌', '其他品牌'],
+                data: [55, 25, 20],
+                backgroundColor: ['#3B82F6', '#10B981', '#8B5CF6']
+            }
+        },
+        india: {
+            title: "印度市場",
+            description: `
+                <p>市場增長迅速，草本和阿育吠陀產品是核心特色。</p>
+                <p class="mt-2"><strong>消費者偏好：</strong></p>
+                <ul class="list-disc list-inside mt-1">
+                    <li>天然草本：對阿育吠陀和天然成分有深厚文化認同。</li>
+                    <li>本土品牌強勢：Mamaearth, WOW Skin Science, Biotique等品牌深受信賴。</li>
+                    <li>問題解決導向：注重減少脫髮、滋養頭皮等功效。</li>
+                </ul>
+            `,
+            chartData: {
+                labels: ['Unilever', 'P&G', '本土草本品牌 (Marico, Dabur, etc.)', '其他'],
+                data: [30, 20, 35, 15],
+                backgroundColor: ['#3B82F6', '#6366F1', '#10B981', '#F97316']
+            }
+        },
+        japan: {
+            title: "日本市場",
+            description: `
+                <p>市場成熟且競爭激烈，消費者偏好高附加價值產品。</p>
+                 <p class="mt-2"><strong>消費者偏好：</strong></p>
+                <ul class="list-disc list-inside mt-1">
+                    <li>高附加價值：無矽靈、氨基酸配方等產品流行。</li>
+                    <li>修護功能：極緻損傷修護是暢銷產品的主要賣點。</li>
+                    <li>品牌忠誠度與回購率：部分暢銷品有很高的回購率。</li>
+                </ul>
+            `,
+            chartData: {
+                labels: ['潘婷 (P&G)', 'Dear Beaute (Kracie)', 'LUX (Unilever)', '花王 (Kao)', '其他'],
+                data: [2.23, 2.15, 2.11, 15, 78.51],
+                backgroundColor: ['#3B82F6', '#EF4444', '#F97316', '#10B981', '#6B7280']
+            }
+        },
+        korea: {
+            title: "韓國市場",
+            description: `
+                <p>韓妝影響力巨大，護髮市場趨向奢華和專業化。</p>
+                 <p class="mt-2"><strong>消費者偏好：</strong></p>
+                <ul class="list-disc list-inside mt-1">
+                    <li>功效導向：抗頭皮屑和脫髮治療是主要增長點。</li>
+                    <li>韓方草本：呂(RYO)等品牌將韓方精華融入產品。</li>
+                    <li>香氛體驗：注重多層次、持久的香氣。</li>
+                    <li>天然成分：Innisfree, Whamisa等品牌強調天然配方。</li>
+                </ul>
+            `,
+            chartData: {
+                labels: ['愛茉莉太平洋', 'LG生活健康', '其他國際品牌', '本土新興品牌'],
+                data: [35, 30, 20, 15],
+                 backgroundColor: ['#10B981', '#3B82F6', '#F59E0B', '#6366F1']
+            }
+        },
+        sea: {
+            title: "東南亞市場",
+            description: `
+                <p>市場多元且潛力巨大，各國特色鮮明。</p>
+                 <p class="mt-2"><strong>總體趨勢：</strong></p>
+                <ul class="list-disc list-inside mt-1">
+                    <li>年輕化：受全球美妝趨勢影響，對個護產品需求大。</li>
+                    <li>在地化需求：清真認證(馬來西亞)、氣候對應(越南控油)等。</li>
+                    <li>天然有機：該趨勢在整個東南亞地區都非常普遍。</li>
+                </ul>
+            `,
+            chartData: {
+                labels: ['Unilever', 'P&G', 'L\'Oréal', '本土品牌', '其他'],
+                data: [40, 25, 10, 15, 10],
+                backgroundColor: ['#3B82F6', '#6366F1', '#A855F7', '#10B981', '#6B7280']
+            }
+        }
+    };
+
+    let regionalChart;
+
+    function updateRegionalContent(region) {
+        const data = regionalData[region];
+        document.getElementById('region-title').textContent = data.title;
+        document.getElementById('region-description').innerHTML = data.description;
+        
+        const seaDetails = document.getElementById('sea-details');
+        if (region === 'sea') {
+            seaDetails.classList.remove('hidden');
+        } else {
+            seaDetails.classList.add('hidden');
+        }
+
+        const ctx = document.getElementById('regionalBrandShareChart').getContext('2d');
+        if (regionalChart) {
+            regionalChart.destroy();
+        }
+        regionalChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.chartData.labels,
+                datasets: [{
+                    label: '市場份額 (%)',
+                    data: data.chartData.data,
+                    backgroundColor: data.chartData.backgroundColor,
+                    borderColor: data.chartData.backgroundColor.map(c => c.replace('0.6', '1')),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y + '%';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '市場份額 (%)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+
+    const regionTabs = document.getElementById('region-tabs');
+    regionTabs.addEventListener('click', function(e) {
+        if (e.target.tagName === 'BUTTON') {
+            const region = e.target.dataset.region;
+            regionTabs.querySelector('.active').classList.remove('active');
+            e.target.classList.add('active');
+            updateRegionalContent(region);
+        }
+    });
+    
+    updateRegionalContent('china');
+
+    const globalCtx = document.getElementById('globalMarketShareChart').getContext('2d');
+    new Chart(globalCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['亞太地區', '世界其他地區'],
+            datasets: [{
+                data: [36.42, 100 - 36.42],
+                backgroundColor: ['#3B82F6', '#E5E7EB'],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                tooltip: {
+                     callbacks: {
+                        label: function(context) {
+                            return context.label + ': ' + context.parsed.toFixed(2) + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    window.addEventListener('hashchange', function() {
+        const hash = window.location.hash.substring(1);
+        navLinks.forEach(link => {
+            const linkTarget = link.getAttribute('href').substring(1);
+            if (linkTarget === hash) {
+                link.classList.add('active');
+                document.getElementById(linkTarget).classList.add('active');
+            } else {
+                link.classList.remove('active');
+                document.getElementById(linkTarget).classList.remove('active');
+            }
+        });
+    });
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+
+            navLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+            
+            contentSections.forEach(section => {
+                section.classList.remove('active');
+                if (section.id === targetId) {
+                    section.classList.add('active');
+                    section.classList.remove('fade-in');
+                    void section.offsetWidth; 
+                    section.classList.add('fade-in');
+                }
+            });
+            window.location.hash = targetId;
+        });
+    });
+
+    if (window.location.hash) {
+        const event = new Event('hashchange');
+        window.dispatchEvent(event);
+    }
+
+    const trendCards = document.querySelectorAll('.trend-card');
+    trendCards.forEach(card => {
+        card.addEventListener('click', () => {
+            card.classList.toggle('open');
+        });
+    });
+});
+</script>
+</body>
+</html>
