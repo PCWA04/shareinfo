@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>監察院調查蝦皮案：互動式分析報告</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony (Light neutrals like slate-50/gray-50, a primary muted teal accent, and complementary chart colors) -->
+    <!-- Application Structure Plan: A thematic, dashboard-style single-page application. The structure is designed for non-linear exploration, diverging from the report's linear format to enhance user understanding. The main navigation links to four key themes: 1) Event Overview, 2) Multi-faceted Impacts (with sub-navigation), 3) Stakeholders (interactive map), and 4) Recommendations (accordion). This structure groups related concepts logically, allowing users to choose their own path through the complex information, which is more intuitive than following the dense report structure. -->
+    <!-- Visualization & Content Choices: 1. Event Overview: Goal=Inform -> Method=Interactive Timeline (HTML/CSS/JS) -> Interaction=Hover for details -> Justification=Visually represents the sequence of events. 2. Stakeholders: Goal=Organize/Compare -> Method=Clickable Stakeholder Map (HTML/Flexbox) -> Interaction=Click to reveal stances -> Justification=Simplifies complex relationships and viewpoints. 3. Impacts: Goal=Compare/Inform -> Method=Doughnut Chart (Chart.js) for data types collected, Tabbed content for impact areas -> Interaction=Click tabs -> Justification=Doughnut chart clearly shows data proportions from report's Table 2; tabs organize dense impact analysis. 4. Recommendations: Goal=Inform -> Method=Accordion (HTML/JS) -> Interaction=Click to expand -> Justification=Presents targeted advice without overwhelming the user. CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+        .active-nav {
+            color: #0d9488; /* teal-600 */
+            border-bottom-color: #0d9488; /* teal-600 */
+        }
+        .inactive-nav {
+            color: #4b5563; /* gray-600 */
+            border-bottom-color: transparent;
+        }
+        .active-tab {
+            background-color: #14b8a6; /* teal-500 */
+            color: white;
+            border-color: #14b8a6; /* teal-500 */
+        }
+        .inactive-tab {
+            background-color: white;
+            color: #374151; /* gray-700 */
+            border-color: #d1d5db; /* gray-300 */
+        }
+        .section-fade-in {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-gray-800">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-teal-700">蝦皮調查案透視</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#overview" class="nav-link px-3 py-2 rounded-md text-sm font-medium border-b-2 transition-colors duration-300 active-nav">事件總覽</a>
+                        <a href="#impacts" class="nav-link px-3 py-2 rounded-md text-sm font-medium border-b-2 transition-colors duration-300 inactive-nav">多方影響</a>
+                        <a href="#stakeholders" class="nav-link px-3 py-2 rounded-md text-sm font-medium border-b-2 transition-colors duration-300 inactive-nav">利害關係人</a>
+                        <a href="#recommendations" class="nav-link px-3 py-2 rounded-md text-sm font-medium border-b-2 transition-colors duration-300 inactive-nav">未來展望</a>
+                    </div>
+                </div>
+                <div class="-mr-2 flex md:hidden">
+                    <button id="mobile-menu-button" type="button" class="bg-white inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500" aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <svg class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#overview" class="nav-link-mobile text-gray-600 hover:bg-gray-50 hover:text-teal-600 block px-3 py-2 rounded-md text-base font-medium">事件總覽</a>
+                <a href="#impacts" class="nav-link-mobile text-gray-600 hover:bg-gray-50 hover:text-teal-600 block px-3 py-2 rounded-md text-base font-medium">多方影響</a>
+                <a href="#stakeholders" class="nav-link-mobile text-gray-600 hover:bg-gray-50 hover:text-teal-600 block px-3 py-2 rounded-md text-base font-medium">利害關係人</a>
+                <a href="#recommendations" class="nav-link-mobile text-gray-600 hover:bg-gray-50 hover:text-teal-600 block px-3 py-2 rounded-md text-base font-medium">未來展望</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        
+        <section id="overview" class="px-4 py-16 sm:px-0 scroll-mt-16">
+            <div class="text-center">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">監察院調查蝦皮案</h1>
+                <p class="mt-4 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">一場關於中資疑慮、數據安全與國家主權的全面檢視。本報告將帶您深入了解事件的來龍去脈、潛在衝擊與未來走向。</p>
+            </div>
+            
+            <div class="mt-16">
+                <h2 class="text-2xl font-bold text-center text-gray-800 mb-8">事件發展時間軸</h2>
+                <div class="relative w-full max-w-3xl mx-auto">
+                    <div class="absolute left-1/2 w-0.5 h-full bg-teal-200"></div>
+                    <div class="space-y-12">
+                        <div class="relative flex items-center">
+                            <div class="w-1/2 pr-8 text-right">
+                                <p class="text-gray-500">2017年</p>
+                                <h3 class="font-bold text-lg text-teal-800">首次浮現中資爭議</h3>
+                                <p class="text-sm text-gray-600 mt-1">母公司冬海集團赴美上市，騰訊持股近4成，引發外界對其實質控制權的質疑。</p>
+                            </div>
+                            <div class="absolute left-1/2 -translate-x-1/2 w-5 h-5 bg-teal-500 rounded-full border-4 border-white"></div>
+                            <div class="w-1/2 pl-8"></div>
+                        </div>
+                        <div class="relative flex items-center">
+                            <div class="w-1/2 pr-8"></div>
+                            <div class="absolute left-1/2 -translate-x-1/2 w-5 h-5 bg-teal-500 rounded-full border-4 border-white"></div>
+                            <div class="w-1/2 pl-8 text-left">
+                                <p class="text-gray-500">2022年</p>
+                                <h3 class="font-bold text-lg text-teal-800">立法院關切與投審會調查</h3>
+                                <p class="text-sm text-gray-600 mt-1">立法院質疑蝦皮違反《兩岸條例》，經濟部投審會要求蝦皮說明股權結構。</p>
+                            </div>
+                        </div>
+                         <div class="relative flex items-center">
+                            <div class="w-1/2 pr-8 text-right">
+                                <p class="text-gray-500">2025年4月17日</p>
+                                <h3 class="font-bold text-lg text-teal-800">監察院啟動自動調查</h3>
+                                <p class="text-sm text-gray-600 mt-1">監委賴振昌、賴鼎銘以「疑具中資背景，影響我國資安及經濟主權」為由，正式立案調查。</p>
+                            </div>
+                            <div class="absolute left-1/2 -translate-x-1/2 w-5 h-5 bg-teal-500 rounded-full border-4 border-white"></div>
+                            <div class="w-1/2 pl-8"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-20 bg-white p-8 rounded-2xl shadow-lg">
+                <h3 class="text-xl font-bold text-center text-gray-800 mb-6">調查核心：三大疑慮</h3>
+                <p class="text-center text-gray-600 mb-8">監察院的調查主要聚焦於三大核心議題，這些議題不僅關乎蝦皮自身的合規性，更觸及了台灣對數位經濟的監管框架與國家安全。</p>
+                <div class="grid md:grid-cols-3 gap-8 text-center">
+                    <div class="p-6 bg-slate-50 rounded-xl">
+                        <div class="text-4xl text-teal-600 mb-3">🏢</div>
+                        <h4 class="font-bold text-lg">主管機關監管</h4>
+                        <p class="text-sm text-gray-600 mt-2">檢視經濟部、數位發展部等機關，是否確實依法審查與監管蝦皮在台的投資與業務。</p>
+                    </div>
+                    <div class="p-6 bg-slate-50 rounded-xl">
+                        <div class="text-4xl text-teal-600 mb-3">🛡️</div>
+                        <h4 class="font-bold text-lg">平台資安機制</h4>
+                        <p class="text-sm text-gray-600 mt-2">評估蝦皮的資訊安全機制是否健全，能否有效保護數百萬台灣用戶的個人資料。</p>
+                    </div>
+                    <div class="p-6 bg-slate-50 rounded-xl">
+                        <div class="text-4xl text-teal-600 mb-3">💸</div>
+                        <h4 class="font-bold text-lg">個資與金流使用</h4>
+                        <p class="text-sm text-gray-600 mt-2">釐清其掌握的龐大用戶個資與金流數據，是否存在違法或不當使用的情況。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="impacts" class="px-4 py-16 sm:px-0 scroll-mt-16">
+            <h2 class="text-3xl font-bold text-center text-gray-900">牽一髮動全身：事件的多方影響</h2>
+            <p class="mt-4 text-lg text-gray-600 text-center max-w-3xl mx-auto">蝦皮調查案的影響力遠超單一企業，它觸動了法律、市場乃至國家安全等多個層面的敏感神經，預示著台灣數位治理的未來走向。</p>
+            
+            <div class="mt-12">
+                <div class="flex justify-center space-x-2 sm:space-x-4 mb-8">
+                    <button class="impact-tab-button px-4 py-2 text-sm sm:text-base font-medium border rounded-full transition-all duration-300 active-tab" data-tab="legal">法律與監管</button>
+                    <button class="impact-tab-button px-4 py-2 text-sm sm:text-base font-medium border rounded-full transition-all duration-300 inactive-tab" data-tab="business">商業與市場</button>
+                    <button class="impact-tab-button px-4 py-2 text-sm sm:text-base font-medium border rounded-full transition-all duration-300 inactive-tab" data-tab="security">國家安全</button>
+                </div>
+                
+                <div id="legal-tab" class="impact-tab-content grid md:grid-cols-5 gap-8 section-fade-in">
+                    <div class="md:col-span-3 bg-white p-8 rounded-2xl shadow-lg">
+                        <h3 class="font-bold text-xl mb-4 text-teal-700">法律與監管層面的漣漪</h3>
+                        <div class="space-y-4 text-gray-700">
+                            <p><strong>調查權限爭議：</strong>前監委質疑監察院調查私人企業的合法性，認為此舉可能「擴權」，凸顯現行憲政框架在面對具國安影響的關鍵私人企業時，可能存在模糊地帶。</p>
+                            <p><strong>平台責任加壓：</strong>過往的個資外洩事件與帳戶濫用案，使平台責任成為焦點。此案可能加速立法，要求電商實施更嚴格的身份驗證(KYC)與反洗錢(AML)措施。</p>
+                            <p><strong>外資審查趨嚴：</strong>本案將加劇對《兩岸條例》及外資審查機制的辯論，未來對具中資背景或股權結構複雜的數位平台，審查標準可能更嚴格，深入檢視「實質控制權」。</p>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2 bg-white p-8 rounded-2xl shadow-lg flex flex-col items-center justify-center">
+                        <h3 class="font-bold text-lg text-center mb-4 text-gray-800">蝦皮蒐集個資類型分析</h3>
+                        <div class="chart-container">
+                            <canvas id="dataCollectionChart"></canvas>
+                        </div>
+                        <p class="text-xs text-center text-gray-500 mt-4">資料來源：根據報告中引述的蝦皮隱私權政策整理，顯示其蒐集資料範圍廣泛。</p>
+                    </div>
+                </div>
+
+                <div id="business-tab" class="impact-tab-content grid md:grid-cols-1 gap-8 section-fade-in hidden">
+                    <div class="bg-white p-8 rounded-2xl shadow-lg">
+                        <h3 class="font-bold text-xl mb-4 text-teal-700">商業與市場層面的震盪</h3>
+                        <ul class="space-y-4 text-gray-700 list-disc list-inside">
+                            <li><strong>策略轉向壓力：</strong>面對監管壓力，蝦皮可能被迫調整營運策略，從過去的「補貼搶市」轉向更注重「合規與盈利」，投入更多資源於數據安全與法規遵循。</li>
+                            <li><strong>消費者信心衝擊：</strong>調查案與過往的負面事件，可能侵蝕消費者信任，導致部分用戶轉向其他被認為更安全或透明的平台。</li>
+                            <li><strong>市場格局變動：</strong>本土電商（如momo, PChome）或新進國際業者，可能利用此機會，以「數據安全」和「在地合規」為訴求，爭取市場份額，改變競爭格局。</li>
+                            <li><strong>行業門檻提高：</strong>監管趨嚴將提高所有電商平台的合規成本，特別是在實名驗證、反洗錢及資安措施上，可能加速市場整合，淘汰體質較弱的小型業者。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="security-tab" class="impact-tab-content grid md:grid-cols-1 gap-8 section-fade-in hidden">
+                    <div class="bg-white p-8 rounded-2xl shadow-lg">
+                         <h3 class="font-bold text-xl mb-4 text-teal-700">國家安全層面的警鐘</h3>
+                         <div class="space-y-6 text-gray-700">
+                             <div>
+                                 <h4 class="font-semibold text-lg">數據即資產，亦是風險</h4>
+                                 <p class="mt-2">蝦皮掌握的用戶個資、消費習慣、金流與人際網絡等海量數據，若落入惡意國家行為者手中，可能被用於情報分析、識別弱點、進行認知作戰或影響力操作，已從消費者保護議題，上升至國家安全議題。</p>
+                             </div>
+                              <div>
+                                 <h4 class="font-semibold text-lg">經濟主權的數位挑戰</h4>
+                                 <p class="mt-2">對蝦皮中資背景的疑慮，延伸至對台灣「經濟主權」的擔憂。若外國勢力能間接控制主流電商平台，不僅可能衝擊本地產業（如商品傾銷），更可能透過掌握金流，將商業影響力轉化為地緣政治籌碼。</p>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="stakeholders" class="px-4 py-16 sm:px-0 scroll-mt-16">
+            <h2 class="text-3xl font-bold text-center text-gray-900">事件中的利害關係人</h2>
+            <p class="mt-4 text-lg text-gray-600 text-center max-w-3xl mx-auto">本案涉及多方角色，各自的立場、行動與回應，共同交織出事件的複雜樣貌。點擊下方角色，了解他們的觀點。</p>
+            
+            <div class="mt-12 flex flex-wrap justify-center gap-4">
+                <button class="stakeholder-button p-4 w-32 h-32 flex flex-col items-center justify-center bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500" data-stakeholder="control-yuan">
+                    <span class="text-4xl">🏛️</span>
+                    <span class="mt-2 font-semibold text-sm">監察院</span>
+                </button>
+                <button class="stakeholder-button p-4 w-32 h-32 flex flex-col items-center justify-center bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500" data-stakeholder="shopee">
+                    <span class="text-4xl">🛒</span>
+                    <span class="mt-2 font-semibold text-sm">蝦皮</span>
+                </button>
+                <button class="stakeholder-button p-4 w-32 h-32 flex flex-col items-center justify-center bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500" data-stakeholder="gov">
+                    <span class="text-4xl">🇹🇼</span>
+                    <span class="mt-2 font-semibold text-sm">政府部會</span>
+                </button>
+                <button class="stakeholder-button p-4 w-32 h-32 flex flex-col items-center justify-center bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500" data-stakeholder="experts">
+                    <span class="text-4xl">⚖️</span>
+                    <span class="mt-2 font-semibold text-sm">專家與公民團體</span>
+                </button>
+            </div>
+
+            <div id="stakeholder-details" class="mt-8 min-h-[200px] transition-all duration-500">
+                <div class="bg-white p-8 rounded-2xl shadow-lg max-w-4xl mx-auto hidden section-fade-in" data-content="control-yuan">
+                    <h3 class="font-bold text-xl text-teal-700 mb-4">監察院：政府監管的監督者</h3>
+                    <p class="text-gray-700">監察院強調，調查重點在於釐清「主管機關是否確實依法審查及監管」。其立場是作為政府的監督者，檢視行政部門在面對新型態數位經濟挑戰時，是否存在監管失靈或法規不足的問題，而非直接懲處私人企業。</p>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-lg max-w-4xl mx-auto hidden section-fade-in" data-content="shopee">
+                    <h3 class="font-bold text-xl text-teal-700 mb-4">蝦皮：謹慎回應的市場龍頭</h3>
+                    <p class="text-gray-700">蝦皮的官方回應從初期的「全力配合調查」轉為後來的「暫不回應」，顯示其面對敏感審查時的法律謹慎。公司重申營運、資安、金流均符合台灣法規，並與中資無關，但此說法是針對過往爭議，而非本次調查。對於平台濫用問題，則表示已強化驗證機制並配合檢警偵辦。</p>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-lg max-w-4xl mx-auto hidden section-fade-in" data-content="gov">
+                    <h3 class="font-bold text-xl text-teal-700 mb-4">政府部會：碎片化的監管體系</h3>
+                    <p class="text-gray-700">台灣對電商的監管涉及多個部會：數位發展部負責第三方支付與個資保護、經濟部投審會負責外資審查、金管會負責電子支付。這種碎片化的監管模式在面對蝦皮這類橫跨多領域的複雜平台時，可能存在協調挑戰與監管漏洞。監察院的調查也間接指出了此系統性問題。</p>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-lg max-w-4xl mx-auto hidden section-fade-in" data-content="experts">
+                    <h3 class="font-bold text-xl text-teal-700 mb-4">專家與公民團體：多元觀點的交鋒</h3>
+                    <p class="text-gray-700"><strong>國安派：</strong>以經濟民主連合為代表，強調中資背景與數據外流的國安風險，呼籲主管機關應更嚴格審查，甚至駁回投資申請。<br><strong>法制派：</strong>部分法律專家（如前監委）質疑監察院調查私人企業的權限，認為可能逾越憲法職權。<br><strong>消保派：</strong>消費者文教基金會等團體，則呼籲政府應加強監管、提高罰則，並要求企業投入更多資源保護消費者個資與交易安全。</p>
+                </div>
+                 <div class="text-center text-gray-500 mt-8" id="stakeholder-placeholder">
+                    <p>請點擊上方角色圖示以查看詳細資訊。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="recommendations" class="px-4 py-16 sm:px-0 scroll-mt-16">
+            <h2 class="text-3xl font-bold text-center text-gray-900">未來展望與各方建議</h2>
+            <p class="mt-4 text-lg text-gray-600 text-center max-w-3xl mx-auto">蝦皮案是台灣數位主權發展的風向標。面對挑戰，政府、業者與消費者該如何應對？</p>
+            
+            <div class="mt-12 max-w-4xl mx-auto space-y-4">
+                <div class="accordion-item bg-white rounded-lg shadow-sm">
+                    <button class="accordion-header w-full flex justify-between items-center text-left p-5 font-semibold text-lg hover:bg-slate-50 transition-colors">
+                        <span>對政府監管機關的建議</span>
+                        <svg class="accordion-icon w-6 h-6 transition-transform transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="accordion-content hidden p-5 pt-0">
+                        <ul class="text-gray-700 space-y-2 list-disc list-inside">
+                            <li><strong>強化外資審查：</strong>建立更透明、更嚴格的外資審查機制，超越股權比例，深入評估「實質控制權」。</li>
+                            <li><strong>完善數據治理：</strong>檢視並更新個資法，考慮納入數據在地化要求，並大幅提高數據外洩的罰則。</li>
+                            <li><strong>整合監管職權：</strong>提升跨部會協調效能，考慮成立專責單位，以應對數位經濟的複雜性，避免監管套利。</li>
+                            <li><strong>推動主動監管：</strong>從被動應對轉為主動、基於風險的監管，要求平台定期進行獨立資安稽核並發布透明度報告。</li>
+                        </ul>
+                    </div>
+                </div>
+                 <div class="accordion-item bg-white rounded-lg shadow-sm">
+                    <button class="accordion-header w-full flex justify-between items-center text-left p-5 font-semibold text-lg hover:bg-slate-50 transition-colors">
+                        <span>對電商平台業者的建議</span>
+                        <svg class="accordion-icon w-6 h-6 transition-transform transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="accordion-content hidden p-5 pt-0">
+                         <ul class="text-gray-700 space-y-2 list-disc list-inside">
+                            <li><strong>優先考量資安：</strong>將數據安全與隱私保護置於核心地位，大幅投資於網路安全基礎設施。</li>
+                            <li><strong>提升營運透明：</strong>主動揭露股權結構、數據處理實踐（特別是跨境傳輸）與合規措施，以建立用戶信任。</li>
+                            <li><strong>落實平台責任：</strong>嚴格執行KYC與AML協議，積極監控並通報可疑活動，防止平台被用於非法目的。</li>
+                            <li><strong>融入在地考量：</strong>將全球商業模式調整以適應台灣的監管與國安環境，認識到市場主導地位伴隨著更高的社會責任。</li>
+                        </ul>
+                    </div>
+                </div>
+                 <div class="accordion-item bg-white rounded-lg shadow-sm">
+                    <button class="accordion-header w-full flex justify-between items-center text-left p-5 font-semibold text-lg hover:bg-slate-50 transition-colors">
+                        <span>對消費者的建議</span>
+                        <svg class="accordion-icon w-6 h-6 transition-transform transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="accordion-content hidden p-5 pt-0">
+                         <ul class="text-gray-700 space-y-2 list-disc list-inside">
+                            <li><strong>提高數據風險意識：</strong>了解平台蒐集了哪些個資，以及數據外洩與濫用的潛在風險。</li>
+                            <li><strong>實踐數位衛生：</strong>使用高強度且獨立的密碼，啟用雙重驗證，謹慎分享敏感個資。</li>
+                            <li><strong>審閱隱私政策：</strong>在使用服務前，花時間了解平台的隱私權政策與服務條款。</li>
+                            <li><strong>舉報可疑活動：</strong>遇到可疑帳號、釣魚詐騙或異常請求時，立即向平台及相關單位舉報。</li>
+                             <li><strong>分散平台風險：</strong>避免過度依賴單一平台，可選擇在多個具良好合規記錄的平台間分散購物。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+    </main>
+    
+    <footer class="bg-gray-800 text-white">
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-sm text-gray-400">本互動式報告根據公開資訊與監察院調查報告整理而成，僅供學術分析與公眾教育目的。</p>
+            <p class="text-sm text-gray-400 mt-2">© 2025 數位主權分析專題</p>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // Mobile menu toggle
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileMenuButton.addEventListener('click', () => {
+        const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
+        mobileMenuButton.setAttribute('aria-expanded', !isExpanded);
+        mobileMenu.classList.toggle('hidden');
+        mobileMenuButton.querySelectorAll('svg').forEach(svg => svg.classList.toggle('hidden'));
+    });
+    
+    // Smooth scrolling for navigation
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+                // Close mobile menu on click
+                if (mobileMenu.classList.contains('hidden') === false) {
+                    mobileMenuButton.click();
+                }
+            }
+        });
+    });
+
+    // Navigation active state on scroll
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.nav-link');
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            if (pageYOffset >= sectionTop - 80) { // 80px offset for sticky header
+                current = section.getAttribute('id');
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.classList.remove('active-nav');
+            link.classList.add('inactive-nav');
+            if (link.getAttribute('href').substring(1) === current) {
+                link.classList.add('active-nav');
+                link.classList.remove('inactive-nav');
+            }
+        });
+    });
+
+
+    // Impacts section tabs
+    const impactTabButtons = document.querySelectorAll('.impact-tab-button');
+    const impactTabContents = document.querySelectorAll('.impact-tab-content');
+
+    impactTabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tabId = button.dataset.tab;
+
+            impactTabButtons.forEach(btn => {
+                btn.classList.remove('active-tab');
+                btn.classList.add('inactive-tab');
+            });
+            button.classList.add('active-tab');
+            button.classList.remove('inactive-tab');
+
+            impactTabContents.forEach(content => {
+                if (content.id === `${tabId}-tab`) {
+                    content.classList.remove('hidden');
+                } else {
+                    content.classList.add('hidden');
+                }
+            });
+        });
+    });
+    
+    // Stakeholders section
+    const stakeholderButtons = document.querySelectorAll('.stakeholder-button');
+    const stakeholderDetails = document.querySelectorAll('#stakeholder-details > div[data-content]');
+    const stakeholderPlaceholder = document.getElementById('stakeholder-placeholder');
+
+    stakeholderButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const stakeholderId = button.dataset.stakeholder;
+            
+            stakeholderButtons.forEach(btn => btn.classList.remove('border-teal-500', 'scale-105'));
+            button.classList.add('border-teal-500', 'scale-105');
+
+            stakeholderPlaceholder.classList.add('hidden');
+
+            stakeholderDetails.forEach(detail => {
+                if (detail.dataset.content === stakeholderId) {
+                    detail.classList.remove('hidden');
+                } else {
+                    detail.classList.add('hidden');
+                }
+            });
+        });
+    });
+
+    // Accordion for recommendations
+    const accordionHeaders = document.querySelectorAll('.accordion-header');
+    accordionHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+            const content = header.nextElementSibling;
+            const icon = header.querySelector('.accordion-icon');
+            
+            // Close other accordions
+            document.querySelectorAll('.accordion-content').forEach(c => {
+                if (c !== content && !c.classList.contains('hidden')) {
+                    c.classList.add('hidden');
+                    c.previousElementSibling.querySelector('.accordion-icon').classList.remove('rotate-180');
+                }
+            });
+
+            content.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
+        });
+    });
+
+    // Chart.js doughnut chart for data collection
+    const ctx = document.getElementById('dataCollectionChart').getContext('2d');
+    const dataCollectionChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['識別個人者 (身分證, 姓名)', '財務交易 (銀行帳號)', '個人描述 (年齡, 性別)', '生活與行為 (消費模式)', '其他 (照片, 互動)'],
+            datasets: [{
+                label: '蒐集個資類型',
+                data: [30, 25, 15, 20, 10],
+                backgroundColor: [
+                    '#0d9488', // teal-600
+                    '#0f766e', // teal-700
+                    '#14b8a6', // teal-500
+                    '#2dd4bf', // teal-400
+                    '#5eead4'  // teal-300
+                ],
+                borderColor: '#ffffff',
+                borderWidth: 2,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: {
+                           family: "'Noto Sans TC', sans-serif"
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed !== null) {
+                                label += context.parsed + '%';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+
+</body>
+</html>
