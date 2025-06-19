@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OOH 戶外配送互動指南</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Logistics -->
+    <!-- Application Structure Plan: 我設計了一個三段式的應用程式結構來引導使用者。第一部分「什麼是 OOH？」用互動卡片介紹基本定義。第二部分「為何 OOH 如此重要？」是核心，透過一個甜甜圈圖和一個長條圖，將抽象的價值主張與發展動能視覺化，使用者可以點擊互動來探索詳細資訊。第三部分「OOH 的實際應用」展示了市場上的領導者，鞏固了概念的現實意義。這種由淺入深的結構，從「是什麼」到「為什麼重要」再到「如何應用」，創造了一個比靜態報告更直觀、更具吸引力的學習路徑。 -->
+    <!-- Visualization & Content Choices: 報告資訊：OOH類型 -> 目標：告知 -> 呈現方式：互動卡片 -> 互動：點擊顯示詳細資訊 -> 理由：直接明瞭地定義三個核心概念 -> 技術：HTML/CSS/JS。 報告資訊：價值主張 -> 目標：解釋與比較 -> 呈現方式：互動式甜甜圈圖與文字區塊 -> 互動：點擊價值按鈕，對應的圖表區塊會高亮，並顯示相關說明文字 -> 理由：將五大價值與視覺元素緊密連結，強化記憶點 -> 技術：Chart.js。 報告資訊：發展動能 -> 目標：告知 -> 呈現方式：水平長條圖 -> 互動：滑鼠懸停顯示工具提示 -> 理由：清晰地呈現推動 OOH 發展的各項因素 -> 技術：Chart.js。 報告資訊：案例公司 -> 目標：展示應用 -> 呈現方式：品牌標誌網格 -> 互動：無（僅展示）-> 理由：快速建立 OOH 是主流解決方案的認知 -> 技術：HTML/CSS。 -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F8F7F4;
+            color: #3D405B;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s;
+        }
+        .nav-link:hover {
+            color: #E07A5F;
+        }
+        .value-button.active {
+            background-color: #E07A5F;
+            color: #FFFFFF;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .type-card.active {
+            border-color: #E07A5F;
+            transform: scale(1.03);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-[#3D405B]">OOH 互動指南</h1>
+            <div class="hidden md:flex space-x-8">
+                <a href="#what" class="nav-link text-gray-600 font-medium">什麼是OOH？</a>
+                <a href="#why" class="nav-link text-gray-600 font-medium">為何重要？</a>
+                <a href="#how" class="nav-link text-gray-600 font-medium">實際應用</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12 md:py-16">
+
+        <section id="what" class="mb-20 md:mb-28 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">什麼是 OOH 戶外配送？</h2>
+            <p class="max-w-3xl mx-auto text-gray-600 mb-12">OOH (Out-of-Home) 指的是將包裹配送至消費者住家以外的地點。這種模式旨在提升配送的便利性、效率與安全性，已成為現代電商物流不可或缺的一環。請點擊下方卡片，了解三種主要的 OOH 服務類型。</p>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div id="type-card-locker" class="type-card bg-white p-6 rounded-xl shadow-md border-2 border-transparent cursor-pointer transition-all duration-300">
+                    <div class="text-4xl mb-4">📦</div>
+                    <h3 class="text-xl font-bold mb-2">包裹儲物櫃</h3>
+                    <p id="type-desc-locker" class="text-gray-500 text-sm opacity-0 h-0 transition-all duration-300">一種自動化、通常 24/7 全天候開放的儲物櫃，消費者可使用密碼或手機 App 自行取件，提供極高的取件彈性。</p>
+                </div>
+                <div id="type-card-pudo" class="type-card bg-white p-6 rounded-xl shadow-md border-2 border-transparent cursor-pointer transition-all duration-300">
+                    <div class="text-4xl mb-4">🏪</div>
+                    <h3 class="text-xl font-bold mb-2">取/投遞點 (PUDO)</h3>
+                    <p id="type-desc-pudo" class="text-gray-500 text-sm opacity-0 h-0 transition-all duration-300">與當地商家（如便利商店、零售店）合作設立的服務點，消費者可以在商家營業時間內方便地取件或寄件。</p>
+                </div>
+                <div id="type-card-click" class="type-card bg-white p-6 rounded-xl shadow-md border-2 border-transparent cursor-pointer transition-all duration-300">
+                     <div class="text-4xl mb-4">🛍️</div>
+                    <h3 class="text-xl font-bold mb-2">到店取貨</h3>
+                    <p id="type-desc-click" class="text-gray-500 text-sm opacity-0 h-0 transition-all duration-300">消費者在線上購物後，選擇直接到品牌的實體店面取貨。這種方式結合了線上購物的便利與實體店的服務體驗。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="why" class="mb-20 md:mb-28">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">為何 OOH 如此重要？</h2>
+                <p class="max-w-3xl mx-auto text-gray-600">本節探討戶外配送 (OOH) 為何成為現代物流的關鍵。我們將解析推動其發展的主要動力，並深入剖析 OOH 為企業和消費者帶來的五大核心價值。點擊下方的價值主張按鈕，探索其詳細內容與對應圖表變化。</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div class="flex flex-col items-center">
+                    <div class="chart-container mb-6">
+                        <canvas id="valueChart"></canvas>
+                    </div>
+                    <div class="flex flex-wrap justify-center gap-3">
+                        <button class="value-button px-4 py-2 text-sm font-semibold rounded-full shadow-sm transition-all duration-300" data-index="0">成本效益</button>
+                        <button class="value-button px-4 py-2 text-sm font-semibold rounded-full shadow-sm transition-all duration-300" data-index="1">便利彈性</button>
+                        <button class="value-button px-4 py-2 text-sm font-semibold rounded-full shadow-sm transition-all duration-300" data-index="2">安全可靠</button>
+                        <button class="value-button px-4 py-2 text-sm font-semibold rounded-full shadow-sm transition-all duration-300" data-index="3">永續發展</button>
+                        <button class="value-button px-4 py-2 text-sm font-semibold rounded-full shadow-sm transition-all duration-300" data-index="4">客戶體驗</button>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg min-h-[300px] flex flex-col justify-center">
+                    <h3 id="value-title" class="text-2xl font-bold mb-3 text-[#3D405B]">探索 OOH 的核心價值</h3>
+                    <p id="value-desc" class="text-gray-700">點擊上方的按鈕，查看 OOH 為物流生態系帶來的各項具體好處。每個價值主張都對應著一項關鍵優勢，共同構成了 OOH 成功的基礎。</p>
+                </div>
+            </div>
+            
+            <div class="mt-20 md:mt-28">
+                 <div class="text-center mb-12">
+                    <h3 class="text-2xl md:text-3xl font-bold mb-4">推動 OOH 發展的關鍵動力</h3>
+                    <p class="max-w-3xl mx-auto text-gray-600">多項社會與科技趨勢的交會，共同推動了 OOH 配送的快速成長。下圖顯示了影響 OOH 普及度的主要因素。</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <div class="chart-container h-80 md:h-96 max-w-4xl">
+                        <canvas id="driversChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="how" class="text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">OOH 的實際應用</h2>
+            <p class="max-w-3xl mx-auto text-gray-600 mb-12">全球眾多領先的物流和電商公司，都已將 OOH 網路作為其服務的核心部分，藉此優化成本結構、提升客戶滿意度並實現可持續的擴展。以下是部分採用 OOH 解決方案的知名企業。</p>
+            <div class="flex flex-wrap justify-center items-center gap-x-8 gap-y-6 text-gray-500 font-semibold">
+                <span>InPost</span>
+                <span>eMAG/Same Day</span>
+                <span>Allegro</span>
+                <span>DPD/La Poste</span>
+                <span>UPS</span>
+                <span>Trendyol/Alibaba</span>
+                <span>Nova Post</span>
+                <span>Post Nord</span>
+            </div>
+             <div class="mt-20 md:mt-24 bg-white p-8 rounded-xl shadow-lg text-left">
+                <h3 class="text-2xl font-bold mb-4 text-center">供應商案例：ARKA 智慧包裹儲物櫃</h3>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div>
+                         <p class="text-gray-700 mb-4">技術供應商在 OOH 生態系中扮演著關鍵角色。例如，ARKA 公司專注於提供端到端的智慧儲物櫃解決方案，其服務涵蓋硬體設計、軟體開發到生產製造。</p>
+                         <p class="text-gray-700">這類供應商強調其產品的可靠性與耐用性，確保儲物櫃無論是在繁忙的市中心，還是在氣候多變的偏遠地區都能穩定運行。此外，提供如太陽能供電的選項，也進一步增強了 OOH 網路的部署彈性與永續性。</p>
+                    </div>
+                    <div class="flex justify-center items-center bg-gray-100 rounded-lg p-8 h-48">
+                         <span class="text-3xl text-gray-400">❖ ARKA</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-20">
+        <div class="container mx-auto px-6 py-8 text-center text-gray-400">
+            <p>此互動報告由 AI 根據《The Ultimate Out-of-Home Delivery Handbook》文件生成。</p>
+            <p class="text-sm mt-2">僅供概念展示與資訊摘要使用。</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const valueData = {
+                labels: ['成本效益', '便利彈性', '安全可靠', '永續發展', '客戶體驗'],
+                titles: [
+                    '顯著的成本效益',
+                    '極致的便利與彈性',
+                    '強化的安全性與可靠性',
+                    '支持環境永續發展',
+                    '優化的客戶體驗'
+                ],
+                descriptions: [
+                    '透過集中配送點大幅降低昂貴的「最後一哩路」配送成本。整合路線能減少運輸車輛的行駛里程和停靠次數，顯著提升資源利用效率。',
+                    '消費者無需在家苦等包裹，可依自己的行程在方便的時間和地點取件。包裹儲物櫃提供24/7服務，PUDO點的營業時間也通常很長。',
+                    '包裹存放在安全的儲物櫃或有專人管理的PUDO點，大幅降低了包裹在門口被偷竊或遺失的風險，同時保護了消費者的居住隱私。',
+                    '集中配送能有效減少快遞車輛的總行駛里程與怠速時間，從而降低燃料消耗和碳排放，是更環保的物流選擇。',
+                    '提供無縫、直觀的取件流程，結合清晰的通知與簡易的操作介面，有效減少了配送失敗的挫折感，提升了整體購物滿意度。'
+                ],
+                colors: {
+                    bg: ['#81B29A', '#F2CC8F', '#6A8EAE', '#B270A2', '#E07A5F'],
+                    hover: ['#619a79', '#e0b875', '#557694', '#995b8a', '#c7674e']
+                }
+            };
+
+            const valueButtons = document.querySelectorAll('.value-button');
+            const valueTitle = document.getElementById('value-title');
+            const valueDesc = document.getElementById('value-desc');
+
+            const valueCtx = document.getElementById('valueChart').getContext('2d');
+            const valueChart = new Chart(valueCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: valueData.labels,
+                    datasets: [{
+                        data: [20, 20, 20, 20, 20],
+                        backgroundColor: valueData.colors.bg,
+                        hoverBackgroundColor: valueData.colors.hover,
+                        borderColor: '#F8F7F4',
+                        borderWidth: 4,
+                        hoverBorderWidth: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: false
+                        }
+                    }
+                }
+            });
+
+            function updateValueSection(index) {
+                valueButtons.forEach((btn, i) => {
+                    btn.classList.toggle('active', parseInt(btn.dataset.index) === index);
+                });
+
+                valueTitle.textContent = valueData.titles[index];
+                valueDesc.textContent = valueData.descriptions[index];
+
+                valueChart.data.datasets[0].borderWidth = valueChart.data.datasets[0].data.map((_, i) => i === index ? 8 : 4);
+                valueChart.data.datasets[0].borderColor = valueChart.data.datasets[0].data.map((_, i) => i === index ? valueData.colors.hover[i] : '#F8F7F4');
+                valueChart.update();
+            }
+
+            valueButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const index = parseInt(button.dataset.index);
+                    updateValueSection(index);
+                });
+            });
+
+            updateValueSection(0);
+
+
+            const driversCtx = document.getElementById('driversChart').getContext('2d');
+            const driversChart = new Chart(driversCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['電商快速成長', '城市化與居住密集', '科技進步(IoT)', '智慧型手機普及'],
+                    datasets: [{
+                        label: '影響力指數',
+                        data: [95, 80, 88, 92],
+                        backgroundColor: '#6A8EAE',
+                        borderColor: '#557694',
+                        borderWidth: 1,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#3D405B',
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 12 },
+                            padding: 10,
+                            cornerRadius: 5
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#e5e7eb'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            const typeCards = document.querySelectorAll('.type-card');
+            typeCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const desc = card.querySelector('p');
+                    const isActive = card.classList.contains('active');
+                    
+                    typeCards.forEach(c => {
+                        c.classList.remove('active');
+                        c.querySelector('p').classList.add('opacity-0', 'h-0');
+                        c.querySelector('p').classList.remove('mt-2');
+                    });
+
+                    if (!isActive) {
+                        card.classList.add('active');
+                        desc.classList.remove('opacity-0', 'h-0');
+                        desc.classList.add('mt-2');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
