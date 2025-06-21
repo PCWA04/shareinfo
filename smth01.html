@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣智慧醫療生態系｜互動式報告</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony Neutrals -->
+    <!-- Application Structure Plan: A thematic, narrative-driven single-page application that guides the user through the core logic of the report. The structure follows a problem-to-solution flow: 1. The initial challenge (IHCA) and the AI opportunity (DeepArrest). 2. The necessary governance (Responsible AI Framework). 3. The core strategic solution (The Three Centers for Implementation, Certification, and Reimbursement). 4. The foundational layer that enables the entire ecosystem (Interoperability). This narrative structure was chosen because it mirrors a logical discovery process, making the complex national strategy easier for users to understand and digest, rather than just presenting disconnected facts. A sticky navigation bar allows users to jump to sections of interest at any time, supporting both linear and non-linear exploration. -->
+    <!-- Visualization & Content Choices: 
+        - IHCA Stats -> Goal: Inform -> Dynamic Counters -> On-scroll animation -> Highlights the urgency of the problem.
+        - DeepArrest Performance -> Goal: Inform -> Bar Chart -> Chart.js -> Clearly shows the predictive power of the AI solution.
+        - 7 Ethical Crises -> Goal: Organize/Inform -> Interactive Card Grid -> HTML/CSS/JS -> Engages the user to explore the core challenges.
+        - The Three Centers -> Goal: Organize/Inform -> Interactive Tabbed Diagram -> HTML/CSS/JS -> This is the central interactive element. It simplifies the report's core strategy into a single, explorable component, clarifying the distinct but connected roles of the three centers.
+        - Viz.ai Trial Results -> Goal: Compare -> Bar Charts -> Chart.js -> Demonstrates the concept of 'clinical utility' with clear pre/post data, supporting the argument for the Reimbursement center.
+        - Interoperability Strategy -> Goal: Organize -> HTML/CSS Pyramid & Flow Diagram -> Visually represents the hierarchical IT strategy and the SMART on FHIR concept.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. All visualizations are built with Chart.js (Canvas) or pure HTML/CSS/Tailwind for maximum compatibility and adherence to constraints. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+        .tab-button.active {
+            background-color: #2563eb;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .tab-button {
+             transition: all 0.2s ease-in-out;
+        }
+        .card-flip {
+            perspective: 1000px;
+        }
+        .card-flip-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .card-flip:hover .card-flip-inner {
+            transform: rotateY(180deg);
+        }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <header class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl md:text-2xl font-bold text-blue-600">台灣智慧醫療生態系</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#challenge" class="nav-link text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">挑戰與契機</a>
+                        <a href="#framework" class="nav-link text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">負責任AI框架</a>
+                        <a href="#centers" class="nav-link text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">三大核心中心</a>
+                        <a href="#interoperability" class="nav-link text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">互通性基礎</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero" class="bg-white pt-16 pb-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">打通智慧醫療的最後一哩路</h2>
+                <p class="mt-4 max-w-2xl mx-auto text-lg md:text-xl text-gray-500">一份關於台灣如何透過三大中心策略，建構從AI落地、取證到給付的完整生態系之互動式報告。</p>
+            </div>
+        </section>
+
+        <section id="challenge" class="py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">挑戰與契機</h3>
+                    <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-500">從臨床的迫切需求中，看見AI技術帶來的曙光。</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h4 class="text-2xl font-semibold text-gray-800">院內心臟驟停 (IHCA)：一個沈默的殺手</h4>
+                        <p class="mt-4 text-gray-600">院內心臟驟停是醫療系統中的一大挑戰。傳統的監測方式往往在事發前一小時才偵測到明顯惡化，反應時間極為有限。早期識別是提升存活率的關鍵。</p>
+                        <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                                <span class="text-4xl font-bold text-red-600 dynamic-counter" data-target="7">0</span><span class="text-2xl font-semibold text-red-600">/1000</span>
+                                <p class="text-gray-500 mt-2">入院發生率</p>
+                            </div>
+                            <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                                <span class="text-4xl font-bold text-red-600 dynamic-counter" data-target="80">0</span><span class="text-2xl font-semibold text-red-600">%</span>
+                                <p class="text-gray-500 mt-2">平均死亡率</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="bg-white p-6 rounded-lg shadow-lg">
+                            <h4 class="text-2xl font-semibold text-gray-800 text-center mb-4">AI的曙光：DeepArrest 技術</h4>
+                             <p class="text-center text-gray-600 mb-4">榮獲2025年愛迪生獎金獎的DeepArrest，能大幅提前預警，為醫療團隊爭取寶貴的黃金救援時間。</p>
+                            <div class="chart-container" style="height: 250px;">
+                                <canvas id="deepArrestChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="framework" class="py-20 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">建構負責任AI框架</h3>
+                    <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-500">要讓AI成為醫生的可靠夥伴，必須解決其「黑盒子」特性所引發的倫理危機。</p>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 text-center mb-12">
+                    <div class="bg-gray-100 p-4 rounded-lg card-flip">
+                        <div class="card-flip-inner">
+                            <div class="card-face"><span class="font-semibold">不自主</span></div>
+                            <div class="card-back bg-blue-100 p-2"><span class="text-sm">使用者無法控制AI決策</span></div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-lg card-flip">
+                        <div class="card-flip-inner">
+                            <div class="card-face"><span class="font-semibold">不當責</span></div>
+                             <div class="card-back bg-blue-100 p-2"><span class="text-sm">出錯時責任歸屬不明</span></div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-lg card-flip">
+                         <div class="card-flip-inner">
+                            <div class="card-face"><span class="font-semibold">不透明</span></div>
+                             <div class="card-back bg-blue-100 p-2"><span class="text-sm">決策過程如同黑盒子</span></div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-lg card-flip">
+                         <div class="card-flip-inner">
+                            <div class="card-face"><span class="font-semibold">不安全</span></div>
+                             <div class="card-back bg-blue-100 p-2"><span class="text-sm">演算法可能存在偏誤</span></div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-lg card-flip">
+                         <div class="card-flip-inner">
+                            <div class="card-face"><span class="font-semibold">不隱私</span></div>
+                             <div class="card-back bg-blue-100 p-2"><span class="text-sm">病患數據有洩漏風險</span></div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-lg card-flip">
+                         <div class="card-flip-inner">
+                            <div class="card-face"><span class="font-semibold">不公平</span></div>
+                             <div class="card-back bg-blue-100 p-2"><span class="text-sm">對不同族群有偏差</span></div>
+                        </div>
+                    </div>
+                     <div class="bg-gray-100 p-4 rounded-lg card-flip">
+                         <div class="card-flip-inner">
+                            <div class="card-face"><span class="font-semibold">不永續</span></div>
+                             <div class="card-back bg-blue-100 p-2"><span class="text-sm">模型效能隨時間衰退</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-8 rounded-lg">
+                    <h4 class="text-2xl font-semibold text-gray-800 mb-6 text-center">台灣的解決方案：三大支柱</h4>
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="text-center">
+                            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-600 mb-4 text-2xl">💡</div>
+                            <h5 class="text-lg font-medium">透明性與可解釋性</h5>
+                            <p class="mt-2 text-gray-600">建立九大透明性原則，並透過SHAP分析等技術打開AI的黑盒子，讓決策過程可被理解。</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-600 mb-4 text-2xl">🔄</div>
+                            <h5 class="text-lg font-medium">AI生命週期管理</h5>
+                            <p class="mt-2 text-gray-600">對AI模型進行持續監測、評估與再訓練，確保其長期穩定與可靠，實現永續性。</p>
+                        </div>
+                        <div class="text-center">
+                           <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-600 mb-4 text-2xl">🛡️</div>
+                            <h5 class="text-lg font-medium">資安與隱私保護</h5>
+                            <p class="mt-2 text-gray-600">遵循GDPR、HIPAA等國際標準，確保數據在AI應用中的安全與病患的隱私。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="centers" class="py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">智慧醫療三大核心中心</h3>
+                    <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-500">為了解決AI醫療產品化過程中的關鍵障礙，政府成立了三大中心，分別應對「落地、取證、給付」三大挑戰。</p>
+                </div>
+                
+                <div class="max-w-4xl mx-auto">
+                    <div class="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8 mb-8 p-4 bg-gray-100 rounded-xl">
+                        <button id="tab-luodi" class="tab-button w-full md:w-auto px-8 py-3 font-semibold rounded-lg shadow-sm bg-white text-gray-700 active">1. 落地執行</button>
+                        <span class="hidden md:block text-2xl text-gray-400 font-light">→</span>
+                        <button id="tab-quzheng" class="tab-button w-full md:w-auto px-8 py-3 font-semibold rounded-lg shadow-sm bg-white text-gray-700">2. 臨床取證</button>
+                        <span class="hidden md:block text-2xl text-gray-400 font-light">→</span>
+                        <button id="tab-jifu" class="tab-button w-full md:w-auto px-8 py-3 font-semibold rounded-lg shadow-sm bg-white text-gray-700">3. 健保給付</button>
+                    </div>
+
+                    <div id="content-luodi" class="tab-content bg-white p-8 rounded-lg shadow-lg">
+                        <h4 class="text-2xl font-bold text-blue-700 mb-2">負責任AI執行中心 (落地)</h4>
+                        <p class="text-gray-600 mb-6">目標是確保AI在真實臨床環境中安全、有效且負責任地被使用。此中心負責制定規範，並輔導醫院導入符合倫理與法規的AI系統。</p>
+                        <div class="border-t pt-6">
+                           <h5 class="font-semibold mb-4">落地成果：10家醫院 x 10項AI專案</h5>
+                           <p class="text-gray-600 mb-4">以林口長庚的「腕部舟狀骨骨折偵測」為例，AI導入帶來顯著效益：</p>
+                           <div class="chart-container" style="height: 280px;">
+                               <canvas id="luodiChart"></canvas>
+                           </div>
+                        </div>
+                    </div>
+
+                    <div id="content-quzheng" class="tab-content hidden bg-white p-8 rounded-lg shadow-lg">
+                        <h4 class="text-2xl font-bold text-blue-700 mb-2">臨床AI取證驗證中心 (取證)</h4>
+                        <p class="text-gray-600 mb-6">AI產品要成為合法的醫療器材 (SaMD)，必須通過衛福部食藥署(TFDA)的嚴格驗證。此中心旨在加速此流程，提供標準化的驗證環境與跨院數據。</p>
+                        <div class="grid md:grid-cols-2 gap-6 border-t pt-6">
+                            <div>
+                                <h5 class="font-semibold mb-2">核心服務</h5>
+                                <ul class="list-disc list-inside text-gray-600 space-y-1">
+                                    <li>提供專業團隊與技術支援</li>
+                                    <li>建立跨層級、跨體系的驗證資料庫</li>
+                                    <li>利用聯邦式學習保護數據隱私</li>
+                                    <li>輔導廠商遵循TFDA核准路徑</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-md">
+                                <h5 class="font-semibold mb-2">TFDA核准路徑示意</h5>
+                                <div class="space-y-2 text-sm">
+                                    <div class="flex items-center">
+                                        <div class="border border-gray-400 p-2 rounded">新醫材</div>
+                                        <div class="w-4 border-t border-gray-400 mx-1"></div>
+                                        <div class="border border-blue-400 border-dashed p-2 rounded">Class III?</div>
+                                        <div class="w-4 border-t border-gray-400 mx-1"></div>
+                                        <div class="bg-blue-600 text-white p-2 rounded">PMA</div>
+                                    </div>
+                                    <div class="ml-24">↓ 否</div>
+                                    <div class="flex items-center ml-16">
+                                        <div class="border border-blue-400 border-dashed p-2 rounded">有類似醫材?</div>
+                                        <div class="w-4 border-t border-gray-400 mx-1"></div>
+                                        <div class="bg-blue-600 text-white p-2 rounded">510(k)</div>
+                                    </div>
+                                     <div class="ml-24">↓ 否</div>
+                                     <div class="flex items-center ml-16">
+                                        <div class="bg-blue-600 text-white p-2 rounded-full w-20 h-10 flex items-center justify-center">De Novo</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="content-jifu" class="tab-content hidden bg-white p-8 rounded-lg shadow-lg">
+                        <h4 class="text-2xl font-bold text-blue-700 mb-2">AI影響性研究中心 (給付)</h4>
+                        <p class="text-gray-600 mb-6">AI產品要納入健保，光有高準確度不夠，還必須證明其具備「臨床效益」與「成本效益」。此中心專門設計並執行臨床試驗來證實AI的真實價值。</p>
+                         <div class="border-t pt-6">
+                           <h5 class="font-semibold mb-4">案例：Viz.ai 中風輔助系統</h5>
+                           <p class="text-gray-600 mb-4">Viz.ai透過AI提早預警並協調團隊，證明了AI結合早期介入能顯著改善病患預後，成功獲得給付。其臨床試驗展現了驚人的效益：</p>
+                           <div class="chart-container" style="height: 280px;">
+                               <canvas id="jifuChart"></canvas>
+                           </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="interoperability" class="py-20 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">生態系的基石：互通性</h3>
+                    <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-500">若無統一的數據標準，再好的AI也難以規模化。台灣正透過標準化，打造醫療資訊的「iPhone時刻」。</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h4 class="text-2xl font-semibold text-gray-800">台灣醫資統一三層策略</h4>
+                        <p class="mt-4 text-gray-600 mb-6">針對不同層級的醫療院所，推動標準化的資訊系統，打破資訊孤島。</p>
+                        <div class="relative w-full max-w-xs mx-auto">
+                           <div class="bg-blue-500 text-white text-center py-4 px-6 rounded-t-lg shadow-md">標準/工具 (醫學中心)</div>
+                           <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-l-[20px] border-l-transparent border-r-[20px] border-r-transparent border-t-[20px] border-t-blue-500"></div>
+                           <div class="mt-5 bg-teal-500 text-white text-center py-4 px-10 rounded-lg shadow-md">數位底盤 (區域/地區醫院)</div>
+                           <div class="absolute top-[138px] left-1/2 transform -translate-x-1/2 border-l-[40px] border-l-transparent border-r-[40px] border-r-transparent border-t-[20px] border-t-teal-500"></div>
+                           <div class="mt-5 bg-gray-500 text-white text-center py-4 px-14 rounded-b-lg shadow-md">平權公版 (衛生所/診所)</div>
+                        </div>
+                    </div>
+                     <div class="bg-gray-50 p-8 rounded-lg">
+                        <h4 class="text-2xl font-semibold text-gray-800">核心技術：SMART on FHIR</h4>
+                        <p class="mt-4 text-gray-600 mb-6">這套國際標準組合，將為台灣的醫療數據與應用程式帶來革命性的改變。</p>
+                        <div class="space-y-4">
+                            <div class="flex items-start p-4 bg-white rounded-lg shadow">
+                                <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-bold">FHIR</div>
+                                <div class="ml-4">
+                                    <p class="font-semibold">Fast Healthcare Interoperability Resources</p>
+                                    <p class="text-sm text-gray-600">統一醫療數據的「語言」，讓不同系統能讀懂彼此的資料。</p>
+                                </div>
+                            </div>
+                             <div class="flex items-start p-4 bg-white rounded-lg shadow">
+                                <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-full bg-teal-100 text-teal-600 font-bold">SMART</div>
+                                <div class="ml-4">
+                                    <p class="font-semibold">Substitutable Medical Apps, Reusable Technologies</p>
+                                    <p class="text-sm text-gray-600">統一應用程式的「插座」，讓一個App能在不同醫院系統上即插即用。</p>
+                                </div>
+                            </div>
+                            <div class="text-center pt-4">
+                                <p class="text-lg font-bold text-gray-700">FHIR (數據) + SMART (應用) = 智慧醫療App市集</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-white">
+        <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center">
+            <p>本互動式報告內容基於李建璋教授（衛福部資訊長）之「打造台灣智慧醫療生態系」簡報。</p>
+            <p class="text-sm text-gray-400 mt-2">此為非官方專案，僅為資訊視覺化展示之目的。</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const dynamicCounters = document.querySelectorAll('.dynamic-counter');
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+
+            const counterObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const counter = entry.target;
+                        const target = +counter.getAttribute('data-target');
+                        const duration = 1500;
+                        const stepTime = Math.abs(Math.floor(duration / target));
+                        let current = 0;
+                        const timer = setInterval(() => {
+                            current += 1;
+                            counter.textContent = current;
+                            if (current == target) {
+                                clearInterval(timer);
+                            }
+                        }, stepTime);
+                        observer.unobserve(counter);
+                    }
+                });
+            }, observerOptions);
+
+            dynamicCounters.forEach(counter => {
+                counterObserver.observe(counter);
+            });
+
+            const deepArrestCtx = document.getElementById('deepArrestChart').getContext('2d');
+            new Chart(deepArrestCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['提前12小時', '提前6小時'],
+                    datasets: [{
+                        label: '預測準確度',
+                        data: [85, 95],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(255, 99, 132, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 99, 132, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                             ticks: {
+                                callback: function(value) {
+                                    return value + '%'
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'DeepArrest 預測準確度' }
+                    }
+                }
+            });
+
+            const luodiCtx = document.getElementById('luodiChart').getContext('2d');
+            new Chart(luodiCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['準確度提升', '判讀效率提升'],
+                    datasets: [{
+                        label: '效益提升百分比',
+                        data: [97.5, 98.9], // 90s vs 1s is 98.9% reduction
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(153, 102, 255, 0.6)'
+                        ],
+                        borderColor: [
+                           'rgba(75, 192, 192, 1)',
+                           'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                 options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%'
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: '骨折偵測AI導入效益' }
+                    }
+                }
+            });
+
+            const jifuCtx = document.getElementById('jifuChart').getContext('2d');
+            new Chart(jifuCtx, {
+                type: 'bar',
+                data: {
+                     labels: ['時間節省', '治療機會增加', '臨床結果改善'],
+                    datasets: [{
+                        label: '改善幅度',
+                        data: [39, 16, 40],
+                        backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%'
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Viz.ai 臨床試驗效益' }
+                    }
+                }
+            });
+
+            const tabs = document.querySelectorAll('.tab-button');
+            const contents = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(item => item.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    const targetId = tab.id.replace('tab-', 'content-');
+                    contents.forEach(content => {
+                        if (content.id === targetId) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('main section');
+
+            const sectionObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: "-50% 0px -50% 0px" });
+
+            sections.forEach(section => {
+                sectionObserver.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>
