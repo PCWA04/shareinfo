@@ -159,6 +159,9 @@
             .score-board {
                 font-size: 1rem;
             }
+            .controls {
+                gap: 0.5rem; /* Reduced gap for smaller screens */
+            }
             .control-button {
                 padding: 0.75rem 1rem;
                 font-size: 1.2rem;
@@ -207,7 +210,7 @@
 
             const COLS = 10;
             const ROWS = 20;
-            const BLOCK_SIZE = 30; // Default block size
+            let BLOCK_SIZE = 30; // Changed from const to let to allow reassignment
             let board = [];
             let currentPiece;
             let currentX, currentY;
@@ -412,7 +415,11 @@
 
                 // Level up logic
                 const linesToLevelUp = 10;
-                if (score >= level * linesToLevelUp * 100) { // Example: every 1000 points
+                // This condition for leveling up needs to be more robust.
+                // Let's simplify for now to score based, but for a real game,
+                // it should be based on total lines cleared.
+                // For simplicity, current logic: score needed for next level increases by a factor of 100 points per level
+                if (score >= level * 1000) { // Example: every 1000 points
                     level++;
                     levelDisplay.textContent = level;
                     dropInterval = Math.max(50, dropInterval - 50); // Increase speed, min 50ms
