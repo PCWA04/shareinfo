@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labubu與盲盒經濟：互動式分析報告</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: The application employs a thematic, single-page scrolling structure with a sticky top navigation bar. This design facilitates non-linear exploration, allowing users to jump directly to sections of interest. The flow is designed to tell a story: 1. **Hero Section:** A captivating introduction. 2. **The Icon's Journey:** Focuses on the specific story of Labubu. 3. **Anatomy of Success:** Deconstructs the strategic pillars (IP, Marketing, Psychology). 4. **Global Market Dashboard:** Centralizes all quantitative data with interactive charts for easy analysis. 5. **The Collector's Profile:** Zooms in on the consumer. 6. **Future of Fun:** Looks ahead at challenges and trends. This structure was chosen over the report's linear format to create a more engaging, user-driven exploratory experience that logically groups related concepts for better synthesis and understanding. -->
+    <!-- Visualization & Content Choices: 1. **Market Growth (China & Global):** Report Info -> Market size data from 2015-2030. Goal -> Compare trends over time. Viz -> Interactive Bar Chart. Interaction -> Hover tooltips for precise data. Justification -> Bar charts are excellent for comparing discrete values across categories (years) and series (regions). Library -> Chart.js. 2. **Pop Mart Overseas Sales:** Report Info -> Regional sales percentages. Goal -> Show proportional breakdown. Viz -> Interactive Donut Chart. Interaction -> Hover tooltips for region name and percentage. Justification -> Donut charts are ideal for visualizing parts of a whole. Library -> Chart.js. 3. **Success Factors & Future Trends:** Report Info -> Qualitative strategic points. Goal -> Organize complex information. Presentation -> Interactive cards and tabbed sections. Interaction -> Click to switch tabs, hover for potential highlights. Justification -> These components break down dense text into manageable, user-selectable chunks, preventing information overload. Method -> HTML/CSS/JS. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #FFFBF5;
+            color: #3D405B;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #E07A5F;
+            border-bottom-color: #E07A5F;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #F4F1DE;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 24rem;
+            width: 100%;
+            max-width: 48rem;
+        }
+        .tab {
+            cursor: pointer;
+            padding: 0.75rem 1.5rem;
+            transition: background-color 0.3s, color 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+        .tab.active {
+            color: #E07A5F;
+            border-bottom-color: #E07A5F;
+            font-weight: 700;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .stat-card {
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(5px);
+            border: 1px solid #F4F1DE;
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #E07A5F, #81B29A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .labubu-icon {
+            display: inline-block;
+            font-size: 1.5em;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <a href="#" class="text-2xl font-bold gradient-text">Labubu崛起的秘密</a>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#journey" class="nav-link px-3 py-2 text-sm font-medium">Labubu的旅程</a>
+                        <a href="#success" class="nav-link px-3 py-2 text-sm font-medium">成功方程式</a>
+                        <a href="#market" class="nav-link px-3 py-2 text-sm font-medium">全球市場儀表板</a>
+                        <a href="#future" class="nav-link px-3 py-2 text-sm font-medium">未來展望</a>
+                    </div>
+                </div>
+                 <div class="md:hidden">
+                    <select id="mobile-nav" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <option value="#home">首頁</option>
+                        <option value="#journey">Labubu的旅程</option>
+                        <option value="#success">成功方程式</option>
+                        <option value="#market">全球市場</option>
+                        <option value="#future">未來展望</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main id="home">
+        <section class="min-h-[60vh] md:min-h-[80vh] flex items-center justify-center text-center bg-cover bg-center py-20 px-4" style="background-image: linear-gradient(to bottom, rgba(255, 251, 245, 0.6), #FFFBF5), url('https://placehold.co/1200x800/F4F1DE/3D405B?text=Labubu+Art');">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-4xl md:text-6xl font-bold tracking-tight text-[#3D405B] mb-4">解構一個文化現象</h1>
+                <h2 class="text-5xl md:text-7xl font-extrabold gradient-text mb-6">Labubu的崛起與盲盒經濟</h2>
+                <p class="max-w-2xl mx-auto text-lg md:text-xl text-gray-600">
+                    從藝術家的奇幻精靈，到全球追捧的潮流符號。本報告將深入剖析Labubu如何擄獲人心，並揭示其背後價值千億的盲盒市場運作法則、消費者心理及未來趨勢。
+                </p>
+            </div>
+        </section>
+
+        <section id="journey" class="py-20 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-bold text-[#3D405B] sm:text-4xl">The Icon's Journey: Labubu的誕生與演變</h2>
+                    <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Labubu並非橫空出世。它的成功源於藝術家的獨特願景，並在泡泡瑪特的精心培育下，從一個繪本角色蛻變為全球轟動的文化IP。本節將追溯其從概念到偶像的非凡旅程。</p>
+                </div>
+
+                <div class="relative">
+                    <div class="absolute left-1/2 w-0.5 h-full bg-[#F4F1DE] -translate-x-1/2 hidden md:block"></div>
+                    <div class="space-y-12 md:space-y-0">
+                        <div class="flex flex-col md:flex-row items-center">
+                            <div class="md:w-5/12">
+                                <div class="card p-6 rounded-lg shadow-lg">
+                                    <h3 class="text-2xl font-bold text-[#E07A5F]">2015年：藝術願景的起源</h3>
+                                    <p class="mt-3 text-gray-600">香港藝術家龍家昇（Kasing Lung）受北歐神話啟發，創作出「The Monsters」系列。其中，有著尖耳朵和九顆牙的Labubu作為第一個角色誕生，最初被藝術家本人認為形象「怪異且不友善」。</p>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-[#81B29A] text-white flex items-center justify-center font-bold text-xl my-4 md:my-0 mx-auto z-10">1</div>
+                            <div class="md:w-5/12"></div>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row-reverse items-center">
+                            <div class="md:w-5/12">
+                                <div class="card p-6 rounded-lg shadow-lg">
+                                    <h3 class="text-2xl font-bold text-[#E07A5F]">形象演變：從怪異到可愛</h3>
+                                    <p class="mt-3 text-gray-600">隨著藝術家心態轉變，Labubu的形象逐漸「軟化」，變得「可愛又穩重」。這種美學上的策略性調整，使其更具親和力，契合了泡泡瑪特強調的「療癒心理」，為其走向大眾市場奠定了關鍵基礎。</p>
+                                </div>
+                            </div>
+                           <div class="w-12 h-12 rounded-full bg-[#81B29A] text-white flex items-center justify-center font-bold text-xl my-4 md:my-0 mx-auto z-10">2</div>
+                            <div class="md:w-5/12"></div>
+                        </div>
+                        
+                        <div class="flex flex-col md:flex-row items-center">
+                            <div class="md:w-5/12">
+                                <div class="card p-6 rounded-lg shadow-lg">
+                                    <h3 class="text-2xl font-bold text-[#E07A5F]">泡泡瑪特：商業化的催化劑</h3>
+                                    <p class="mt-3 text-gray-600">潮流玩具巨頭泡泡瑪特發掘了Labubu的潛力，將其納入盲盒產品線。藉助泡泡瑪特從設計、生產、行銷到分銷的完整產業鏈，Labubu的影響力被迅速放大，從藝術家作品轉變為具有巨大商業價值的商品。</p>
+                                </div>
+                            </div>
+                           <div class="w-12 h-12 rounded-full bg-[#81B29A] text-white flex items-center justify-center font-bold text-xl my-4 md:my-0 mx-auto z-10">3</div>
+                            <div class="md:w-5/12"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="success" class="py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-bold text-[#3D405B] sm:text-4xl">成功方程式：解構現象級IP的四大支柱</h2>
+                    <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Labubu的成功並非偶然，而是一個精心構建的生態系統的產物。本節將剖析其背後的四大核心戰略：創新的IP開發、精準的社群行銷、高明的品牌合作，以及對消費者心理的深刻洞察。</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="card p-6 rounded-lg">
+                        <div class="text-4xl text-[#E07A5F] mb-4">🎨</div>
+                        <h3 class="text-xl font-bold mb-2">創新的IP開發</h3>
+                        <p class="text-gray-600">採用「空白畫布」策略，IP本身不帶複雜故事，讓消費者能投射自身情感。同時遵循「大眾審美、高辨識度、可延伸性」三大標準，使其能不斷推出新系列，維持市場新鮮感。</p>
+                    </div>
+                    <div class="card p-6 rounded-lg">
+                        <div class="text-4xl text-[#E07A5F] mb-4">📣</div>
+                        <h3 class="text-xl font-bold mb-2">精準的社群行銷</h3>
+                        <p class="text-gray-600">高度重視社群媒體與用戶生成內容(UGC)，特別是「開箱影片」，形成病毒式傳播。線下門店則打造成潮流文化空間，結合粉絲見面會等活動，建立高達49.4%復購率的忠實社群。</p>
+                    </div>
+                    <div class="card p-6 rounded-lg">
+                        <div class="text-4xl text-[#E07A5F] mb-4">🤝</div>
+                        <h3 class="text-xl font-bold mb-2">跨界合作與品牌提升</h3>
+                        <p class="text-gray-600">與奢侈品牌（如愛馬仕包）、藝術IP（如羅浮宮）和消費品牌（如可口可樂）跨界，打破「玩具」的刻板印象，提升品牌格調，將Labubu塑造成一種「社交貨幣」，並催生了活躍的二手市場。</p>
+                    </div>
+                    <div class="card p-6 rounded-lg">
+                        <div class="text-4xl text-[#E07A5F] mb-4">❤️</div>
+                        <h3 class="text-xl font-bold mb-2">深刻的心理洞察</h3>
+                        <p class="text-gray-600">精準運用「驚喜經濟」和「斯金納箱」原理，激發消費者的收藏慾和重複購買行為。同時，可愛的形象滿足了年輕人在高壓生活下的「療癒心理」需求，提供情感慰藉。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="market" class="py-20 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-bold text-[#3D405B] sm:text-4xl">全球市場儀表板：數據背後的千億賽道</h2>
+                    <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">盲盒經濟已發展成一個龐大的全球市場。本儀表板將透過互動圖表，直觀展示市場規模的驚人增長、泡泡瑪特的全球佈局，以及激烈的市場競爭格局，揭示這個產業的巨大潛力。</p>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                    <div class="lg:col-span-3">
+                        <div class="card p-6 rounded-lg h-full">
+                            <h3 class="text-xl font-bold text-center mb-4">全球與中國潮流玩具市場規模 (人民幣億元)</h3>
+                            <div class="chart-container">
+                                <canvas id="marketSizeChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <div class="card p-6 rounded-lg h-full">
+                            <h3 class="text-xl font-bold text-center mb-4">泡泡瑪特海外銷售區域分佈</h3>
+                            <div class="chart-container">
+                                <canvas id="regionalSalesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-12">
+                    <h3 class="text-2xl font-bold text-center mb-8">競爭格局與消費者速寫</h3>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="card p-6 rounded-lg">
+                            <h4 class="font-bold text-lg mb-3 text-[#3D405B]">主要市場參與者</h4>
+                            <p class="text-gray-600 mb-4">市場高度分散，泡泡瑪特市佔率約8.5%，領先但未形成壟斷。主要競爭者包括：</p>
+                            <ul class="list-disc list-inside text-gray-600 space-y-1">
+                                <li>國際品牌：TOKIDOKI, Sonny Angel, Be@rbrick</li>
+                                <li>中國品牌：52TOYS, Rolife若來, IP小站</li>
+                                <li>「長尾」市場：近80%由眾多小型參與者構成</li>
+                            </ul>
+                        </div>
+                        <div class="card p-6 rounded-lg">
+                            <h4 class="font-bold text-lg mb-3 text-[#3D405B]">核心消費者畫像</h4>
+                            <p class="text-gray-600 mb-4">購買盲盒的核心動力是「社交」與「自我愉悅」。</p>
+                             <ul class="list-disc list-inside text-gray-600 space-y-1">
+                                <li><span class="font-semibold">年齡：</span> 18-34歲的Z世代與年輕白領</li>
+                                <li><span class="font-semibold">性別：</span> 以1995年後出生的女性為主</li>
+                                <li><span class="font-semibold">地域：</span> 主要集中在一線城市</li>
+                                <li><span class="font-semibold">動機：</span> 追求可愛外觀、個人品味展示、情感療癒</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="future" class="py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-bold text-[#3D405B] sm:text-4xl">未來展望：挑戰、機遇與新趨勢</h2>
+                     <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">盲盒產業在高速發展的同時，也面臨著監管收緊的挑戰和市場演化的需求。本節將探討行業的未來走向，包括如何應對爭議，以及數位化、永續性和體驗式擴展等新興趨勢帶來的機遇。</p>
+                </div>
+
+                <div class="max-w-4xl mx-auto">
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-6 justify-center" aria-label="Tabs">
+                            <button class="tab active" data-tab="challenges">挑戰與法規</button>
+                            <button class="tab" data-tab="trends">新興趨勢</button>
+                            <button class="tab" data-tab="outlook">戰略展望</button>
+                        </nav>
+                    </div>
+                    <div class="mt-8">
+                        <div id="challenges" class="tab-content active">
+                             <div class="card p-8 rounded-lg">
+                                <h3 class="font-bold text-xl mb-4 text-[#E07A5F]">倫理爭議與監管收緊</h3>
+                                <p class="text-gray-600 mb-4">盲盒因其隨機性被批評易引發成癮、過度消費和類賭博行為，尤其對未成年人構成風險。為此，監管機構已介入：</p>
+                                <ul class="list-disc list-inside space-y-2 text-gray-600">
+                                    <li><span class="font-semibold">價格限制：</span>單個盲盒售價一般不超過200元人民幣。</li>
+                                    <li><span class="font-semibold">年齡限制：</span>禁止向8歲以下兒童銷售，8歲以上需監護人同意。</li>
+                                    <li><span class="font-semibold">透明度要求：</span>需明碼標價，禁止後台操縱機率。</li>
+                                    <li><span class="font-semibold">國際趨勢：</span>歐盟等地區也可能強制要求披露機率，增加合規成本。</li>
+                                </ul>
+                                <p class="mt-4 text-gray-500 text-sm">長期來看，合理的監管有助於行業淘汰不良參與者，建立消費者信任，促使企業專注於產品價值本身，實現可持續發展。</p>
+                            </div>
+                        </div>
+                        <div id="trends" class="tab-content">
+                             <div class="card p-8 rounded-lg">
+                                <h3 class="font-bold text-xl mb-4 text-[#81B29A]">多元化與體驗式擴展</h3>
+                                <p class="text-gray-600 mb-4">為應對挑戰並尋求新增長，行業正從單一產品銷售轉向構建全面的IP生態系統：</p>
+                                <ul class="list-disc list-inside space-y-2 text-gray-600">
+                                    <li><span class="font-semibold">數位化與NFT：</span>結合區塊鏈推出NFT盲盒，探索元宇宙，增強AR開盒等虛實互動體驗。</li>
+                                    <li><span class="font-semibold">永續發展：</span>採用環保材料，減少碳排放，以應對消費者日益增長的環保意識。</li>
+                                    <li><span class="font-semibold">產品多元化 ("盲盒+"):</span> 將盲盒模式擴展至美妝、文具、零食等更多品類。</li>
+                                    <li><span class="font-semibold">體驗式擴展：</span>IP從實體玩具延伸至主題樂園、手機遊戲等更廣泛的娛樂體驗。</li>
+                                     <li><span class="font-semibold">全球供應鏈優化：</span>在海外設廠（如越南、墨西哥）以規避貿易壁壘、降低成本。</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div id="outlook" class="tab-content">
+                            <div class="card p-8 rounded-lg">
+                                <h3 class="font-bold text-xl mb-4 text-[#3D405B]">結論與戰略展望</h3>
+                                <p class="text-gray-600">Labubu與泡泡瑪特的成功證明了「IP創新 + 精準行銷 + 社群建設 + 心理洞察」模式的巨大威力。盲盒經濟作為Z世代文化認同的載體，仍具備強勁的增長潛力。</p>
+                                <p class="mt-4 text-gray-600">未來的成功將屬於那些能夠持續孵化爆款IP、深化內容生態、靈活應對全球市場與監管變化，並積極擁抱數位化與永續發展的企業。這是一場從玩具製造商向綜合性娛樂生活方式品牌轉型的長跑。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 mt-20">
+        <div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-gray-500 text-sm">
+            <p>&copy; 2024 互動式分析報告。基於公開資訊分析，僅供研究參考。</p>
+            <p class="mt-1">由 AI 輔助生成，專為資訊視覺化設計。</p>
+        </div>
+    </footer>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const marketData = {
+            years: ['2015', '2020', '2024 (預計)', '2030 (預計)'],
+            china: [63, 294.8, 763, 1100],
+            global: [null, null, 161, 234] 
+        };
+
+        const regionalData = {
+            regions: ['東南亞市場', '日韓港澳台', '歐美澳洲市場'],
+            sales: [41.1, 35.4, 23.5]
+        };
+        
+        const marketCtx = document.getElementById('marketSizeChart').getContext('2d');
+        new Chart(marketCtx, {
+            type: 'bar',
+            data: {
+                labels: marketData.years,
+                datasets: [
+                    {
+                        label: '中國市場規模',
+                        data: marketData.china,
+                        backgroundColor: 'rgba(224, 122, 95, 0.7)',
+                        borderColor: 'rgba(224, 122, 95, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '全球市場規模',
+                        data: marketData.global,
+                        backgroundColor: 'rgba(129, 178, 154, 0.7)',
+                        borderColor: 'rgba(129, 178, 154, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y + ' 億';
+                                }
+                                return label;
+                            }
+                        }
+                    },
+                     legend: {
+                        position: 'bottom',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '人民幣 (億元)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                           display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        const regionalCtx = document.getElementById('regionalSalesChart').getContext('2d');
+        new Chart(regionalCtx, {
+            type: 'doughnut',
+            data: {
+                labels: regionalData.regions,
+                datasets: [{
+                    label: '銷售佔比',
+                    data: regionalData.sales,
+                    backgroundColor: [
+                        'rgba(224, 122, 95, 0.8)',
+                        'rgba(129, 178, 154, 0.8)',
+                        'rgba(244, 241, 222, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(224, 122, 95, 1)',
+                        'rgba(129, 178, 154, 1)',
+                        'rgba(61, 64, 91, 0.3)'
+                    ],
+                    borderWidth: 1,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += context.parsed + '%';
+                                }
+                                return label;
+                            }
+                        }
+                    },
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                             boxWidth: 20
+                        }
+                    }
+                }
+            }
+        });
+
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(item => item.classList.remove('active'));
+                tab.classList.add('active');
+                const target = document.getElementById(tab.dataset.tab);
+                tabContents.forEach(content => content.classList.remove('active'));
+                target.classList.add('active');
+            });
+        });
+
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('main section, main');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+        
+        const mobileNav = document.getElementById('mobile-nav');
+        mobileNav.addEventListener('change', (event) => {
+            window.location.hash = event.target.value;
+        });
+
+    });
+    </script>
+</body>
+</html>
