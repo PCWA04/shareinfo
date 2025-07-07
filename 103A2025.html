@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>103A Talk 系列活動總覽</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application uses a card-based layout within a responsive grid. This structure is intuitive for Browse a list of items like events. The primary interaction is a set of filter buttons at the top ("All", "Online", "In-person"), allowing users to easily toggle between different event formats. This is more user-friendly than a static list as it allows users to quickly find events that match their interest or availability (e.g., only show online events). Each card contains all relevant information, and a status badge provides a quick visual cue about the event's timing (Confirmed Date vs. TBD). This design prioritizes clarity and ease of use. -->
+    <!-- Visualization & Content Choices: Report Info: List of 4 events. -> Goal: Inform and allow easy Browse. -> Viz/Presentation Method: Interactive cards with icons and structured text. A "Status" badge is used to quickly convey timing. -> Interaction: JavaScript-powered filtering buttons to show/hide cards based on the event format ('online' or 'in-person'). -> Justification: For a list of events, a dynamic, filterable card layout is superior to static text or complex charts. It empowers the user to control the view and find information efficiently. Icons help break up text and improve scannability. -> Library/Method: Vanilla JavaScript for interaction, Tailwind CSS for styling. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #FDFBF8; /* Warm neutral background */
+        }
+        .filter-btn {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .filter-btn.active {
+            color: #C08462; /* Accent color */
+            border-bottom-color: #C08462;
+        }
+        .event-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.5s ease;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .event-card.hidden {
+            opacity: 0;
+            transform: translateY(20px);
+            height: 0;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto px-4 py-8 md:py-12">
+        
+        <header class="text-center mb-8 md:mb-12">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 tracking-wide">103A Talk 系列活動總覽</h1>
+            <p class="mt-2 text-lg text-gray-600">探索即將舉行的專業分享與實地參訪</p>
+        </header>
+
+        <div id="app-introduction" class="max-w-3xl mx-auto bg-white/60 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-gray-200/80 mb-8">
+            <p class="text-gray-700">
+                歡迎來到 103A Talk 系列活動的互動式總覽頁面。這裡彙總了所有即將到來的線上講座與實體參訪活動。您可以點擊下方的篩選按鈕，依據「線上講座」或「實體參訪」來快速尋找您感興趣的活動。每張卡片都包含了活動的詳細介紹、講者資訊與時間地點，希望能幫助您輕鬆掌握所有精彩內容。
+            </p>
+        </div>
+        
+        <div class="flex justify-center items-center space-x-4 sm:space-x-8 mb-10 pb-2 border-b border-gray-200">
+            <button id="filter-all" class="filter-btn active text-lg font-semibold py-2 px-2" data-filter="all">所有活動</button>
+            <button id="filter-online" class="filter-btn text-lg font-semibold py-2 px-2 text-gray-500 hover:text-[#C08462]" data-filter="online">線上講座</button>
+            <button id="filter-in-person" class="filter-btn text-lg font-semibold py-2 px-2 text-gray-500 hover:text-[#C08462]" data-filter="in-person">實體參訪</button>
+        </div>
+        
+        <main id="event-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+        </main>
+
+    </div>
+
+    <script>
+        const eventsData = [
+            {
+                id: 2,
+                title: '國際投資展望與穿越週期的投資思維',
+                icon: '🎙️',
+                description: '全球政經動盪再起，美國對中國產品的高額關稅有可能回歸甚至擴大，這不僅改變貿易格局，更深刻影響企業的供應鏈布局與國際資本佈局策略。本次邀請棋富同學，分享他的洞見以及投資心法，邀請同學熱情支持，共同參與線上短講!',
+                speaker: '棋富同學',
+                date: '8/4（一）',
+                time: '20:30 – 21:00',
+                format: '線上講座',
+                location: null,
+                type: 'online'
+            },
+            {
+                id: 3,
+                title: '漫談都更概念（實際案例分享）',
+                icon: '🏙️',
+                description: '市場現況：近期中央銀行透過「第七波限貸令」與選擇性信用管制，對第二戶以上購屋貸款大幅放緊，有效壓抑投資性購屋與投機炒作。本場邀請玉鳳姊姊，從多年參與實際都更案例出發，帶大家深入探討都市更新的法規脈絡、流程機制、投資收益與風險控管等核心議題。',
+                speaker: '玉鳳姊姊',
+                date: '9/1（一）',
+                time: '20:30 – 21:00',
+                format: '線上講座',
+                location: null,
+                type: 'online'
+            },
+            {
+                id: 4,
+                title: 'AI Lab 實地參訪',
+                icon: '🏢',
+                description: '長春集團早已運用AI做工廠瑕疵檢測、公安監控、公安QA問答及會議紀錄摘要等等，甚至連會議室預約及客戶訂單客服回覆，都已善用AI力量。我們很榮幸可以到全新的AI Lab實地參訪，敬請期待!',
+                speaker: '至善同學',
+                date: 'TBD',
+                time: '9月中下旬平日上午',
+                format: '實體參訪',
+                location: '黃至善同學公司 AI Lab',
+                type: 'in-person'
+            },
+            {
+                id: 5,
+                title: 'MitionAI 運動紀錄器 & AI乾式熟成牛肉應用',
+                icon: '🥩',
+                description: '由Ducan親自打造的AI產品，使用手機麥克風做為超音波無線傳輸連接方式，進行運動數據採集與個性化AI教練的智慧運動紀錄平台。通過即時數據監測、智能問答和預測分析，幫助用戶科學訓練、降低運動傷害風險。本場聽說還可以吃到AI牛肉，敬請期待!',
+                speaker: '嘉宏同學',
+                date: 'TBD',
+                time: '10月中下旬平日上午',
+                format: '實體參訪',
+                location: '陳嘉宏同學公司',
+                type: 'in-person'
+            }
+        ];
+
+        const eventGrid = document.getElementById('event-grid');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+
+        function renderEvents(filter = 'all') {
+            eventGrid.innerHTML = '';
+            const fragment = document.createDocumentFragment();
+
+            eventsData.forEach(event => {
+                const eventCard = document.createElement('div');
+                eventCard.className = 'event-card bg-white rounded-xl shadow-md border border-gray-200/80 overflow-hidden flex flex-col';
+                eventCard.dataset.type = event.type;
+                
+                const isTBD = event.date.toLowerCase() === 'tbd';
+                const statusBg = isTBD ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800';
+                const statusText = isTBD ? '時間待定' : '日期確定';
+                
+                let locationInfo = '';
+                if(event.location) {
+                    locationInfo = `
+                    <div class="flex items-center text-gray-600">
+                        <span class="text-xl mr-3">📍</span>
+                        <div class="flex flex-col">
+                           <span class="font-semibold text-sm">地點</span>
+                           <span>${event.location}</span>
+                        </div>
+                    </div>`;
+                } else {
+                    locationInfo = `
+                    <div class="flex items-center text-gray-600">
+                        <span class="text-xl mr-3">💻</span>
+                        <div class="flex flex-col">
+                           <span class="font-semibold text-sm">形式</span>
+                           <span>${event.format}</span>
+                        </div>
+                    </div>`;
+                }
+
+                eventCard.innerHTML = `
+                    <div class="p-6 flex-grow">
+                        <div class="flex justify-between items-start mb-4">
+                            <h2 class="text-xl font-bold text-gray-800 pr-4">${event.icon} ${event.title}</h2>
+                            <span class="text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap ${statusBg}">${statusText}</span>
+                        </div>
+                        <p class="text-gray-600 mb-6 leading-relaxed">${event.description}</p>
+                    </div>
+                    <div class="px-6 py-4 bg-gray-50/70 border-t border-gray-200/80 space-y-4 text-sm">
+                        <div class="flex items-center text-gray-600">
+                            <span class="text-xl mr-3">👤</span>
+                            <div class="flex flex-col">
+                               <span class="font-semibold text-sm">講者</span>
+                               <span>${event.speaker}</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="flex items-center text-gray-600">
+                                <span class="text-xl mr-3">📅</span>
+                                <div class="flex flex-col">
+                                   <span class="font-semibold text-sm">日期</span>
+                                   <span>${event.date}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center text-gray-600">
+                                <span class="text-xl mr-3">🕒</span>
+                                <div class="flex flex-col">
+                                   <span class="font-semibold text-sm">時間</span>
+                                   <span>${event.time}</span>
+                                </div>
+                            </div>
+                        </div>
+                        ${locationInfo}
+                    </div>
+                `;
+                fragment.appendChild(eventCard);
+            });
+
+            eventGrid.appendChild(fragment);
+            
+            setTimeout(() => {
+                applyFilter(filter);
+            }, 50);
+        }
+        
+        function applyFilter(filter) {
+            const cards = document.querySelectorAll('.event-card');
+            cards.forEach(card => {
+                if (filter === 'all' || card.dataset.type === filter) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const filter = button.dataset.filter;
+                
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                applyFilter(filter);
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => renderEvents());
+
+    </script>
+
+</body>
+</html>
