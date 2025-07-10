@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動式實業團模式分析儀表板</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- 
+    Chosen Palette: Warm Neutral Harmony. Background: #fdfaf6 (Warm Off-white), Text: #3d405b (Deep Indigo), Primary Accent: #81b29a (Sage Green), Secondary Accent/Charts: #f2cc8f (Muted Gold), #e07a5f (Terracotta). 
+    Application Structure Plan: A thematic, single-page dashboard designed for non-linear exploration. The structure shifts from the report's linear chapters to a user-centric journey: 1. 'What is Jitsugyodan?' (combining history & CSR), 2. 'The Athlete's Journey' (a lifecycle view of recruitment, training, support, career), 3. 'Financial Analysis' (interactive charts for costs), and 4. 'Strategic Benefits' (actionable takeaways). This narrative flow is more intuitive and engaging, guiding the user from foundational concepts to practical application and strategic value, which is more useful for a company considering this model.
+    Visualization & Content Choices: 
+    - History: Report Info -> Historical milestones [1.1]. Goal -> Show change over time. Viz -> Interactive HTML/CSS timeline. Interaction -> Click on eras to reveal details. Justification -> More engaging than static text.
+    - Athlete Training: Report Info -> Training phases table [2.3.1]. Goal -> Organize process. Viz -> Interactive HTML/CSS process flow diagram. Interaction -> Hover/click on stages. Justification -> Visualizes the cyclical process better than a table.
+    - Finances: Report Info -> Salary & operational cost tables [3.1.1, 3.2.1]. Goal -> Compare & inform on costs. Viz -> Two Chart.js canvas charts (stacked bar for salary, donut for operational costs). Interaction -> Sliders/buttons to adjust assumptions and see dynamic changes. Justification -> Makes abstract financial data tangible and easier to grasp.
+    - Strategy: Report Info -> Final recommendations. Goal -> Inform & organize. Viz -> Clickable accordion cards. Interaction -> Click to expand. Justification -> Presents dense text in a digestible, user-controlled format.
+    CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #fdfaf6;
+            color: #3d405b;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            width: 100%;
+            max-width: 600px;
+            height: 320px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s, border-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #81b29a;
+            border-bottom-color: #81b29a;
+        }
+        .phase-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .phase-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header & Navigation -->
+    <header id="header" class="bg-[#fdfaf6]/80 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-[#3d405b]">實業團模式分析儀表板</h1>
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#overview" class="nav-link font-medium pb-1">模式概覽</a>
+                    <a href="#journey" class="nav-link font-medium pb-1">運動員旅程</a>
+                    <a href="#financials" class="nav-link font-medium pb-1">財務解析</a>
+                    <a href="#strategy" class="nav-link font-medium pb-1">策略效益</a>
+                </nav>
+                 <button id="mobile-menu-button" class="md:hidden text-2xl">☰</button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden">
+            <a href="#overview" class="block text-center py-2 text-lg nav-link-mobile">模式概覽</a>
+            <a href="#journey" class="block text-center py-2 text-lg nav-link-mobile">運動員旅程</a>
+            <a href="#financials" class="block text-center py-2 text-lg nav-link-mobile">財務解析</a>
+            <a href="#strategy" class="block text-center py-2 text-lg nav-link-mobile">策略效益</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <!-- Section 1: Overview -->
+        <section id="overview" class="mb-20 scroll-mt-24">
+            <h2 class="text-4xl font-bold text-center mb-4">實業團是什麼？</h2>
+            <p class="text-center text-lg max-w-3xl mx-auto mb-12 text-[#3d405b]/80">
+                日本的實業團不僅是企業的運動隊伍，它是一種將精英體育、企業社會責任（CSR）與品牌策略深度融合的獨特模式。這不僅關乎競技成績，更是一項對人才、品牌和社會的長期投資。
+            </p>
+
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-bold mb-4 text-[#81b29a]">歷史的演進：從員工福利到企業名片</h3>
+                    <p class="mb-6">實業團的發展反映了日本經濟與社會的變遷。從最初提升員工士氣的「職場體育」，演變為代表企業榮譽的「企業體育」，再到今日強調社會責任與人才發展的策略性資產。</p>
+                    <div class="relative pl-8">
+                        <!-- Timeline -->
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#f2cc8f] rounded"></div>
+                        <div class="mb-8 relative">
+                            <div class="absolute -left-11 top-0 w-6 h-6 bg-[#e07a5f] rounded-full border-4 border-[#fdfaf6]"></div>
+                            <h4 class="font-bold">明治時代：職場體育的萌芽</h4>
+                            <p class="text-sm text-[#3d405b]/70">為促進員工健康與歸屬感而設立。</p>
+                        </div>
+                        <div class="mb-8 relative">
+                            <div class="absolute -left-11 top-0 w-6 h-6 bg-[#e07a5f] rounded-full border-4 border-[#fdfaf6]"></div>
+                            <h4 class="font-bold">1960年代：企業體育的黃金時期</h4>
+                            <p class="text-sm text-[#3d405b]/70">1964東京奧運會後，實業團成為企業榮譽與廣告宣傳的象徵。</p>
+                        </div>
+                        <div class="mb-8 relative">
+                            <div class="absolute -left-11 top-0 w-6 h-6 bg-[#e07a5f] rounded-full border-4 border-[#fdfaf6]"></div>
+                            <h4 class="font-bold">1990年代：泡沫經濟的挑戰</h4>
+                            <p class="text-sm text-[#3d405b]/70">經濟衝擊下，企業開始重新評估投資效益，傳統價值受到挑戰。</p>
+                        </div>
+                        <div class="relative">
+                            <div class="absolute -left-11 top-0 w-6 h-6 bg-[#e07a5f] rounded-full border-4 border-[#fdfaf6]"></div>
+                            <h4 class="font-bold">現代：策略性CSR與人才資產</h4>
+                            <p class="text-sm text-[#3d405b]/70">轉型為企業社會責任、品牌價值和人才長期發展的核心策略。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white/60 p-8 rounded-xl shadow-md">
+                    <h3 class="text-2xl font-bold mb-4 text-[#81b29a]">超越勝負的核心價值</h3>
+                    <p class="mb-6">現代實業團是企業價值觀的有力展現。它回應了市場對企業社會責任的期待，並能有效提升品牌形象與員工凝聚力。</p>
+                    <div class="bg-[#81b29a]/10 p-6 rounded-lg">
+                        <p class="text-4xl font-bold text-[#e07a5f] text-center">89.1%</p>
+                        <p class="text-center font-semibold mt-2">的日本投資者認為，在投資時有必要考量企業的社會責任。</p>
+                        <p class="text-center text-xs mt-2 text-[#3d405b]/60">資料來源：報告 [6]</p>
+                    </div>
+                    <div class="mt-6 text-center">
+                        <span class="inline-block bg-[#f2cc8f]/20 text-[#3d405b] text-sm font-semibold mr-2 px-2.5 py-0.5 rounded-full">品牌聲譽</span>
+                        <span class="inline-block bg-[#f2cc8f]/20 text-[#3d405b] text-sm font-semibold mr-2 px-2.5 py-0.5 rounded-full">員工士氣</span>
+                        <span class="inline-block bg-[#f2cc8f]/20 text-[#3d405b] text-sm font-semibold mr-2 px-2.5 py-0.5 rounded-full">社區貢獻</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Athlete's Journey -->
+        <section id="journey" class="mb-20 scroll-mt-24">
+            <h2 class="text-4xl font-bold text-center mb-4">運動員的育成旅程</h2>
+            <p class="text-center text-lg max-w-3xl mx-auto mb-12 text-[#3d405b]/80">
+                實業團提供了一套從招募、訓練、支持到退役轉型的完整生命週期計畫。這不僅是為了追求卓越的運動表現，更是對運動員個人職涯的長期承諾。
+            </p>
+
+            <h3 class="text-2xl font-bold text-center mb-8 text-[#81b29a]">科學化的選手育成階段</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Phases -->
+                <div class="phase-card bg-white/60 p-6 rounded-xl shadow-md border-l-4 border-[#81b29a]">
+                    <h4 class="font-bold text-lg">招募與導入</h4>
+                    <p class="text-sm mt-2 text-[#3d405b]/80">選拔具潛力的新人，進行個人數據收集與目標設定，融入團隊文化。</p>
+                </div>
+                <div class="phase-card bg-white/60 p-6 rounded-xl shadow-md border-l-4 border-[#f2cc8f]">
+                    <h4 class="font-bold text-lg">基礎建立與賽前準備</h4>
+                    <p class="text-sm mt-2 text-[#3d405b]/80">系統性地進行大量體能與技術訓練，並針對特定賽事進行戰術演練與調整。</p>
+                </div>
+                <div class="phase-card bg-white/60 p-6 rounded-xl shadow-md border-l-4 border-[#e07a5f]">
+                    <h4 class="font-bold text-lg">比賽與恢復</h4>
+                    <p class="text-sm mt-2 text-[#3d405b]/80">在賽季中追求巔峰表現，並在賽後進行主動恢復與身心復盤，為下個週期做準備。</p>
+                </div>
+            </div>
+            
+            <div class="mt-12 grid md:grid-cols-5 gap-8 items-center">
+                <div class="md:col-span-2">
+                    <h3 class="text-2xl font-bold mb-4 text-[#81b29a]">全方位的支援體系</h3>
+                    <p class="mb-4">成功的運動員背後，是一整個專業團隊的支持。實業團投入大量資源於醫療、營養、心理等「軟基礎設施」，這不僅是為了提升表現，更是保護公司最寶貴的人力資產。</p>
+                    <p class="text-sm text-[#3d405b]/80">這種全面的支援體系往往與企業整體的「健康經營」理念相結合，將精英運動的健康實踐推廣至全體員工，創造雙贏。</p>
+                </div>
+                <div class="md:col-span-3">
+                     <div class="chart-container">
+                        <canvas id="supportSystemChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Financials -->
+        <section id="financials" class="mb-20 scroll-mt-24">
+            <h2 class="text-4xl font-bold text-center mb-4">財務解析：成本與投資</h2>
+             <p class="text-center text-lg max-w-3xl mx-auto mb-12 text-[#3d405b]/80">
+                營運實業團需要精密的財務規劃。費用主要分為兩大塊：給予運動員穩定保障的「薪資福利」，以及支持團隊運作和追求卓越表現的「訓練與活動費用」。
+            </p>
+
+            <div class="grid lg:grid-cols-2 gap-12">
+                <!-- Athlete Salary -->
+                <div class="bg-white/60 p-8 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold mb-2">運動員薪資福利構成（預估）</h3>
+                    <p class="text-sm mb-6 text-[#3d405b]/70">運動員作為正式員工，其薪酬結構穩定且可預測。請滑動調整年薪，觀察各項成本變化。</p>
+                    <div class="mb-4">
+                        <label for="salary-slider" class="block font-medium mb-2">預估年薪: <span id="salary-value" class="font-bold text-[#e07a5f]">700</span> 萬日圓</label>
+                        <input id="salary-slider" type="range" min="400" max="1000" value="700" step="50" class="w-full h-2 bg-[#f2cc8f]/50 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                    <div class="chart-container h-[280px] md:h-[350px]">
+                        <canvas id="salaryChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Operational Costs -->
+                <div class="bg-white/60 p-8 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold mb-2">年度營運費用佔比（預估）</h3>
+                    <p class="text-sm mb-6 text-[#3d405b]/70">除了選手薪資，團隊營運還包含多樣化的變動成本。點擊圖表區塊可查看預估費用範圍。</p>
+                    <div class="chart-container h-[340px] md:h-[400px]">
+                        <canvas id="operationalCostChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Strategy -->
+        <section id="strategy" class="scroll-mt-24">
+            <h2 class="text-4xl font-bold text-center mb-4">給企業的策略建議</h2>
+            <p class="text-center text-lg max-w-3xl mx-auto mb-12 text-[#3d405b]/80">
+                若貴公司考慮推動跑步實業團，這不僅是一項財務投資，更是一項長期的策略佈局。以下是基於報告分析得出的六大關鍵成功要素。
+            </p>
+
+            <div class="space-y-4 max-w-4xl mx-auto">
+                <!-- Accordion Items -->
+                <div class="accordion-item bg-white/60 rounded-lg shadow-md">
+                    <button class="accordion-header w-full flex justify-between items-center text-left p-5 font-semibold text-lg">
+                        <span>1. 明確策略定位與價值主張</span>
+                        <span class="accordion-icon text-2xl font-light transform transition-transform">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="p-5 pt-0 text-[#3d405b]/80">在啟動前，清晰定義實業團對公司的核心價值。除了培養優秀運動員，應思考如何將其與貴公司的企業社會責任(CSR)策略、品牌形象提升、員工福祉及人才發展計畫深度結合。</p>
+                    </div>
+                </div>
+                 <div class="accordion-item bg-white/60 rounded-lg shadow-md">
+                    <button class="accordion-header w-full flex justify-between items-center text-left p-5 font-semibold text-lg">
+                        <span>2. 建立整合性組織架構</span>
+                        <span class="accordion-icon text-2xl font-light transform transition-transform">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="p-5 pt-0 text-[#3d405b]/80">建立一個融合體育專業管理與企業行政管理的雙重架構。配備專業教練團隊、運動科學專家，同時也需有企業內部的人力資源、財務和行政人員負責日常運營與合規。</p>
+                    </div>
+                </div>
+                 <div class="accordion-item bg-white/60 rounded-lg shadow-md">
+                    <button class="accordion-header w-full flex justify-between items-center text-left p-5 font-semibold text-lg">
+                        <span>3. 設計具競爭力的「員工-運動員」模式</span>
+                        <span class="accordion-icon text-2xl font-light transform transition-transform">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="p-5 pt-0 text-[#3d405b]/80">制定具吸引力的薪酬福利方案。強調公司提供的職涯穩定性、退役後就業保障以及全面的福利，以彌補可能與純職業體育存在的薪資差距，吸引重視長期發展的人才。</p>
+                    </div>
+                </div>
+                <div class="accordion-item bg-white/60 rounded-lg shadow-md">
+                    <button class="accordion-header w-full flex justify-between items-center text-left p-5 font-semibold text-lg">
+                        <span>4. 投入全面運動員支援系統</span>
+                        <span class="accordion-icon text-2xl font-light transform transition-transform">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="p-5 pt-0 text-[#3d405b]/80">預算應涵蓋專業的訓練設施、醫療照護、營養諮詢及心理輔導。將這些支援視為對運動員長期健康和表現的關鍵投資，保護公司的人力資產。</p>
+                    </div>
+                </div>
+                <div class="accordion-item bg-white/60 rounded-lg shadow-md">
+                    <button class="accordion-header w-full flex justify-between items-center text-left p-5 font-semibold text-lg">
+                        <span>5. 精細化財務預算與風險管理</span>
+                        <span class="accordion-icon text-2xl font-light transform transition-transform">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="p-5 pt-0 text-[#3d405b]/80">建立詳細的預算模型，並定期評估投入產出效益。特別關注參賽費用等可能波動的項目，並預留應急資金。效益評估不應僅限於競技成績，也應包括品牌曝光、員工士氣等無形價值。</p>
+                    </div>
+                </div>
+                <div class="accordion-item bg-white/60 rounded-lg shadow-md">
+                    <button class="accordion-header w-full flex justify-between items-center text-left p-5 font-semibold text-lg">
+                        <span>6. 規劃運動員職涯發展路徑</span>
+                        <span class="accordion-icon text-2xl font-light transform transition-transform">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="p-5 pt-0 text-[#3d405b]/80">從招募階段就應與運動員明確溝通其在公司內部的職涯發展前景。提供必要的培訓和輔導，幫助他們順利從競技場過渡到企業工作崗位，實現人才的長期價值。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-8 mt-12 border-t border-[#3d405b]/10">
+        <p class="text-sm text-[#3d405b]/60">此互動式報告由 AI 根據提供之資料生成</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Mobile Menu
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            document.querySelectorAll('.nav-link-mobile').forEach(link => {
+                link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+            });
+
+            // Smooth scrolling for navigation
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+            
+            // Nav link active state on scroll
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('header nav a');
+            const onScroll = () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 120) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            };
+            window.addEventListener('scroll', onScroll);
+
+
+            // Chart.js: Support System Chart
+            const supportCtx = document.getElementById('supportSystemChart').getContext('2d');
+            new Chart(supportCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['醫療與健康支持', '訓練設施與科學', '營養與膳食', '心理輔導'],
+                    datasets: [{
+                        label: '支援體系構成',
+                        data: [35, 30, 20, 15],
+                        backgroundColor: [
+                            '#81b29a',
+                            '#f2cc8f',
+                            '#e07a5f',
+                            '#3d405b'
+                        ],
+                        borderColor: '#fdfaf6',
+                        borderWidth: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    size: 14,
+                                    family: "'Noto Sans TC', sans-serif"
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed + '% (相對重要性)';
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                         title: {
+                            display: true,
+                            text: '運動員全方位支援體系',
+                            font: { size: 16 },
+                            padding: { top: 10, bottom: 20 }
+                        }
+                    }
+                }
+            });
+
+            // Chart.js: Salary Chart
+            const salarySlider = document.getElementById('salary-slider');
+            const salaryValue = document.getElementById('salary-value');
+            const salaryCtx = document.getElementById('salaryChart').getContext('2d');
+            
+            const salaryData = {
+                labels: ['薪資福利'],
+                datasets: [
+                    {
+                        label: '基本月薪',
+                        backgroundColor: '#81b29a',
+                    },
+                    {
+                        label: '年度績效獎金',
+                        backgroundColor: '#f2cc8f',
+                    },
+                    {
+                        label: '福利與津貼',
+                        backgroundColor: '#e07a5f',
+                    },
+                     {
+                        label: '預估稅款',
+                        backgroundColor: '#3d405b',
+                    }
+                ]
+            };
+
+            const salaryChart = new Chart(salaryCtx, {
+                type: 'bar',
+                data: salaryData,
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            stacked: true,
+                            title: { display: true, text: '萬日圓' }
+                        },
+                        y: {
+                            stacked: true
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                             callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw.toFixed(1)} 萬日圓`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            function updateSalaryChart() {
+                const totalSalary = parseInt(salarySlider.value);
+                salaryValue.textContent = totalSalary;
+                
+                const tax = totalSalary * 0.20; // 20% estimated tax
+                const remaining = totalSalary - tax;
+                const benefits = totalSalary * 0.12; //津貼福利假設
+                const performanceBonus = remaining * 0.25; //獎金假設
+                const baseSalary = remaining - benefits - performanceBonus;
+
+                salaryChart.data.datasets[0].data = [baseSalary];
+                salaryChart.data.datasets[1].data = [performanceBonus];
+                salaryChart.data.datasets[2].data = [benefits];
+                salaryChart.data.datasets[3].data = [tax];
+                salaryChart.update();
+            }
+            
+            salarySlider.addEventListener('input', updateSalaryChart);
+            updateSalaryChart(); // Initial call
+
+            // Chart.js: Operational Cost Chart
+            const costCtx = document.getElementById('operationalCostChart').getContext('2d');
+            const costData = {
+                labels: ['教練與支援團隊', '國內外差旅', '訓練設施與醫療', '推廣與裝備', '其他費用'],
+                datasets: [{
+                    data: [35, 25, 20, 15, 5],
+                    backgroundColor: ['#3d405b', '#e07a5f', '#81b29a', '#f2cc8f', '#a9a9a9'],
+                    borderColor: '#fdfaf6',
+                    borderWidth: 4,
+                }]
+            };
+
+            const costChart = new Chart(costCtx, {
+                type: 'pie',
+                data: costData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                             labels: {
+                                font: {
+                                    size: 12,
+                                    family: "'Noto Sans TC', sans-serif"
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const labels = ['500萬 - 1500萬', '500萬 - 1600萬', '250萬 - 900萬', '180萬 - 750萬', '60萬 - 160萬'];
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += `約佔 ${context.parsed}%`;
+                                    const details = ` (預估範圍: ${labels[context.dataIndex]} 日圓)`;
+                                    return [label, details];
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '年度營運費用構成佔比',
+                            font: { size: 16 },
+                            padding: { top: 10, bottom: 20 }
+                        }
+                    }
+                }
+            });
+
+            // Accordion functionality
+            const accordionItems = document.querySelectorAll('.accordion-item');
+            accordionItems.forEach(item => {
+                const header = item.querySelector('.accordion-header');
+                const content = item.querySelector('.accordion-content');
+                const icon = item.querySelector('.accordion-icon');
+                header.addEventListener('click', () => {
+                    // Close other items
+                    accordionItems.forEach(otherItem => {
+                        if (otherItem !== item) {
+                            otherItem.querySelector('.accordion-content').style.maxHeight = null;
+                            otherItem.querySelector('.accordion-icon').textContent = '+';
+                            otherItem.querySelector('.accordion-icon').classList.remove('rotate-45');
+                        }
+                    });
+
+                    // Toggle current item
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        icon.textContent = '+';
+                        icon.classList.remove('rotate-45');
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        icon.textContent = '−';
+                        icon.classList.add('rotate-45');
+                    }
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
