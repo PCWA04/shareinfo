@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>芝加哥馬拉松互動行程</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: 基於原始報告的時序性，我設計了一個以標籤頁為基礎的導航結構。使用者可以透過頂部導覽列在「總覽」和特定日期之間自由切換。這種設計優於傳統的長滾動頁面，因為它允許使用者快速定位到感興趣的日期，而無需滾動整個文檔。「總覽」頁面作為著陸頁，提供了關鍵資訊摘要和一個視覺化圖表，讓使用者對整個行程的節奏有宏觀的認識。每日詳情頁則以結構化的卡片呈現，增強了可讀性。這個結構旨在優化使用者查找和理解行程資訊的效率與體驗。 -->
+    <!-- Visualization & Content Choices: 
+        1. 每日活動強度圖 (總覽頁): [報告資訊: 每日行程安排] -> [目標: 比較每日行程的 yoğunluk] -> [呈現方式: Chart.js 長條圖] -> [互動: 滑鼠懸停顯示詳細資訊] -> [理由: 將文字性的行程安排轉化為直觀的視覺比較，幫助使用者快速理解行程的鬆緊節奏，這是純文字報告無法提供的。] -> [函式庫: Chart.js]。
+        2. 每日行程卡片 (每日頁): [報告資訊: 各日的詳細活動、交通、餐飲] -> [目標: 有組織地展示每日細節] -> [呈現方式: 結構化的 HTML/Tailwind CSS 卡片，搭配 Unicode 圖示（🏃, 🎟️, �️, 🍕）] -> [互動: 透過點擊頂部標籤頁顯示/隱藏] -> [理由: 卡片式佈局將資訊分塊，使其更易於閱讀。Unicode 圖示作為視覺提示，可以幫助使用者快速掃描和分類活動類型。] -> [函式庫/方法: Vanilla JS, Tailwind CSS]。
+        3. 關鍵資訊面板 (總覽頁): [報告資訊: 航班、住宿] -> [目標: 突顯核心後勤資訊] -> [呈現方式: 簡潔的 HTML/Tailwind CSS 面板] -> [互動: 無] -> [理由: 將最重要的後勤資訊置於首頁顯眼位置，方便使用者隨時快速查閱。]。
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .nav-btn {
+            transition: all 0.3s ease;
+        }
+        .nav-btn.active {
+            background-color: #0284c7; /* sky-600 */
+            color: white;
+            font-weight: 600;
+        }
+        .content-panel {
+            display: none;
+        }
+        .content-panel.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 250px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="text-slate-700">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-800">芝加哥馬拉松行程總覽</h1>
+            <p class="text-lg text-slate-500 mt-2">10/9 (四) 至 10/14 (二) | 住宿：Swissotel Chicago</p>
+        </header>
+
+        <nav class="flex flex-wrap justify-center gap-2 mb-8">
+            <button class="nav-btn px-4 py-2 rounded-full text-sm md:text-base bg-white shadow-sm hover:bg-sky-100" data-tab="overview">總覽</button>
+            <button class="nav-btn px-4 py-2 rounded-full text-sm md:text-base bg-white shadow-sm hover:bg-sky-100" data-tab="day1">10/9 (四)</button>
+            <button class="nav-btn px-4 py-2 rounded-full text-sm md:text-base bg-white shadow-sm hover:bg-sky-100" data-tab="day2">10/10 (五)</button>
+            <button class="nav-btn px-4 py-2 rounded-full text-sm md:text-base bg-white shadow-sm hover:bg-sky-100" data-tab="day3">10/11 (六)</button>
+            <button class="nav-btn px-4 py-2 rounded-full text-sm md:text-base bg-white shadow-sm hover:bg-sky-100" data-tab="day4">10/12 (日)</button>
+            <button class="nav-btn px-4 py-2 rounded-full text-sm md:text-base bg-white shadow-sm hover:bg-sky-100" data-tab="day5">10/13 (一)</button>
+            <button class="nav-btn px-4 py-2 rounded-full text-sm md:text-base bg-white shadow-sm hover:bg-sky-100" data-tab="day6">10/14 (二)</button>
+        </nav>
+
+        <main id="content-container">
+            <!-- Overview Panel -->
+            <div id="overview" class="content-panel animate-fade-in">
+                <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-4">行程核心資訊</h2>
+                     <p class="text-slate-600 mb-6">此總覽頁面匯總了本次旅程最重要的資訊。您可以在下方找到關鍵的後勤安排，以及一個每日活動強度的視覺化圖表，幫助您快速建立對整個行程節奏的認識。點擊上方的日期標籤可以深入探索每一天的詳細計畫。</p>
+                    <div class="grid md:grid-cols-2 gap-6 text-center">
+                        <div class="bg-sky-50 p-4 rounded-lg">
+                            <h3 class="font-bold text-sky-800">✈️ 航班資訊</h3>
+                            <p>長榮航空 BR056</p>
+                            <p>預計 10/9 晚上 8:45 抵達 O'Hare 機場</p>
+                        </div>
+                        <div class="bg-indigo-50 p-4 rounded-lg">
+                            <h3 class="font-bold text-indigo-800">🏨 住宿資訊</h3>
+                            <p>Swissotel Chicago</p>
+                            <p>位於市中心，交通便利</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2 text-center">每日活動強度分析</h2>
+                    <p class="text-slate-600 mb-6 text-center max-w-3xl mx-auto">這張圖表將每日的行程量化為「活動強度」，讓您一眼就能看出哪幾天是行程高峰。這有助於您更好地分配體力，尤其是在賽前進行調整並為賽後的恢復做好準備。</p>
+                    <div class="chart-container">
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Day 1 Panel -->
+            <div id="day1" class="content-panel">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-4">📅 10/9 (四) - 抵達日</h2>
+                    <ul class="space-y-4">
+                        <li><strong class="text-sky-700">✈️ 航班抵達:</strong> EVA Air BR056 於晚上 8:45 抵達芝加哥 O'Hare 機場。</li>
+                        <li><strong class="text-sky-700">⏱️ 預計時程:</strong> 入境與交通預估需 1–1.5 小時，約晚上 10:30 抵達飯店。</li>
+                        <li><strong class="text-sky-700">🚌 交通建議:</strong> 搭乘 CTA 藍線至市區（約 45 分鐘），或搭乘 Uber（約 $50 美金）。</li>
+                        <li><strong class="text-sky-700">🛌 晚間安排:</strong> 抵達飯店後充分休息，為隔日的行程儲備體力。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Day 2 Panel -->
+            <div id="day2" class="content-panel">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-4">📅 10/10 (五) - Expo + 輕鬆觀光</h2>
+                     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                           <h3 class="font-semibold text-lg mb-2">🎟️ 上午</h3>
+                           <p>前往馬拉松 Expo (McCormick Place) 領取號碼布與選手包。</p>
+                           <p class="text-sm text-slate-500 mt-2">交通: CTA 公車 #3 或 #21，或 Uber。</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                           <h3 class="font-semibold text-lg mb-2">🏛️ 中午至下午</h3>
+                           <p>在千禧公園 (Millennium Park) 與雲門（銀豆）合影，並參觀芝加哥藝術博物館 (Art Institute of Chicago)。</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                           <h3 class="font-semibold text-lg mb-2">🚢 傍晚</h3>
+                           <p>參加芝加哥建築遊船 (Architecture River Cruise)，欣賞城市天際線。</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg col-span-1 md:col-span-2 lg:col-span-3">
+                           <h3 class="font-semibold text-lg mb-2">🍕 晚餐建議</h3>
+                           <p>品嚐芝加哥道地的深盤披薩 (Giordano's 或 Lou Malnati’s)，或探索 Eataly 義大利市集。</p>
+                        </div>
+                     </div>
+                </div>
+            </div>
+            
+            <!-- Day 3 Panel -->
+            <div id="day3" class="content-panel">
+                 <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-4">📅 10/11 (六) - Chicago 5K 路跑日</h2>
+                    <ul class="space-y-4 border-l-4 border-sky-300 pl-4">
+                        <li><strong>05:30:</strong> 起床，享用簡單早餐（香蕉、吐司、運動飲料）。</li>
+                        <li><strong>06:30:</strong> 🏃 步行約 15 分鐘前往 Grant Park 準備參賽。</li>
+                        <li><strong>07:30:</strong> Chicago 5K 正式開跑！</li>
+                        <li><strong>08:30:</strong> 完賽後拍照留念，返回飯店休息。</li>
+                        <li><strong>上午:</strong> 自由活動，建議輕鬆散步，避免過度勞累。</li>
+                        <li><strong>下午:</strong> 靜態行程建議：參觀芝加哥文化中心（免費）或 Harold Washington Library。購物可至 Block 37。</li>
+                        <li><strong>傍晚:</strong> 在飯店充分休息、伸展、泡腳，為明日大賽做準備。</li>
+                        <li><strong>🍝 晚餐建議:</strong> 提早享用碳水化合物為主的晚餐，如 Quartino Ristorante 或 RPM Italian 的義大利麵。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Day 4 Panel -->
+            <div id="day4" class="content-panel">
+                <div class="bg-white p-6 rounded-xl shadow-md border-4 border-red-500">
+                    <h2 class="text-2xl font-bold text-red-600 mb-4">📅 10/12 (日) - 馬拉松主賽日！</h2>
+                     <p class="text-slate-600 mb-6">今天是旅程的最高潮！請依照個人習慣調整準備時間，保持最佳狀態。祝您順利完賽，享受這場盛大的城市派對！</p>
+                     <ul class="space-y-4">
+                        <li><strong>04:30–05:00:</strong> 起床，準備賽前早餐。</li>
+                        <li><strong>06:00:</strong> 🏃‍♀️ 步行前往 Grant Park 集合。</li>
+                        <li><strong>07:30:</strong> 🏁 Bank of America Chicago Marathon 正式起跑！</li>
+                        <li><strong>完賽後:</strong> 領取完賽包，拍照留念，慢慢步行回飯店。</li>
+                        <li><strong>下午:</strong> 沐浴、補充能量，務必讓身體得到充分的靜態休息。</li>
+                        <li><strong>🏆 晚餐建議 (慶功):</strong> 到 Beatrix 享用健康豐盛的一餐，或在 Cafecito 品嚐美味的古巴三明治與熱湯。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Day 5 Panel -->
+            <div id="day5" class="content-panel">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-4">📅 10/13 (一) - 放鬆觀光日</h2>
+                     <div class="space-y-6">
+                        <div>
+                           <h3 class="font-semibold text-lg mb-2">🌳 上午</h3>
+                           <p>在湖濱小徑 (Lakefront Trail) 悠閒散步，或造訪免費入場的林肯公園動物園 (Lincoln Park Zoo)。</p>
+                           <p class="text-sm text-slate-500 mt-1">交通: CTA #151 公車。</p>
+                        </div>
+                        <div>
+                           <h3 class="font-semibold text-lg mb-2">🎡 中午</h3>
+                           <p>前往海軍碼頭 (Navy Pier) 散步，體驗百年摩天輪。</p>
+                        </div>
+                        <div>
+                           <h3 class="font-semibold text-lg mb-2">🏙️ 下午</h3>
+                           <p>登上 360 CHICAGO 或 Willis Tower Skydeck，從高空俯瞰芝加哥全景。</p>
+                           <p class="text-sm text-slate-500 mt-1">交通: #151/#146 公車或紅線。</p>
+                        </div>
+                        <div>
+                           <h3 class="font-semibold text-lg mb-2">🥩 晚餐建議</h3>
+                           <p>品嚐 Wildfire 的經典牛排，或 Gyu-Kaku 的日式燒肉。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Day 6 Panel -->
+            <div id="day6" class="content-panel">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-4">📅 10/14 (二) - 探索日 + 返台</h2>
+                    <ul class="space-y-4">
+                        <li><strong>上午:</strong> 辦理退房並寄放行李。可至壯麗大道 (Magnificent Mile) 進行最後採買，或再次造訪芝加哥文化中心。</li>
+                        <li><strong>下午:</strong> 在美術館南邊的公園區或格蘭特公園悠閒散步，享受在芝加哥的最後時光。</li>
+                        <li><strong>🥗 晚餐建議 (機場前):</strong> 到 The Purple Pig 享用地中海風味，或選擇 Sweetgreen 的清爽沙拉碗。</li>
+                        <li><strong>✈️ 前往機場:</strong> 約晚上 8:30 搭乘 Uber 或地鐵前往 O'Hare 機場。</li>
+                        <li><strong>提醒:</strong> 航班為 10/15 凌晨 00:30，建議提早約 3 小時（晚上 9:30 左右）抵達機場。</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="mt-8 text-center bg-white p-6 rounded-xl shadow-md">
+            <h3 class="text-xl font-bold text-slate-800 mb-3">📌 重要提醒</h3>
+            <ul class="text-slate-600 space-y-2">
+                <li>Chicago 5K 與馬拉松賽事當天皆會封路，請務必早起並預留充足的交通與入場時間。</li>
+                <li>每日活動量請依個人恢復狀況彈性調整，行程建議以放鬆為主，避免過度疲勞。</li>
+                <li>10 月的芝加哥氣候早晚溫差較大，請務必攜帶保暖外套。</li>
+            </ul>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.nav-btn');
+            const panels = document.querySelectorAll('.content-panel');
+
+            function setActiveTab(tabId) {
+                tabs.forEach(tab => {
+                    if (tab.dataset.tab === tabId) {
+                        tab.classList.add('active');
+                    } else {
+                        tab.classList.remove('active');
+                    }
+                });
+
+                panels.forEach(panel => {
+                    if (panel.id === tabId) {
+                        panel.classList.add('active');
+                    } else {
+                        panel.classList.remove('active');
+                    }
+                });
+            }
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    setActiveTab(tab.dataset.tab);
+                });
+            });
+
+            // Set initial state
+            setActiveTab('overview');
+
+            // Chart.js implementation
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            const activityChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['10/9 抵達', '10/10 Expo', '10/11 5K賽', '10/12 馬拉松', '10/13 觀光', '10/14 返台'],
+                    datasets: [{
+                        label: '活動強度 (滿分10)',
+                        data: [2, 6, 7, 10, 5, 4],
+                        backgroundColor: [
+                            'rgba(56, 189, 248, 0.6)',
+                            'rgba(129, 140, 248, 0.6)',
+                            'rgba(249, 115, 22, 0.6)',
+                            'rgba(239, 68, 68, 0.7)',
+                            'rgba(16, 185, 129, 0.6)',
+                            'rgba(107, 114, 128, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgb(56, 189, 248)',
+                            'rgb(129, 140, 248)',
+                            'rgb(249, 115, 22)',
+                            'rgb(239, 68, 68)',
+                            'rgb(16, 185, 129)',
+                            'rgb(107, 114, 128)'
+                        ],
+                        borderWidth: 1.5,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10,
+                            title: {
+                                display: true,
+                                text: '強度等級'
+                            }
+                        },
+                        x: {
+                           grid: {
+                                display: false
+                           }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
