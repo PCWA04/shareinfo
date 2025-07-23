@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>芝加哥馬拉松行程總覽</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for modal overlay */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+        .modal-content {
+            max-height: 90vh; /* Limit modal height */
+            overflow-y: auto; /* Enable scrolling for long content */
+        }
+        /* Ensure font-inter is applied */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 font-inter text-gray-800 p-4 sm:p-8 flex flex-col items-center">
+
+    <!-- Header Section -->
+    <header class="w-full max-w-4xl text-center mb-8">
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-blue-800 mb-4 drop-shadow-lg">
+            芝加哥馬拉松行程總覽
+        </h1>
+        <p class="text-lg sm:text-xl text-gray-600">
+            住宿：Swissotel Chicago (10/9 - 10/14)
+        </p>
+    </header>
+
+    <!-- Itinerary Grid -->
+    <main id="itinerary-grid" class="w-full max-w-4xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <!-- Day cards will be injected here by JavaScript -->
+    </main>
+
+    <!-- Important Reminders Section -->
+    <section class="w-full max-w-4xl bg-white rounded-xl shadow-lg p-6 sm:p-8 mb-8">
+        <h2 class="text-3xl font-bold text-blue-700 mb-4">� 小提醒：</h2>
+        <ul class="list-disc list-inside text-lg text-gray-700 space-y-2">
+            <li>Chicago 5K 與馬拉松皆會封路，建議早起預留交通與入場時間。</li>
+            <li>每天活動量調整依個人恢復狀況，行程建議以放鬆為主。</li>
+            <li>請攜帶外套，10 月氣候早晚涼爽。</li>
+        </ul>
+    </section>
+
+    <!-- Detail Modal -->
+    <div id="detail-modal" class="fixed inset-0 hidden modal-overlay">
+        <div class="bg-white rounded-xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full modal-content relative">
+            <button
+                id="close-modal-btn"
+                class="absolute top-4 right-4 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors duration-300 focus:outline-none"
+                aria-label="關閉"
+            >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            <h2 id="modal-title" class="text-3xl font-bold text-blue-700 mb-4"></h2>
+            <ul id="modal-details" class="list-disc list-inside text-lg text-gray-700 space-y-3">
+                <!-- Details will be injected here by JavaScript -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Define the full itinerary data
+        const itinerary = [
+            {
+                date: '10/9（四）',
+                title: '抵達日',
+                details: [
+                    '航班：EVA Air BR056 抵達芝加哥 O\'Hare 機場時間為晚上 8:45',
+                    '入境與交通預估需 1–1.5 小時，抵達飯店約 10:30 PM',
+                    '建議安排：搭乘 CTA 藍線至市區（約 45 分鐘），或 Uber 約 $50 美金',
+                    '抵達飯店後休息，無其他行程安排，建議提早就寢為隔日做準備'
+                ]
+            },
+            {
+                date: '10/10（五）',
+                title: 'Expo + 輕鬆觀光日',
+                details: [
+                    '上午：前往馬拉松 Expo（McCormick Place）領取號碼布與選手包',
+                    '搭乘建議：搭乘 CTA 公車 #3 King Drive 或 #21 Cermak 方向（約 25–30 分鐘）或 Uber 前往約 $15–20，視交通而定',
+                    '中午至下午：Millennium Park（銀豆）拍照、Art Institute of Chicago 藝術館參觀（步行可達）',
+                    '傍晚：參加 Chicago Architecture River Cruise（建築遊船，約 60–75 分鐘）',
+                    '搭乘建議：步行 10 分鐘至 Wendella 或 Shoreline 碼頭',
+                    '晚餐建議：Giordano\'s 或 Lou Malnati’s （深盤比薩）、Eataly Chicago （義大利市集）'
+                ]
+            },
+            {
+                date: '10/11（六）',
+                title: 'Chicago 5K 路跑日',
+                details: [
+                    '05:30 起床，簡單早餐（香蕉、吐司、運動飲料）',
+                    '06:30 步行前往 Grant Park，準備參賽（步行約 15 分鐘）',
+                    '07:30 Chicago 5K 開跑',
+                    '08:30 完賽拍照、喝水、回飯店沖澡休息',
+                    '上午：自由活動（建議散步、買紀念品，不宜太累）',
+                    '下午：靜態行程建議：造訪 芝加哥文化中心 （免費參觀，壯麗圓頂玻璃）或前往 芝加哥公共圖書館 Harold Washington Library （建築愛好者最愛）',
+                    '若偏好購物，可至 Block 37 購物中心 （離飯店不遠，室內舒適）',
+                    '傍晚：飯店休息、伸展、泡腳',
+                    '晚餐建議：提早吃義大利麵／米飯為主的碳水化合物 (Quartino Ristorante / RPM Italian)'
+                ]
+            },
+            {
+                date: '10/12（日）',
+                title: '馬拉松主賽日',
+                details: [
+                    '04:30–05:00 起床、準備早餐（依個人習慣）',
+                    '06:00 前往 Grant Park 集合（步行約 15 分鐘）',
+                    '07:30 正式起跑（Bank of America Chicago Marathon）',
+                    '完賽後：領取完賽包、拍照留念、慢慢步行回飯店',
+                    '下午：洗澡、補充能量、靜態休息',
+                    '晚餐建議（慶功）：Beatrix （健康豐盛）、Cafecito （古巴三明治與熱湯）'
+                ]
+            },
+            {
+                date: '10/13（一）',
+                title: '放鬆觀光日',
+                details: [
+                    '上午：Lakefront Trail 散步或 Lincoln Park Zoo（免費入場）',
+                    '搭乘建議：CTA #151 公車',
+                    '中午：Navy Pier 散步、摩天輪',
+                    '步行約 15 分鐘即可達',
+                    '下午：360 CHICAGO 或 Willis Tower Skydeck',
+                    '360：#151 或 #146 公車 / Willis Tower：紅線至 Jackson 站',
+                    '晚餐建議：Wildfire （經典牛排）、Gyu-Kaku （日式燒肉）'
+                ]
+            },
+            {
+                date: '10/14（二）',
+                title: '探索日 + 晚間返台',
+                details: [
+                    '上午：退房前可寄放行李，安排最後觀光行程',
+                    '建議行程選項：曼菲斯大道（Magnificent Mile）精品街最後採買、芝加哥文化中心（免費、壯觀玻璃圓頂）、芝加哥大劇院外觀拍照 + The Chicago French Market 午餐',
+                    '下午：芝加哥最後散步，如芝加哥美術館南邊公園區或 Grant Park 一帶放鬆',
+                    '晚餐建議（機場前飽餐）：The Purple Pig （地中海風味）或 Sweetgreen （清爽沙拉碗）',
+                    '約 20:30 搭乘 Uber 或地鐵前往機場（航班為 10/15 凌晨 00:30）',
+                    '建議提早約 3 小時抵達 O\'Hare（21:30 左右）'
+                ]
+            }
+        ];
+
+        // Get DOM elements
+        const itineraryGrid = document.getElementById('itinerary-grid');
+        const detailModal = document.getElementById('detail-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const modalTitle = document.getElementById('modal-title');
+        const modalDetails = document.getElementById('modal-details');
+
+        // Function to render itinerary cards
+        function renderItineraryCards() {
+            itineraryGrid.innerHTML = ''; // Clear existing content
+            itinerary.forEach((day, index) => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer p-6 flex flex-col justify-between';
+                card.innerHTML = `
+                    <div>
+                        <h2 class="text-2xl font-bold text-blue-700 mb-2">
+                            ${day.date}
+                        </h2>
+                        <p class="text-xl font-semibold text-gray-700 mb-4">
+                            ${day.title}
+                        </p>
+                    </div>
+                    <button class="mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors duration-300 shadow-md">
+                        查看詳情
+                    </button>
+                `;
+                // Add click event listener to show modal
+                card.querySelector('button').addEventListener('click', () => showDetailModal(day));
+                itineraryGrid.appendChild(card);
+            });
+        }
+
+        // Function to show the detail modal
+        function showDetailModal(day) {
+            modalTitle.textContent = `${day.date} - ${day.title}`;
+            modalDetails.innerHTML = ''; // Clear previous details
+            day.details.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                modalDetails.appendChild(li);
+            });
+            detailModal.classList.remove('hidden'); // Show the modal
+        }
+
+        // Function to hide the detail modal
+        function hideDetailModal() {
+            detailModal.classList.add('hidden'); // Hide the modal
+        }
+
+        // Event listener for closing the modal
+        closeModalBtn.addEventListener('click', hideDetailModal);
+
+        // Render cards when the page loads
+        document.addEventListener('DOMContentLoaded', renderItineraryCards);
+    </script>
+</body>
+</html>
