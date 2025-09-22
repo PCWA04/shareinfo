@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>跑步訓練心率計算機</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        .input-group label {
+            display: block;
+            font-weight: bold;
+            color: #4b5563;
+            margin-bottom: 0.5rem;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db;
+            transition: border-color 0.2s;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+        .result-table th, .result-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .result-table th {
+            background-color: #e5e7eb;
+            font-weight: bold;
+            color: #374151;
+        }
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+        .result-table .highlight {
+            font-weight: bold;
+            color: #1f2937;
+        }
+        .result-table .sub-row {
+            padding-left: 2rem;
+            font-style: italic;
+            color: #6b7280;
+        }
+        .formula-box {
+            background-color: #f9fafb;
+            border-left: 4px solid #3b82f6;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 0.5rem;
+            color: #374151;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+<div class="container mx-auto p-6 bg-white rounded-xl shadow-lg">
+    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">跑步訓練心率計算機</h1>
+    <p class="text-center text-gray-600 mb-6">請輸入您的靜止心跳與年齡，即可計算出建議的跑步心率區間。</p>
+
+    <!-- 使用者輸入區塊 -->
+    <div class="input-group">
+        <label for="restingHeartRate" class="text-gray-700 font-semibold">靜止心跳 (次/分):</label>
+        <input type="number" id="restingHeartRate" placeholder="例如：55" class="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+    </div>
+    <div class="input-group">
+        <label for="age" class="text-gray-700 font-semibold">年齡 (歲):</label>
+        <input type="number" id="age" placeholder="例如：30" class="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+    </div>
+
+    <!-- 結果顯示區塊 -->
+    <div class="results mt-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">計算結果</h2>
+        <div id="resultOutput" class="space-y-4">
+            <!-- 結果會在這裡動態生成 -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // 獲取輸入欄位
+    const restingHeartRateInput = document.getElementById('restingHeartRate');
+    const ageInput = document.getElementById('age');
+    const resultOutput = document.getElementById('resultOutput');
+
+    // 監聽輸入事件，即時更新結果
+    [restingHeartRateInput, ageInput].forEach(input => {
+        input.addEventListener('input', calculateHeartRates);
+    });
+
+    function calculateHeartRates() {
+        // 清空之前的結果
+        resultOutput.innerHTML = '';
+
+        const restingHeartRate = parseInt(restingHeartRateInput.value, 10);
+        const age = parseInt(ageInput.value, 10);
+
+        // 檢查輸入是否有效
+        if (isNaN(restingHeartRate) || isNaN(age) || restingHeartRate <= 0 || age <= 0) {
+            resultOutput.innerHTML = '<p class="text-red-500 text-center">請輸入有效的靜止心跳和年齡。</p>';
+            return;
+        }
+
+        // 計算最高心跳
+        const maxHeartRate = 220 - age;
+
+        // 計算心率儲備
+        const heartRateReserve = maxHeartRate - restingHeartRate;
+
+        // 目標心跳強度等級
+        const intensities = {
+            'Zone 1 (60%)': 0.6,
+            'Zone 2 (70%)': 0.7,
+            'Zone 3 (80%)': 0.8,
+            'Zone 4 (85%)': 0.85
+        };
+
+        let resultHTML = `
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-gray-800 font-bold text-lg mb-2">最高心跳</p>
+                <p class="text-gray-600">公式：220 - 年齡</p>
+                <p class="mt-2 text-xl text-blue-600">${maxHeartRate} 次/分</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-gray-800 font-bold text-lg mb-2">心率儲備</p>
+                <p class="text-gray-600">公式：最高心跳 - 靜止心跳</p>
+                <p class="mt-2 text-xl text-blue-600">${heartRateReserve} 次/分</p>
+            </div>
+            <table class="result-table bg-white rounded-lg shadow-md">
+                <thead>
+                    <tr>
+                        <th class="px-4 py-2">運動強度</th>
+                        <th class="px-4 py-2">目標心跳 (次/分)</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        // 動態生成目標心跳結果
+        for (const [intensityText, intensityValue] of Object.entries(intensities)) {
+            const targetHeartRate = Math.round(restingHeartRate + heartRateReserve * intensityValue);
+            resultHTML += `
+                <tr>
+                    <td class="px-4 py-2">${intensityText}</td>
+                    <td class="px-4 py-2">${targetHeartRate}</td>
+                </tr>
+            `;
+        }
+
+        resultHTML += `
+                </tbody>
+            </table>
+        `;
+        
+        resultOutput.innerHTML = resultHTML;
+    }
+</script>
+
+</body>
+</html>
