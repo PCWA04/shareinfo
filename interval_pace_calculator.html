@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>間歇跑配速換算器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white p-8 md:p-10 rounded-xl shadow-2xl w-full max-w-md mx-auto transform transition-all duration-300 hover:scale-105">
+        <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-6">間歇跑配速換算</h1>
+        <p class="text-center text-gray-500 mb-8">
+            輸入您的訓練距離與時間，自動計算每公里的配速。
+        </p>
+
+        <div class="space-y-6">
+            <div>
+                <label for="distance" class="block text-sm font-medium text-gray-700 mb-2">距離 (公尺)</label>
+                <div class="relative rounded-md shadow-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM5.555 9.167A1.5 1.5 0 004 10.5v1.083A1.5 1.5 0 005.555 13H10a1.5 1.5 0 001.5-1.5V10.5A1.5 1.5 0 0010 9H5.555zM12 9a1 1 0 100-2h4a1 1 0 100 2h-4z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <input type="number" id="distance" name="distance" placeholder="例如: 400" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md placeholder-gray-400 text-gray-900 transition-colors duration-200">
+                </div>
+            </div>
+
+            <div>
+                <label for="time" class="block text-sm font-medium text-gray-700 mb-2">目標時間 (秒)</label>
+                <div class="relative rounded-md shadow-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <input type="number" id="time" name="time" placeholder="例如: 90" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md placeholder-gray-400 text-gray-900 transition-colors duration-200">
+                </div>
+            </div>
+
+            <div id="result-container" class="mt-8 text-center" style="display: none;">
+                <p class="text-sm font-medium text-gray-500">每公里配速為:</p>
+                <p id="result-text" class="text-4xl md:text-5xl font-extrabold text-indigo-600 mt-2 animate-pulse transition-all duration-300"></p>
+                <p class="text-gray-500 mt-1">分鐘/公里</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const distanceInput = document.getElementById('distance');
+        const timeInput = document.getElementById('time');
+        const resultContainer = document.getElementById('result-container');
+        const resultText = document.getElementById('result-text');
+
+        function calculatePace() {
+            const distance = parseFloat(distanceInput.value);
+            const time = parseFloat(timeInput.value);
+
+            if (isNaN(distance) || isNaN(time) || distance <= 0 || time <= 0) {
+                resultContainer.style.display = 'none';
+                return;
+            }
+
+            // 將距離從公尺換算成公里
+            const distanceInKm = distance / 1000;
+            // 計算每公里的秒數
+            const secondsPerKm = time / distanceInKm;
+            // 將秒數換算成「分:秒」格式
+            const minutes = Math.floor(secondsPerKm / 60);
+            const seconds = Math.floor(secondsPerKm % 60);
+
+            const formattedSeconds = seconds.toString().padStart(2, '0');
+
+            resultText.textContent = `${minutes}:${formattedSeconds}`;
+            resultContainer.style.display = 'block';
+        }
+
+        // 監聽輸入框的變動
+        distanceInput.addEventListener('input', calculatePace);
+        timeInput.addEventListener('input', calculatePace);
+
+        // 頁面載入時先計算一次，以防有預設值
+        window.onload = calculatePace;
+    </script>
+</body>
+</html>
