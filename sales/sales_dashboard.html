@@ -34,10 +34,16 @@
             </div>
         </div>
 
-        <!-- 搜尋與篩選區塊 -->
-        <div class="mb-6 flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <input type="text" id="searchInput" placeholder="搜尋表格..." class="w-full sm:w-1/2 p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
-            <button onclick="clearSearch()" class="w-full sm:w-auto px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors">清除搜尋</button>
+        <!-- 篩選器區塊 -->
+        <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label for="productFilter" class="block text-sm font-medium text-gray-700 mb-1">產品編號</label>
+                <select id="productFilter" class="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"></select>
+            </div>
+            <div>
+                <label for="regionFilter" class="block text-sm font-medium text-gray-700 mb-1">區域編號</label>
+                <select id="regionFilter" class="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"></select>
+            </div>
         </div>
 
         <!-- 資料表格區塊 -->
@@ -77,7 +83,6 @@
 
         // 讀取 CSV 檔案
         function loadData() {
-            // ⚠️ 檔案名稱已更新為您新提供的檔案
             const salesFile = "BicycleSalesData.csv";
 
             fetch(salesFile)
@@ -91,11 +96,10 @@
                     Papa.parse(text, {
                         header: true,
                         dynamicTyping: true,
-                        skipEmptyLines: true, // ⚠️ 新增：跳過空白行
-                        encoding: 'utf-8',    // ⚠️ 新增：明確指定編碼
+                        skipEmptyLines: true,
+                        encoding: 'utf-8',
                         complete: function(results) {
                             if (results.errors.length > 0) {
-                                // 顯示第一個錯誤的具體訊息
                                 showMessage(`解析 CSV 檔案時發生錯誤: ${results.errors[0].message}`);
                                 console.error("解析錯誤:", results.errors);
                                 return;
@@ -105,6 +109,7 @@
 
                             if (allData.length > 0) {
                                 renderHeaders();
+                                populateFilters();
                                 renderTable(allData);
                                 calculateMetrics(allData);
                                 showMessage("資料載入成功！", "success");
@@ -113,7 +118,6 @@
                             }
                         },
                         error: function(err, file) {
-                            // 顯示 PapaParse 的直接錯誤
                             showMessage(`解析 CSV 檔案時發生錯誤: ${err.message}`);
                             console.error("解析錯誤:", err);
                         }
@@ -173,7 +177,6 @@
             let totalOrders = data.length;
 
             data.forEach(row => {
-                // ⚠️ 處理帶有貨幣符號和逗號的字串
                 const sales = parseFloat(String(row['銷售金額']).replace(/[$, ]/g, ''));
                 const cost = parseFloat(String(row['銷售成本']).replace(/[$, ]/g, ''));
                 
@@ -190,23 +193,42 @@
             totalOrdersEl.textContent = totalOrders.toLocaleString('zh-TW');
         }
 
-        // 搜尋功能
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const filteredData = allData.filter(row => {
-                return Object.values(row).some(value => {
-                    return String(value).toLowerCase().includes(searchTerm);
-                });
+        // 填充篩選器選項
+        function populateFilters() {
+            const productFilter = document.getElementById('productFilter');
+            const regionFilter = document.getElementById('regionFilter');
+
+            const productIds = [...new Set(allData.map(item => item['產品編號']))].sort((a, b) => a - b);
+            const regionIds = [...new Set(allData.map(item => item['區域編號']))].sort((a, b) => a - b);
+
+            productFilter.innerHTML = `<option value="">所有產品</option>`;
+            productIds.forEach(id => {
+                productFilter.innerHTML += `<option value="${id}">${id}</option>`;
             });
+
+            regionFilter.innerHTML = `<option value="">所有區域</option>`;
+            regionIds.forEach(id => {
+                regionFilter.innerHTML += `<option value="${id}">${id}</option>`;
+            });
+
+            // 為篩選器新增事件監聽器
+            productFilter.addEventListener('change', filterData);
+            regionFilter.addEventListener('change', filterData);
+        }
+
+        // 根據篩選器條件篩選資料
+        function filterData() {
+            const selectedProduct = document.getElementById('productFilter').value;
+            const selectedRegion = document.getElementById('regionFilter').value;
+
+            const filteredData = allData.filter(row => {
+                const productMatch = !selectedProduct || String(row['產品編號']) === selectedProduct;
+                const regionMatch = !selectedRegion || String(row['區域編號']) === selectedRegion;
+                return productMatch && regionMatch;
+            });
+
             renderTable(filteredData);
             calculateMetrics(filteredData);
-        });
-
-        // 清除搜尋
-        function clearSearch() {
-            document.getElementById('searchInput').value = '';
-            renderTable(allData);
-            calculateMetrics(allData);
         }
 
         // 網頁載入時執行
