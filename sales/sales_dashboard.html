@@ -93,7 +93,8 @@
                         dynamicTyping: true,
                         complete: function(results) {
                             if (results.errors.length > 0) {
-                                showMessage("解析 CSV 檔案時發生錯誤。");
+                                // 顯示第一個錯誤的具體訊息
+                                showMessage(`解析 CSV 檔案時發生錯誤: ${results.errors[0].message}`);
                                 console.error("解析錯誤:", results.errors);
                                 return;
                             }
@@ -108,6 +109,11 @@
                             } else {
                                 showMessage("CSV 檔案中沒有資料。");
                             }
+                        },
+                        error: function(err, file) {
+                            // 顯示 PapaParse 的直接錯誤
+                            showMessage(`解析 CSV 檔案時發生錯誤: ${err.message}`);
+                            console.error("解析錯誤:", err);
                         }
                     });
                 })
