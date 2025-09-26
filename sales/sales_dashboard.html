@@ -91,6 +91,8 @@
                     Papa.parse(text, {
                         header: true,
                         dynamicTyping: true,
+                        skipEmptyLines: true, // ⚠️ 新增：跳過空白行
+                        encoding: 'utf-8',    // ⚠️ 新增：明確指定編碼
                         complete: function(results) {
                             if (results.errors.length > 0) {
                                 // 顯示第一個錯誤的具體訊息
