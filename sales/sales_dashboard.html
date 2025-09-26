@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>銷售資料儀表板</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-10">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-6">銷售資料儀表板</h1>
+        <p class="text-center text-gray-500 mb-8">透過互動式儀表板探索銷售資料</p>
+
+        <!-- 關鍵指標區塊 -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-8">
+            <div class="bg-indigo-100 rounded-xl p-4 text-center shadow-lg">
+                <p class="text-sm font-medium text-indigo-700">總銷售金額</p>
+                <p id="totalSales" class="mt-1 text-2xl md:text-3xl font-bold text-indigo-900 animate-pulse">...</p>
+            </div>
+            <div class="bg-emerald-100 rounded-xl p-4 text-center shadow-lg">
+                <p class="text-sm font-medium text-emerald-700">總銷售利潤</p>
+                <p id="totalProfit" class="mt-1 text-2xl md:text-3xl font-bold text-emerald-900 animate-pulse">...</p>
+            </div>
+            <div class="bg-rose-100 rounded-xl p-4 text-center shadow-lg">
+                <p class="text-sm font-medium text-rose-700">總訂單數</p>
+                <p id="totalOrders" class="mt-1 text-2xl md:text-3xl font-bold text-rose-900 animate-pulse">...</p>
+            </div>
+        </div>
+
+        <!-- 搜尋與篩選區塊 -->
+        <div class="mb-6 flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <input type="text" id="searchInput" placeholder="搜尋表格..." class="w-full sm:w-1/2 p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
+            <button onclick="clearSearch()" class="w-full sm:w-auto px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors">清除搜尋</button>
+        </div>
+
+        <!-- 資料表格區塊 -->
+        <div class="overflow-x-auto rounded-xl shadow-lg">
+            <table class="min-w-full bg-white border-collapse">
+                <thead class="bg-gray-100 sticky top-0">
+                    <tr id="tableHeader" class="text-sm text-gray-600 uppercase font-semibold text-left"></tr>
+                </thead>
+                <tbody id="tableBody" class="text-sm text-gray-800">
+                    <!-- 資料將在此處動態載入 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 錯誤或訊息提示區 -->
+    <div id="messageBox" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-full shadow-lg z-50 transform scale-0 transition-transform duration-300"></div>
+
+    <script>
+        // 全域變數以儲存原始數據
+        let allData = [];
+        let allHeaders = [];
+
+        // 訊息提示函式
+        function showMessage(message, type = 'error') {
+            const msgBox = document.getElementById('messageBox');
+            msgBox.textContent = message;
+            if (type === 'error') {
+                msgBox.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-full shadow-lg z-50 transform scale-100 transition-transform duration-300';
+            } else {
+                msgBox.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg z-50 transform scale-100 transition-transform duration-300';
+            }
+            setTimeout(() => {
+                msgBox.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-full shadow-lg z-50 transform scale-0 transition-transform duration-300';
+            }, 5000);
+        }
+
+        // 讀取 CSV 檔案
+        function loadData() {
+            // ⚠️ 檔案名稱已更新為您新提供的檔案
+            const salesFile = "BicycleSalesData.csv";
+
+            fetch(salesFile)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('無法載入檔案。請確認檔案已正確上傳。');
+                    }
+                    return response.text();
+                })
+                .then(text => {
+                    Papa.parse(text, {
+                        header: true,
+                        dynamicTyping: true,
+                        complete: function(results) {
+                            if (results.errors.length > 0) {
+                                showMessage("解析 CSV 檔案時發生錯誤。");
+                                console.error("解析錯誤:", results.errors);
+                                return;
+                            }
+                            allData = results.data;
+                            allHeaders = results.meta.fields;
+
+                            if (allData.length > 0) {
+                                renderHeaders();
+                                renderTable(allData);
+                                calculateMetrics(allData);
+                                showMessage("資料載入成功！", "success");
+                            } else {
+                                showMessage("CSV 檔案中沒有資料。");
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error("載入錯誤:", error);
+                    showMessage(error.message);
+                });
+        }
+
+        // 渲染表格標題
+        function renderHeaders() {
+            const headerRow = document.getElementById('tableHeader');
+            headerRow.innerHTML = '';
+            allHeaders.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                th.className = 'p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-200 transition-colors';
+                headerRow.appendChild(th);
+            });
+        }
+
+        // 渲染表格資料
+        function renderTable(data) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+
+            if (data.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td colspan="${allHeaders.length}" class="p-4 text-center text-gray-500">沒有找到符合條件的資料。</td>`;
+                tableBody.appendChild(tr);
+                return;
+            }
+
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 transition-colors border-b border-gray-200';
+                allHeaders.forEach(header => {
+                    const td = document.createElement('td');
+                    td.textContent = row[header] !== undefined ? row[header] : '';
+                    td.className = 'p-4 whitespace-nowrap overflow-hidden text-ellipsis max-w-xs';
+                    tr.appendChild(td);
+                });
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // 計算並顯示關鍵指標
+        function calculateMetrics(data) {
+            const totalSalesEl = document.getElementById('totalSales');
+            const totalProfitEl = document.getElementById('totalProfit');
+            const totalOrdersEl = document.getElementById('totalOrders');
+
+            let totalSales = 0;
+            let totalProfit = 0;
+            let totalOrders = data.length;
+
+            data.forEach(row => {
+                // ⚠️ 處理帶有貨幣符號和逗號的字串
+                const sales = parseFloat(String(row['銷售金額']).replace(/[$, ]/g, ''));
+                const cost = parseFloat(String(row['銷售成本']).replace(/[$, ]/g, ''));
+                
+                if (!isNaN(sales)) {
+                    totalSales += sales;
+                }
+                if (!isNaN(sales) && !isNaN(cost)) {
+                    totalProfit += (sales - cost);
+                }
+            });
+
+            totalSalesEl.textContent = `NT$${totalSales.toLocaleString('zh-TW', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            totalProfitEl.textContent = `NT$${totalProfit.toLocaleString('zh-TW', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            totalOrdersEl.textContent = totalOrders.toLocaleString('zh-TW');
+        }
+
+        // 搜尋功能
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredData = allData.filter(row => {
+                return Object.values(row).some(value => {
+                    return String(value).toLowerCase().includes(searchTerm);
+                });
+            });
+            renderTable(filteredData);
+            calculateMetrics(filteredData);
+        });
+
+        // 清除搜尋
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            renderTable(allData);
+            calculateMetrics(allData);
+        }
+
+        // 網頁載入時執行
+        window.onload = loadData;
+    </script>
+</body>
+</html>
