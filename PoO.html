@@ -3,400 +3,345 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>歌劇魅影 互動式導覽</title>
+    <title>歌劇魅影（The Phantom of the Opera）詳盡導覽</title>
+    <!-- 載入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Dramatic Elegance (Deep purples, gold, and warm off-white/beige) -->
-    <!-- Application Structure Plan: The application is designed as a thematic, single-page journey rather than a linear report. It uses a top navigation bar to anchor key sections: "故事與背景" (Story & Context), "角色深度解析" (Character Analysis), and "互動音樂之旅" (Interactive Musical Journey). This structure allows users to explore content based on interest, rather than following the report's order. The character section uses a tab-like interaction to focus on one character at a time, preventing information overload. The music section is the centerpiece, using dynamic content updates and a chart to visualize the emotional data of each song, making the analysis more engaging and memorable. This design prioritizes user exploration and interactive data discovery for better understanding and retention. -->
-    <!-- Visualization & Content Choices: 1. Report Info: Character analysis. Goal: Compare characters without overwhelming the user. Viz/Method: Interactive content panes. A user clicks a character's name, and JS updates a single display area with their detailed information. Interaction: Click to update content. Justification: Cleaner and more focused than presenting all information at once. Library: Vanilla JS DOM manipulation. 2. Report Info: Song emotional analysis. Goal: Visualize the emotional composition of each key song. Viz/Method: Dynamic Radar Chart. Each song has predefined values for emotional axes (e.g., Mystery, Passion, Sadness). Interaction: User clicks a song title, and the chart updates instantly to show its unique emotional profile, alongside a textual description. Justification: This translates abstract text into an immediate, comparable visual format, offering a unique "wow" factor and deeper insight. Library: Chart.js for canvas-based charting. 3. Report Info: Character triangle relationship. Goal: Organize relationship dynamics. Viz/Method: Styled HTML table. Interaction: Static display. Justification: A simple table is the clearest way to present this specific structured data. Library: Tailwind CSS for styling. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- 設定字體與自訂顏色 -->
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;700&display=swap');
         body {
-            font-family: 'Noto Serif TC', serif;
-            background-color: #FDFBF6;
-            color: #3C3633;
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #1a1a1a; /* 深色背景 */
+            color: #e5e5e5; /* 淺色文字 */
+            /* 移除 body 的大邊距，讓內容更貼合手機螢幕 */
+            padding: 0;
         }
-        .nav-link {
-            transition: color 0.3s, border-bottom-color 0.3s;
-            border-bottom: 2px solid transparent;
+        .theater-bg {
+            background-image: linear-gradient(to bottom, rgba(26, 26, 26, 0.95), rgba(0, 0, 0, 0.9)), url('https://placehold.co/1200x600/220c0c/d0d0d0?text=Paris+Opera+House');
+            background-size: cover;
+            background-position: center;
         }
-        .nav-link:hover, .nav-link.active {
-            color: #A0522D;
-            border-bottom-color: #A0522D;
+        .tab-active {
+            border-bottom: 3px solid #b70020; /* 魅影的紅 */
+            color: #f7f7f7;
+            background-color: rgba(50, 50, 50, 0.5);
         }
-        .hero-title {
-            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+        .tab-inactive {
+            color: #a0a0a0;
         }
-        .card {
-            background-color: #FFFFFF;
-            border: 1px solid #EFEAE6;
-            transition: transform 0.3s, box-shadow 0.3s;
+        .card-bg {
+            background-color: #2b2b2b;
+            border-left: 4px solid #b70020;
         }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        .accordion-header {
+            background-color: #383838;
+            transition: background-color 0.3s ease;
         }
-        .btn-primary {
-            background-color: #7743DB;
-            color: #fff;
-            transition: background-color 0.3s;
+        .accordion-header:hover {
+            background-color: #4a4a4a;
         }
-        .btn-primary:hover {
-            background-color: #5E33AC;
-        }
-        .btn-secondary {
-            background-color: #EFEAE6;
-            color: #3C3633;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        .btn-secondary.active, .btn-secondary:hover {
-            background-color: #A0522D;
-            color: #FFFFFF;
-        }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 450px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 300px;
-            max-height: 400px;
-        }
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 400px;
-            }
+        .text-gold {
+            color: #d4af37; /* 歌劇院的金色 */
         }
     </style>
 </head>
-<body class="antialiased">
-
-    <!-- Header & Hero Section -->
-    <header class="relative h-[60vh] md:h-[70vh] w-full flex items-center justify-center text-white text-center overflow-hidden">
-        <div class="absolute inset-0 bg-black opacity-50 z-10"></div>
-        <img src="https://images.unsplash.com/photo-1596886235122-06511BFc8a2b?q=80&w=2070&auto=format&fit=crop" alt="Paris Opera House" class="absolute inset-0 w-full h-full object-cover">
-        <div class="relative z-20 p-4">
-            <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold hero-title">歌劇魅影</h1>
-            <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto">一場關於音樂、愛戀、與孤獨的永恆悲劇</p>
-        </div>
-    </header>
-
-    <!-- Navigation -->
-    <nav class="sticky top-0 bg-[#FDFBF6]/90 backdrop-blur-sm shadow-md z-30">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-center items-center h-16 space-x-4 md:space-x-8">
-                <a href="#introduction" class="nav-link px-2 py-1 text-sm md:text-base">故事簡介</a>
-                <a href="#context" class="nav-link px-2 py-1 text-sm md:text-base">時代與背景</a>
-                <a href="#characters" class="nav-link px-2 py-1 text-sm md:text-base">角色深度解析</a>
-                <a href="#music" class="nav-link px-2 py-1 text-sm md:text-base">互動音樂之旅</a>
-            </div>
-        </div>
-    </nav>
-
-    <main class="container mx-auto p-4 md:p-8">
-
-        <!-- Introduction Section -->
-        <section id="introduction" class="my-12 md:my-16 scroll-mt-20">
-            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">歡迎來到巴黎歌劇院的地下世界</h2>
-            <p class="max-w-3xl mx-auto text-center text-lg text-gray-700 mb-8">
-                本節將為您簡要介紹《歌劇魅影》這部不朽的音樂劇，從它的起源、創作背景到核心故事。讓我們一同揭開這層神秘面紗，探索這部作品為何能跨越時代，觸動全球無數觀眾的心弦。
-            </p>
-            <div class="bg-white p-6 md:p-8 rounded-lg shadow-lg border border-gray-200">
-                <p class="text-lg leading-relaxed text-gray-800 mb-4">
-                    《歌劇魅影》（The Phantom of the Opera）是一部舉世聞名的音樂劇，由**安德魯·洛伊·韋伯（Andrew Lloyd Webber）**作曲，改編自法國作家**加斯頓·勒胡（Gaston Leroux）**於1910年出版的同名小說。故事設定在19世紀末的巴黎歌劇院，傳說中，一位才華橫溢卻因容貌毀損而隱居於地下的「魅影」，深深愛上了年輕貌美的女高音克莉絲汀。他化身為「音樂天使」，暗中指導她的歌唱技巧，助她成為舞台上最耀眼的明星。然而，當克莉絲汀與其青梅竹馬的勞爾子爵重逢並陷入愛河時，魅影的愛戀轉為狂暴的佔有慾，一連串的驚悚事件就此展開，將所有人的命運捲入一場激情與悲劇的漩渦。
-                </p>
-                <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                    <div>
-                        <h4 class="font-bold text-lg text-amber-700">首演時間</h4>
-                        <p class="text-gray-600">1986年 (倫敦)</p>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-lg text-amber-700">音樂風格</h4>
-                        <p class="text-gray-600">融合古典與搖滾</p>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-lg text-amber-700">原著作者</h4>
-                        <p class="text-gray-600">加斯頓·勒胡</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Context & Background Section -->
-        <section id="context" class="my-12 md:my-16 scroll-mt-20">
-            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">時代的迴響與真實的傳說</h2>
-            <p class="max-w-3xl mx-auto text-center text-lg text-gray-700 mb-12">
-                故事的魅力不僅在於虛構的情節，更源於其深刻的歷史與文化背景。本區塊將帶您穿梭時空，探索小說原著的哥德式風格、作為故事舞台的真實巴黎歌劇院傳聞，以及19世紀末的社會氛圍如何共同孕育出「魅影」這個複雜而迷人的角色。
-            </p>
-            <div class="grid md:grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="card p-6 rounded-lg">
-                    <h3 class="font-bold text-xl mb-3 text-amber-800">🏛️ 真實地點：加尼葉宮</h3>
-                    <p class="text-gray-600">故事的舞台是真實存在的巴黎加尼葉宮。這座宏偉的建築本身就充滿傳奇色彩，據傳其地下真的存在一個蓄水池（小說中魅影的居所），且歷史上曾發生吊燈墜落的意外，這些都成為了作者的創作靈感。</p>
-                </div>
-                <div class="card p-6 rounded-lg">
-                    <h3 class="font-bold text-xl mb-3 text-amber-800">📖 小說原著與哥德風格</h3>
-                    <p class="text-gray-600">加斯頓·勒胡的原著出版於1910年，深受愛倫·坡等作家的影響。作品融合了愛情、驚悚與推理元素，反映了19世紀末流行的浪漫主義與哥德式小說風格，強調強烈的情感、神秘的氛圍與對超自然的探索。</p>
-                </div>
-                <div class="card p-6 rounded-lg">
-                    <h3 class="font-bold text-xl mb-3 text-amber-800">👤 魅影的誕生</h3>
-                    <p class="text-gray-600">魅影（Erik）的角色是「天才與怪物」的結合體，象徵著被社會遺棄的創造力。他的形象反映了19世紀對「異類」的恐懼與同情，是一個充滿悲劇性與矛盾情感的文化符號。</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Characters Section -->
-        <section id="characters" class="my-12 md:my-16 scroll-mt-20">
-            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">靈魂的交織：主要角色解析</h2>
-             <p class="max-w-3xl mx-auto text-center text-lg text-gray-700 mb-12">
-                《歌劇魅影》的魅力核心在於其鮮活而複雜的角色。在此，您可以點選不同角色的頭像，深入了解他們的身分、性格特徵以及在劇中所象徵的意義。從魅影的悲劇、克莉絲汀的成長到勞爾的抉擇，探索他們之間如何構成一段經典的三角關係。
-            </p>
-            <div class="flex justify-center flex-wrap gap-2 md:gap-4 mb-8">
-                <button class="btn-secondary py-2 px-4 rounded-full text-sm md:text-base character-btn active" data-character="phantom">魅影 (Erik)</button>
-                <button class="btn-secondary py-2 px-4 rounded-full text-sm md:text-base character-btn" data-character="christine">克莉絲汀 (Christine)</button>
-                <button class="btn-secondary py-2 px-4 rounded-full text-sm md:text-base character-btn" data-character="raoul">勞爾 (Raoul)</button>
-                <button class="btn-secondary py-2 px-4 rounded-full text-sm md:text-base character-btn" data-character="triangle">三角關係</button>
-            </div>
-
-            <div id="character-display" class="bg-white p-6 md:p-10 rounded-lg shadow-lg border border-gray-200 min-h-[300px]">
-                <!-- Character info will be injected here by JS -->
-            </div>
-        </section>
+<body class="min-h-screen">
+    <!-- 在容器外層增加一些垂直邊距，讓內容居中，並避免與手機邊緣貼死 -->
+    <div class="max-w-6xl mx-auto rounded-xl shadow-2xl overflow-hidden my-4 sm:my-8">
         
-        <!-- Music Section -->
-        <section id="music" class="my-12 md:my-16 scroll-mt-20">
-            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">互動音樂之旅</h2>
-            <p class="max-w-3xl mx-auto text-center text-lg text-gray-700 mb-12">
-                音樂是《歌劇魅影》的靈魂。本區塊提供一個獨特的互動體驗，您可以點選劇中的經典曲目，不僅能看到該曲的劇情含義與情感解析，還能透過旁邊的「情感雷達圖」直觀地感受每首歌在神秘、激情、悲傷、浪漫與希望等五個維度上的情感強度。
+        <!-- 標題區塊 -->
+        <header class="theater-bg p-6 sm:p-10 text-center rounded-t-xl">
+            <!-- 調整標題大小：手機上更緊湊，大螢幕再放大 -->
+            <h1 class="text-3xl sm:text-5xl font-bold text-gold drop-shadow-lg tracking-wider">
+                歌劇魅影（The Phantom of the Opera）
+            </h1>
+            <p class="text-lg sm:text-xl mt-3 italic font-light text-white">
+                "Listen to the Music of the Night..."
             </p>
-            <div class="flex flex-col lg:flex-row gap-8">
-                <!-- Song Selection -->
-                <div class="w-full lg:w-1/3">
-                    <div class="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
-                        <h3 class="font-bold text-xl mb-4 text-center text-amber-800">第一幕 (Act I)</h3>
-                        <div id="song-list-act1" class="space-y-2"></div>
-                        <h3 class="font-bold text-xl mt-6 mb-4 text-center text-amber-800">第二幕 (Act II)</h3>
-                        <div id="song-list-act2" class="space-y-2"></div>
+        </header>
+
+        <!-- 導覽列 (Tabs) - 保持 W-1/3 確保均勻分佈，P-4 確保足夠的觸控目標 -->
+        <nav class="flex justify-center border-b border-gray-700 bg-gray-900 sticky top-0 z-10">
+            <!-- 調整文字大小以確保在手機上清晰可讀 -->
+            <button class="tab-button p-4 text-base font-semibold transition duration-300 w-1/3" data-tab="background">
+                簡介與背景
+            </button>
+            <button class="tab-button p-4 text-base font-semibold transition duration-300 w-1/3" data-tab="characters">
+                主要角色分析
+            </button>
+            <button class="tab-button p-4 text-base font-semibold transition duration-300 w-1/3" data-tab="songs">
+                核心曲目解析
+            </button>
+        </nav>
+
+        <!-- 內容區域 -->
+        <!-- 增加 P-4 確保內容與邊緣有空間 -->
+        <main class="p-4 sm:p-6 bg-gray-800">
+            <!-- 1. 簡介與背景 (Default Active) -->
+            <section id="tab-background" class="tab-content active">
+                <h2 class="text-2xl sm:text-3xl font-bold mb-6 text-red-400">一、音樂劇概覽與創作靈感</h2>
+
+                <!-- 網格結構在手機上會自動變成單欄 -->
+                <div class="grid md:grid-cols-2 gap-6 mb-8">
+                    <div class="card-bg p-4 rounded-lg">
+                        <h3 class="text-xl font-bold text-gold mb-2">作品核心資訊</h3>
+                        <ul class="space-y-2 text-sm">
+                            <li><span class="font-semibold text-red-300">作曲：</span>安德魯·洛伊·韋伯 (Andrew Lloyd Webber)</li>
+                            <li><span class="font-semibold text-red-300">原著：</span>加斯頓·勒胡 (Gaston Leroux) 1910年同名小說</li>
+                            <li><span class="font-semibold text-red-300">首演：</span>1986年（倫敦西區）/ 1988年（百老匯）</li>
+                            <li><span class="font-semibold text-red-300">音樂風格：</span>融合古典歌劇的宏偉與搖滾樂的激情</li>
+                        </ul>
+                    </div>
+                    <div class="card-bg p-4 rounded-lg">
+                        <h3 class="text-xl font-bold text-gold mb-2">故事背景：巴黎歌劇院</h3>
+                        <p class="text-sm">故事設定於19世紀末的**巴黎歌劇院**（加尼葉宮）。一位才華橫溢但容貌毀容的作曲家「魅影」藏身於地底迷宮，愛上了年輕女高音**克莉絲汀**，並在指導她歌唱的過程中，與克莉絲汀的青梅竹馬**勞爾子爵**展開了一場愛與恨的糾葛。</p>
                     </div>
                 </div>
-                <!-- Song Display & Chart -->
-                <div class="w-full lg:w-2/3">
-                     <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg border border-gray-200 sticky top-20">
-                        <div class="flex flex-col md:flex-row gap-4">
-                            <div class="w-full md:w-1/2">
-                                <h3 id="song-title" class="font-bold text-2xl mb-2">請選擇一首曲目</h3>
-                                <p id="song-description" class="text-gray-700 h-48 overflow-y-auto pr-2">點擊左側列表中的歌曲，查看其詳細解析與情感構成。</p>
-                            </div>
-                            <div class="w-full md:w-1/2">
-                                <div class="chart-container">
-                                    <canvas id="song-chart"></canvas>
-                                </div>
-                            </div>
+
+                <h3 class="text-xl sm:text-2xl font-bold mb-4 text-red-400">二、真實地點與歷史傳聞</h3>
+                <div class="space-y-4">
+                    <div class="card-bg p-3 rounded-lg">
+                        <p class="font-semibold text-lg text-gold">加尼葉宮（Palais Garnier）</p>
+                        <p class="text-sm">魅影的故事場景即是這座極其壯麗的真實巴黎歌劇院。它由建築師查爾斯·加尼葉設計，於1875年落成。</p>
+                    </div>
+                    <div class="card-bg p-3 rounded-lg">
+                        <p class="font-semibold text-lg text-gold">地下湖泊與吊燈</p>
+                        <p class="text-sm">歌劇院地下確實設有**蓄水池**（在小說中被設定為魅影的藏身湖泊）。1880年發生的**吊燈墜落事件**，也成為小說中最著名的驚悚靈感來源。</p>
+                    </div>
+                    <div class="card-bg p-3 rounded-lg">
+                        <p class="font-semibold text-lg text-gold">魅影角色的雛形</p>
+                        <p class="text-sm">魅影的形象據說啟發自一位長年住在歌劇院地底的**臉部毀容音樂家**。魅影結合了「天才與怪物」的特質，象徵藝術創造力與社會邊緣化的衝突。</p>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- 2. 主要角色分析 -->
+            <section id="tab-characters" class="tab-content hidden">
+                <h2 class="text-2xl sm:text-3xl font-bold mb-6 text-red-400 text-center">主要角色與三角結構象徵</h2>
+
+                <div class="space-y-6">
+                    <!-- 魅影 -->
+                    <div class="card-bg p-4 rounded-xl shadow-xl">
+                        <h3 class="text-2xl sm:text-3xl font-bold text-gold mb-3 flex items-center">
+                            魅影（The Phantom / Erik）
+                            <span class="ml-4 text-xs bg-red-800 text-white px-2 py-0.5 rounded-full">天才與悲劇</span>
+                        </h3>
+                        <p class="mb-3 text-sm">身分：神秘的音樂天才，藏身於歌劇院地底。</p>
+                        <div class="space-y-2 border-t border-gray-700 pt-3 text-sm">
+                            <p><span class="font-semibold text-red-300">特徵：</span>臉部毀容、戴面具；擁有驚人的作曲與魔術才華；情緒激烈、性格矛盾。</p>
+                            <p><span class="font-semibold text-red-300">象徵：</span>「被社會遺棄的天才」；愛與痛苦的交錯體，觀眾對他**既同情又恐懼**。</p>
+                        </div>
+                    </div>
+
+                    <!-- 克莉絲汀 -->
+                    <div class="card-bg p-4 rounded-xl shadow-xl">
+                        <h3 class="text-2xl sm:text-3xl font-bold text-gold mb-3 flex items-center">
+                            克莉絲汀‧達葉（Christine Daaé）
+                            <span class="ml-4 text-xs bg-red-800 text-white px-2 py-0.5 rounded-full">純真與選擇</span>
+                        </h3>
+                        <p class="mb-3 text-sm">身分：年輕女高音，被魅影視為心靈救贖。</p>
+                        <div class="space-y-2 border-t border-gray-700 pt-3 text-sm">
+                            <p><span class="font-semibold text-red-300">特徵：</span>善良、有音樂天賦但缺乏自信；情感糾葛於魅影的藝術吸引與勞爾的安全感之間。</p>
+                            <p><span class="font-semibold text-red-300">象徵：</span>「藝術的繆思女神」；在依賴與獨立之間掙扎，代表**成長與自我覺醒**。</p>
+                        </div>
+                    </div>
+
+                    <!-- 勞爾 -->
+                    <div class="card-bg p-4 rounded-xl shadow-xl">
+                        <h3 class="text-2xl sm:text-3xl font-bold text-gold mb-3 flex items-center">
+                            勞爾‧夏尼子爵（Raoul, Vicomte de Chagny）
+                            <span class="ml-4 text-xs bg-red-800 text-white px-2 py-0.5 rounded-full">安全與現實</span>
+                        </h3>
+                        <p class="mb-3 text-sm">身分：年輕貴族，克莉絲汀的青梅竹馬。</p>
+                        <div class="space-y-2 border-t border-gray-700 pt-3 text-sm">
+                            <p><span class="font-semibold text-red-300">特徵：</span>正直、溫柔、有責任感；偶爾顯得過於單純與保護欲強烈。</p>
+                            <p><span class="font-semibold text-red-300">象徵：</span>「現實世界的愛情」；理性與秩序的代表；克莉絲汀選擇**安全與正常生活**的支柱。</p>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-    </main>
-
-    <footer class="bg-[#3C3633] text-gray-300 py-6 mt-16">
-        <div class="container mx-auto text-center">
-            <p>《歌劇魅影》互動式導覽</p>
-            <p class="text-sm mt-2">基於公開資料整理，為教育與欣賞目的而設計。</p>
-        </div>
-    </footer>
+            <!-- 3. 核心曲目解析 -->
+            <section id="tab-songs" class="tab-content hidden">
+                <h2 class="text-2xl sm:text-3xl font-bold mb-6 text-red-400 text-center">三、核心曲目：情節與情感轉折</h2>
+                <div class="space-y-2" id="song-accordion-container">
+                    <!-- 曲目將由 JS 動態生成 -->
+                </div>
+            </section>
+        </main>
+    </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Character Data
-            const characters = {
-                phantom: {
-                    name: '魅影 (The Phantom / Erik)',
-                    content: `
-                        <h3 class="text-2xl font-bold mb-4 text-purple-900">被社會遺棄的音樂天才</h3>
-                        <p class="mb-3"><strong>身分：</strong>神秘的音樂天才，因臉部毀容而隱居在巴黎歌劇院地底。</p>
-                        <p class="mb-3"><strong>特徵：</strong>擁有驚人的作曲、建築與魔術才華，但性格極端矛盾。他既能創作出最柔情的音樂，又能毫不猶豫地採取暴力手段。他對克莉絲汀的愛，是混合了浪漫、佔有、與控制的複雜情感。</p>
-                        <p><strong>象徵：</strong>他是「被社會遺棄的天才」，代表著被主流價值觀拒絕的創造力與異類。他的悲劇在於，他擁有無盡的才華，卻因外貌而得不到最基本的愛與認同，最終在愛與恨的交織中走向毀滅。</p>
-                    `
-                },
-                christine: {
-                    name: '克莉絲汀‧達葉 (Christine Daaé)',
-                    content: `
-                        <h3 class="text-2xl font-bold mb-4 text-blue-800">在純真與成長間掙扎的繆思</h3>
-                        <p class="mb-3"><strong>身分：</strong>年輕貌美、具有歌唱天賦的女高音。</p>
-                        <p class="mb-3"><strong>特徵：</strong>善良、純真，但初期缺乏自信，情感上容易受人影響。她崇拜魅影為「音樂天使」，同時又依戀青梅竹馬勞爾所代表的「安全世界」。</p>
-                        <p><strong>象徵：</strong>她是魅影眼中的「藝術繆思」與心靈救贖。她的故事線核心是「成長與選擇」，從一個被動、依賴的少女，最終學會面對恐懼，勇敢地做出自己人生的選擇，從而走向成熟與自我覺醒。</p>
-                    `
-                },
-                raoul: {
-                    name: '勞爾‧夏尼子爵 (Raoul)',
-                    content: `
-                        <h3 class="text-2xl font-bold mb-4 text-green-800">現實世界的陽光與秩序</h3>
-                        <p class="mb-3"><strong>身分：</strong>年輕英俊的貴族，克莉絲汀的青梅竹馬。</p>
-                        <p class="mb-3"><strong>特徵：</strong>正直、溫柔、有責任感，代表著光明、安全與正常的社會秩序。他對克莉絲汀的愛是純粹而直接的，雖然有時顯得單純，但他提供了對抗魅影黑暗世界的勇氣與支柱。</p>
-                        <p><strong>象徵：</strong>他是「現實世界的愛情」，與魅影所代表的「幻想與激情的藝術世界」形成鮮明對比。對克莉絲汀而言，選擇勞爾意味著選擇一個安全、穩定且被社會認可的未來。</p>
-                    `
-                },
-                triangle: {
-                    name: '經典的三角關係',
-                    content: `
-                        <h3 class="text-2xl font-bold mb-4 text-amber-800">夢想、現實與成長的抉擇</h3>
-                        <p class="mb-4">這三位角色構成了一個強大的象徵結構，代表了克莉絲汀內心的掙扎，也是每個人在成長過程中可能面臨的選擇。</p>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="bg-gray-100">
-                                        <th class="border p-2 md:p-3">角色</th>
-                                        <th class="border p-2 md:p-3">代表什麼？</th>
-                                        <th class="border p-2 md:p-3">對克莉絲汀的選擇意涵</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="border p-2 md:p-3 font-semibold">魅影</td>
-                                        <td class="border p-2 md:p-3">黑暗、藝術、激情、悲劇</td>
-                                        <td class="border p-2 md:p-3">追尋極致藝術與夢想所需付出的代價</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="border p-2 md:p-3 font-semibold">勞爾</td>
-                                        <td class="border p-2 md:p-3">光明、安全、愛與未來</td>
-                                        <td class="border p-2 md:p-3">回歸安穩現實、走向成熟與正常生活</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="border p-2 md:p-3 font-semibold">克莉絲汀</td>
-                                        <td class="border p-2 md:p-3">繆思、情感、成長過程</td>
-                                        <td class="border p-2 md:p-3">女性從被動依賴走向主動選擇的過程</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    `
-                }
-            };
-            
-            const characterDisplay = document.getElementById('character-display');
-            const characterBtns = document.querySelectorAll('.character-btn');
-
-            function updateCharacterInfo(characterKey) {
-                characterDisplay.innerHTML = characters[characterKey].content;
-                characterBtns.forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.character === characterKey);
-                });
+        // ------------------------------------------
+        // 1. 核心曲目數據 (從上傳文件提取)
+        // ------------------------------------------
+        const songs = [
+            {
+                title: "Overture（序曲）",
+                singer: "管風琴與樂隊",
+                meaning: "用管風琴強烈開場，象徵魅影的存在與故事的神秘氛圍。",
+                emotion: "震撼、壓迫、充滿戲劇性。"
+            },
+            {
+                title: "Think of Me",
+                singer: "克莉絲汀",
+                meaning: "克莉絲汀首次在舞台上演出，展現歌唱才華，同時對勞爾的一種溫柔呼喚。",
+                emotion: "純真、希望、夢想的實現。"
+            },
+            {
+                title: "The Phantom of the Opera",
+                singer: "魅影與克莉絲汀",
+                meaning: "魅影帶領克莉絲汀深入歌劇院地下世界，展現控制與誘惑。",
+                emotion: "迷幻、誘惑、神秘；帶有危險感。"
+            },
+            {
+                title: "The Music of the Night",
+                singer: "魅影",
+                meaning: "魅影試圖用音樂感動克莉絲汀，展現他的藝術與情慾，是魅影最情感豐沛的告白。",
+                emotion: "柔情、迷戀、壓抑的渴望與深層孤寂。"
+            },
+            {
+                title: "All I Ask of You",
+                singer: "克莉絲汀與勞爾",
+                meaning: "兩人確立彼此的愛情，克莉絲汀尋求安全與真愛。",
+                emotion: "純粹、溫柔、安全感，全劇中最浪漫的一首。"
+            },
+            {
+                title: "All I Ask of You (Reprise)",
+                singer: "魅影",
+                meaning: "魅影暗中目睹兩人告白，感到被背叛，報復的種子萌芽。",
+                emotion: "心碎、悲傷、醋意。"
+            },
+            {
+                title: "Masquerade（化妝舞會）",
+                singer: "群體合唱",
+                meaning: "歌劇團在新年舉辦舞會，象徵表面繁華掩蓋的真相。",
+                emotion: "歡樂外表下暗藏不安，情緒轉折重要時刻。"
+            },
+            {
+                title: "Wishing You Were Somehow Here Again",
+                singer: "克莉絲汀",
+                meaning: "克莉絲汀在父親墓前唱歌，思念並試圖釋懷，代表她內在心靈的獨白。",
+                emotion: "哀傷、掙扎、成長。"
+            },
+            {
+                title: "The Point of No Return",
+                singer: "魅影與克莉絲汀",
+                meaning: "魅影在劇中劇中潛入舞台與克莉絲汀對唱，測試她的情感極限，象徵情感上的「不能回頭」。",
+                emotion: "挑逗、試探、危險、情慾高張。"
+            },
+            {
+                title: "Finale（結尾）",
+                singer: "克莉絲汀、魅影",
+                meaning: "克莉絲汀親吻魅影，給予他從未獲得的同情與愛。魅影最終選擇放手與消失。",
+                emotion: "淚水、救贖、釋放與孤獨。"
             }
+        ];
 
-            characterBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    updateCharacterInfo(btn.dataset.character);
-                });
-            });
+        // ------------------------------------------
+        // 2. 導覽列切換邏輯
+        // ------------------------------------------
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const defaultTab = 'background'; // 預設啟動 'background' 頁面
 
-            updateCharacterInfo('phantom');
-
-            // Song Data
-            const songs = {
-                overture: { act: 1, title: 'Overture (序曲)', description: '用宏亮的管風琴聲開場，立即建立起全劇神秘、黑暗且充滿戲劇性的哥德式氛圍，象徵著魅影無所不在的存在感與壓迫感。', emotions: [5, 3, 2, 1, 1] },
-                thinkOfMe: { act: 1, title: 'Think of Me', description: '克莉絲汀首次登台一展歌喉，歌曲充滿純真與希望。這首歌不僅是她舞台夢想的實現，也是對舊愛勞爾的溫柔呼喚，展現了她初綻的自信。', emotions: [1, 2, 1, 3, 5] },
-                angelOfMusic: { act: 1, title: 'Angel of Music', description: '克莉絲汀向好友梅格傾訴她神秘的「音樂天使」。歌曲充滿敬畏與信仰，揭示了她對魅影的依賴與崇拜，也為後續的發展埋下伏筆。', emotions: [4, 2, 1, 2, 4] },
-                phantomOfTheOpera: { act: 1, title: 'The Phantom of the Opera', description: '標誌性的主題曲。魅影帶領克莉絲汀進入他的地下王國，旋律融合了搖滾的激情與歌劇的宏偉，充滿了神秘、誘惑與被控制的危險感。', emotions: [5, 5, 2, 3, 1] },
-                musicOfTheNight: { act: 1, title: 'The Music of the Night', description: '魅影最深情的告白。他用音樂向克莉絲汀展現自己對藝術的熱情與內心的孤獨。歌曲情感豐沛，充滿柔情、迷戀與壓抑已久的渴望。', emotions: [3, 5, 4, 5, 2] },
-                primaDonna: { act: 1, title: 'Prima Donna', description: '一首充滿諷刺意味的群體合唱。歌劇院經理們試圖安撫首席女高音卡洛塔，展現了歌劇界後台的虛榮與權力鬥爭，充滿戲劇性與滑稽感。', emotions: [1, 2, 1, 1, 2] },
-                allIAskOfYou: { act: 1, title: 'All I Ask of You', description: '克莉絲汀與勞爾在歌劇院屋頂的浪漫對唱，是全劇最溫柔、最充滿安全感的時刻。歌曲代表了純粹的愛情與對未來的承諾，與魅影的黑暗世界形成強烈對比。', emotions: [1, 2, 1, 5, 5] },
-                allIAskOfYouReprise: { act: 1, title: 'All I Ask of You (Reprise)', description: '躲在暗處的魅影目睹了兩人的告白，心碎地重複著這段旋律。歌曲從浪漫轉為極度的悲傷、嫉妒與憤怒，預示著他即將展開的報復。', emotions: [2, 4, 5, 2, 1] },
-                masquerade: { act: 2, title: 'Masquerade (化妝舞會)', description: '第二幕開場的華麗合唱。表面上是歡樂的新年化妝舞會，但歌詞暗示著「紙做的臉孔」背後隱藏的謊言與恐懼，歡樂的氣氛下暗藏著不安。', emotions: [3, 2, 2, 2, 3] },
-                wishing: { act: 2, title: 'Wishing You Were Somehow Here Again', description: '克莉絲汀在父親墓前的獨白。她表達了對父親的思念，同時展現了內心的掙扎與渴望成長的決心，是她自我覺醒的重要時刻。', emotions: [1, 2, 5, 3, 4] },
-                pointOfNoReturn: { act: 2, title: 'The Point of No Return', description: '劇中劇的高潮。魅影潛入舞台與克莉絲汀對唱，歌詞充滿情慾的挑逗與情感的試探。這首歌象徵著兩人的關係已無退路，充滿危險與激情。', emotions: [3, 5, 3, 4, 1] },
-                finale: { act: 2, title: 'Finale (終曲)', description: '在最後的對決中，克莉絲汀給予魅影一個充滿同情的吻。這個吻給予了魅影從未體驗過的救贖。最終，魅影選擇放手，獨自消失，留下無限的悲劇與孤獨。', emotions: [2, 4, 5, 3, 2] }
-            };
-
-            const songList1 = document.getElementById('song-list-act1');
-            const songList2 = document.getElementById('song-list-act2');
-            const songTitleEl = document.getElementById('song-title');
-            const songDescriptionEl = document.getElementById('song-description');
-            
-            Object.keys(songs).forEach(key => {
-                const song = songs[key];
-                const button = document.createElement('button');
-                button.textContent = song.title;
-                button.className = 'w-full text-left p-2 rounded-md btn-secondary text-sm song-btn';
-                button.dataset.songKey = key;
-
-                if (song.act === 1) {
-                    songList1.appendChild(button);
-                } else {
-                    songList2.appendChild(button);
-                }
-            });
-
-            const songChartCtx = document.getElementById('song-chart').getContext('2d');
-            let songChart = new Chart(songChartCtx, {
-                type: 'radar',
-                data: {
-                    labels: ['神秘', '激情', '悲傷', '浪漫', '希望'],
-                    datasets: [{
-                        label: '情感構成',
-                        data: [0,0,0,0,0],
-                        backgroundColor: 'rgba(160, 82, 45, 0.2)',
-                        borderColor: 'rgba(160, 82, 45, 1)',
-                        borderWidth: 2,
-                        pointBackgroundColor: 'rgba(160, 82, 45, 1)'
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            angleLines: { color: 'rgba(60, 54, 51, 0.2)' },
-                            grid: { color: 'rgba(60, 54, 51, 0.2)' },
-                            pointLabels: {
-                                font: { size: 14, family: "'Noto Serif TC', serif" },
-                                color: '#3C3633'
-                            },
-                            suggestedMin: 0,
-                            suggestedMax: 5,
-                            ticks: {
-                                stepSize: 1,
-                                display: false
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: { display: false }
-                    }
-                }
-            });
-
-            function updateSongInfo(songKey) {
-                const song = songs[songKey];
-                songTitleEl.textContent = song.title;
-                songDescriptionEl.textContent = song.description;
-                
-                songChart.data.datasets[0].data = song.emotions;
-                songChart.update();
-                
-                document.querySelectorAll('.song-btn').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.songKey === songKey);
-                });
+        // 初始化
+        tabButtons.forEach(button => {
+            if (button.dataset.tab === defaultTab) {
+                button.classList.add('tab-active');
+                button.classList.remove('tab-inactive');
+            } else {
+                button.classList.add('tab-inactive');
+                button.classList.remove('tab-active');
             }
+        });
+        tabContents.forEach(content => {
+            content.classList.add('hidden');
+            if (content.id === `tab-${defaultTab}`) {
+                content.classList.remove('hidden');
+            }
+        });
 
-            document.querySelectorAll('.song-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    updateSongInfo(btn.dataset.songKey);
-                });
-            });
+        // 點擊事件監聽
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetTab = button.dataset.tab;
 
-            // Smooth scrolling for nav links
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    document.querySelector(this.getAttribute('href')).scrollIntoView({
-                        behavior: 'smooth'
-                    });
+                // 移除所有按鈕的 active 樣式
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('tab-inactive');
                 });
+
+                // 隱藏所有內容
+                tabContents.forEach(content => {
+                    content.classList.add('hidden');
+                });
+
+                // 顯示目標內容並設定 active 樣式
+                document.getElementById(`tab-${targetTab}`).classList.remove('hidden');
+                button.classList.add('tab-active');
+                button.classList.remove('tab-inactive');
             });
         });
+
+        // ------------------------------------------
+        // 3. 曲目手風琴 (Accordion) 邏輯
+        // ------------------------------------------
+
+        const songContainer = document.getElementById('song-accordion-container');
+
+        songs.forEach((song, index) => {
+            // 創建手風琴項目
+            const item = document.createElement('div');
+            item.className = 'rounded-lg overflow-hidden border border-gray-700';
+
+            // 創建標頭（可點擊）
+            const header = document.createElement('div');
+            // 保持 P-4 確保足夠的觸控目標
+            header.className = 'accordion-header p-4 cursor-pointer flex justify-between items-center text-base sm:text-lg font-semibold text-gold';
+            header.innerHTML = `
+                <span>${index + 1}. ${song.title}</span>
+                <span>
+                    <svg class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </span>
+            `;
+
+            // 創建內容
+            const content = document.createElement('div');
+            content.className = 'p-4 bg-gray-900 border-t border-gray-700 hidden text-sm'; // 內文使用 text-sm 增加閱讀密度
+            content.innerHTML = `
+                <p class="mb-2"><span class="font-bold text-red-300">演唱者：</span> ${song.singer}</p>
+                <p class="mb-2"><span class="font-bold text-red-300">歌曲含義：</span> ${song.meaning}</p>
+                <p><span class="font-bold text-red-300">主題情感：</span> ${song.emotion}</p>
+            `;
+            
+            // 點擊事件
+            header.addEventListener('click', () => {
+                const icon = header.querySelector('svg');
+                
+                // 關閉所有其他開啟的內容
+                document.querySelectorAll('#song-accordion-container .accordion-content').forEach(c => {
+                    if (c !== content && !c.classList.contains('hidden')) {
+                         c.classList.add('hidden');
+                         c.previousElementSibling.querySelector('svg').classList.remove('rotate-180');
+                    }
+                });
+
+                // 切換當前內容的顯示狀態
+                content.classList.toggle('hidden');
+                icon.classList.toggle('rotate-180');
+            });
+
+            // 添加標籤用於統一關閉操作
+            content.classList.add('accordion-content');
+
+            item.appendChild(header);
+            item.appendChild(content);
+            songContainer.appendChild(item);
+        });
+
     </script>
 </body>
 </html>
