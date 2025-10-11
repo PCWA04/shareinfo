@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>馬拉松 5K 分段配速計算器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* 讓 padding 不會撐大寬度 */
+            font-size: 16px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #results {
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        #results h2 {
+            color: #007bff;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+        .pace-info {
+            background-color: #e9f7ff;
+            padding: 15px;
+            border-left: 5px solid #007bff;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .total-time {
+            font-weight: bold;
+            background-color: #ffc107;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>馬拉松 5K 分段配速計算器</h1>
+
+    <div>
+        <label for="paceInput">輸入您的目標配速 (分鐘:秒/公里，例如: 4:40)</label>
+        <input type="text" id="paceInput" value="4:40" placeholder="例如: 4:40">
+        <div id="error-message" class="error" style="display: none;"></div>
+        <button onclick="calculateSplits()">計算配速</button>
+    </div>
+
+    <div id="results">
+        <h2>配速分析結果</h2>
+        <div id="paceDetails" class="pace-info"></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>里程 (公里)</th>
+                    <th>分段時間 (5K)</th>
+                    <th>累計時間</th>
+                </tr>
+            </thead>
+            <tbody id="splitsTableBody">
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td class="total-time">全程馬拉松 (42.195K)</td>
+                    <td></td>
+                    <td id="marathonTime" class="total-time"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<script>
+    // 定義馬拉松總距離
+    const MARATHON_DISTANCE = 42.195;
+    // 定義分段距離
+    const SPLIT_DISTANCE = 5;
+
+    /**
+     * 將分鐘:秒的字串轉換為總秒數
+     * @param {string} paceStr - 配速字串，例如 "4:40"
+     * @returns {number|null} 總秒數，或無效時返回 null
+     */
+    function parsePaceToSeconds(paceStr) {
+        const parts = paceStr.split(':');
+        if (parts.length !== 2) {
+            return null; // 格式不對
+        }
+        const minutes = parseInt(parts[0], 10);
+        const seconds = parseInt(parts[1], 10);
+
+        if (isNaN(minutes) || isNaN(seconds) || minutes < 0 || seconds < 0 || seconds >= 60) {
+            return null; // 數字無效或秒數超過 60
+        }
+
+        return minutes * 60 + seconds;
+    }
+
+    /**
+     * 將總秒數轉換為 時:分:秒 的格式
+     * @param {number} totalSeconds - 總秒數
+     * @returns {string} 格式化的時間字串 (H:MM:SS 或 MM:SS)
+     */
+    function formatTime(totalSeconds) {
+        // 四捨五入到最接近的秒
+        const roundedSeconds = Math.round(totalSeconds);
+        const seconds = roundedSeconds % 60;
+        const minutes = Math.floor(roundedSeconds / 60) % 60;
+        const hours = Math.floor(roundedSeconds / 3600);
+
+        const pad = (num) => String(num).padStart(2, '0');
+
+        if (hours > 0) {
+            return `${hours}:${pad(minutes)}:${pad(seconds)}`;
+        } else {
+            return `${pad(minutes)}:${pad(seconds)}`;
+        }
+    }
+
+    /**
+     * 計算配速並顯示結果
+     */
+    function calculateSplits() {
+        const paceInput = document.getElementById('paceInput').value.trim();
+        const errorMessage = document.getElementById('error-message');
+        const splitsTableBody = document.getElementById('splitsTableBody');
+        const marathonTimeDisplay = document.getElementById('marathonTime');
+        const paceDetails = document.getElementById('paceDetails');
+
+        // 清空前一次的結果和錯誤訊息
+        splitsTableBody.innerHTML = '';
+        marathonTimeDisplay.textContent = '';
+        paceDetails.innerHTML = '';
+        errorMessage.style.display = 'none';
+
+        const paceSecondsPerKm = parsePaceToSeconds(paceInput);
+
+        if (paceSecondsPerKm === null || paceSecondsPerKm <= 0) {
+            errorMessage.textContent = '請輸入有效的配速，格式為 分鐘:秒 (例如: 4:40)，且秒數需小於 60。';
+            errorMessage.style.display = 'block';
+            return;
+        }
+
+        // 1. 計算 5K 分段時間 (秒)
+        const splitTimeSeconds = paceSecondsPerKm * SPLIT_DISTANCE;
+        const splitTimeFormatted = formatTime(splitTimeSeconds);
+        
+        // 2. 計算全程馬拉松時間 (秒)
+        const marathonTimeSeconds = paceSecondsPerKm * MARATHON_DISTANCE;
+        const marathonTimeFormatted = formatTime(marathonTimeSeconds);
+
+        // 顯示配速細節
+        paceDetails.innerHTML = `
+            <p><strong>目標配速：</strong> ${paceInput} / 公里</p>
+            <p><strong>每 5 公里預計分段時間：</strong> ${splitTimeFormatted}</p>
+        `;
+
+        let cumulativeTimeSeconds = 0;
+        const fullSplits = Math.floor(MARATHON_DISTANCE / SPLIT_DISTANCE);
+        const remainingDistance = MARATHON_DISTANCE % SPLIT_DISTANCE;
+
+        // 3. 建立 5K 分段表格
+        for (let i = 1; i <= fullSplits; i++) {
+            const distance = i * SPLIT_DISTANCE;
+            cumulativeTimeSeconds += splitTimeSeconds;
+            const cumulativeTimeFormatted = formatTime(cumulativeTimeSeconds);
+
+            const row = splitsTableBody.insertRow();
+            row.insertCell().textContent = `${distance} 公里`;
+            row.insertCell().textContent = splitTimeFormatted;
+            row.insertCell().textContent = cumulativeTimeFormatted;
+        }
+
+        // 4. 處理剩餘距離 (42.195K)
+        if (remainingDistance > 0.001) { // 確保有剩餘距離
+            const lastSplitTimeSeconds = paceSecondsPerKm * remainingDistance;
+            const lastSplitTimeFormatted = formatTime(lastSplitTimeSeconds);
+            // 這裡的累計時間應該和全程時間一樣 (因為表格的最後一行就是終點)
+            
+            const lastRow = splitsTableBody.insertRow();
+            lastRow.insertCell().textContent = `${MARATHON_DISTANCE.toFixed(3)} 公里 (終點)`;
+            lastRow.insertCell().textContent = lastSplitTimeFormatted;
+            lastRow.insertCell().textContent = marathonTimeFormatted;
+            lastRow.classList.add('total-time'); // 最後一行高亮
+        }
+
+
+        // 5. 顯示全程馬拉松時間
+        marathonTimeDisplay.textContent = marathonTimeFormatted;
+    }
+
+    // 頁面載入後自動執行一次預設計算
+    window.onload = calculateSplits;
+</script>
+
+</body>
+</html>
