@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>數位時代的經營策略 - 互動課程大綱</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Warm Neutral (Stone, Blue, Amber) -->
+    <!-- Application Structure Plan: 採用三頁籤 (Tab) 結構設計：「課程總覽」、「課程進度」、「重要任務」。此結構符合學生的使用情境：(1) 總覽：快速了解課程目標、師資與評分。(2) 進度：每週查看的
+核心功能，透過篩選器 (依教師、依類型) 與點擊彈出視窗 (Modal) 顯示詳細內容，取代線性滾動的 PDF。(3) 任務：彙總所有評分項目，方便學生規劃。此設計將線性的大綱轉化為多維度、任務導向的互動介面，大幅提升易用性。 -->
+    <!-- Visualization & Content Choices:
+    1. 評分政策 (40/30/30) -> Goal: 告知比例 -> Viz: 甜甜圈圖 -> Interaction: Hover Tooltip -> Justification: 視覺化權重，快速理解 -> Library: Chart.js (Canvas).
+    2. 課程進度 (12堂課) -> Goal: 組織/探索 -> Viz: 互動卡片網格 -> Interaction: (A) 點擊卡片顯示 Modal (含個案問題), (B) 下拉選單篩選 (依教師/類型) -> Justification: 核心互動，Modal 隱藏複雜細節，篩選器提供客製化視圖 -> Library: Vanilla JS + Tailwind.
+    3. 任務列表 (個案/報告) -> Goal: 組織/告知 -> Viz: 結構化清單 -> Interaction: 點擊展開 -> Justification: 集中管理所有「待辦事項」，減少焦慮 -> Library: Vanilla JS + Tailwind.
+    4. 課程範疇/教材 -> Goal: 告知 -> Viz: 結構化文字區塊 -> Interaction: 靜態閱讀 -> Justification: 基礎資訊清晰呈現 -> Library: HTML/Tailwind.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        :root {
+            --bg-main: #f8f7f6;
+            --bg-card: #ffffff;
+            --text-body: #292524;
+            --color-primary: #1e3a8a; 
+            --color-primary-light: #e0e7ff;
+            --color-accent: #b45309; 
+            --text-muted: #57534e;
+        }
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-body);
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            max-height: 350px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @media (min-width: 640px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-btn {
+            transition: all 0.2s ease-in-out;
+            border-bottom: 3px solid transparent;
+        }
+        .nav-btn.active {
+            border-bottom-color: var(--color-primary);
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+        .nav-btn:hover {
+            background-color: #f1f5f9;
+        }
+        .session-card {
+            display: flex;
+            transition: all 0.2s ease-in-out;
+            border: 1px solid #e7e5e4;
+        }
+        .session-card.hidden {
+            display: none;
+        }
+        .session-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+            border-color: var(--color-primary);
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .tag-chen { background-color: #dbeafe; color: #1e40af; }
+        .tag-guo { background-color: #fee2e2; color: #991b1b; }
+        .tag-case { background-color: #fef3c7; color: #92400e; }
+        .tag-lecture { background-color: #e0e7ff; color: #3730a3; }
+        .tag-activity { background-color: #d1fae5; color: #065f46; }
+        .tag-report { background-color: #fce7f3; color: #9d174d; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        
+        <header class="mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold" style="color: var(--color-primary);">數位時代的經營策略</h1>
+            <p class="text-lg" style="color: var(--text-muted);">EMBA 互動課程大綱 (MBDE 8.0)</p>
+        </header>
+
+        <nav class="flex border-b border-gray-300 mb-6">
+            <button id="nav-overview" class="nav-btn active py-3 px-4 md:px-6 text-sm md:text-base" data-target="content-overview">課程總覽</button>
+            <button id="nav-schedule" class="nav-btn py-3 px-4 md:px-6 text-sm md:text-base" data-target="content-schedule">課程進度</button>
+            <button id="nav-assignments" class="nav-btn py-3 px-4 md:px-6 text-sm md:text-base" data-target="content-assignments">重要任務</button>
+        </nav>
+
+        <main>
+            <div id="content-overview" class="content-pane space-y-8">
+                <section>
+                    <h2 class="text-2xl font-semibold mb-3" style="color: var(--color-primary);">課程範疇 (Nature and Scope)</h2>
+                    <p class="text-base leading-relaxed" style="color: var(--text-body);">
+                        本課程旨在彌補台灣企業在數位經營策略層面的不足。由於多數企業習慣從戰術而非策略層面看待數位新局，本課程特別針對來自傳統（非數位原生）產業背景的 EMBA 同學設計。我們將透過概念架構講授、新興模式觀摩、個案討論及實務經驗分享，系統性導覽企業將面臨的數位變局與挑戰。課程前半段討論互聯網思維，後半段聚焦於企業的數位轉型，幫助同學掌握商業領域數位發展的基本圖譜。
+                    </p>
+                </section>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <section class="lg:col-span-2 space-y-6">
+                        <div>
+                            <h2 class="text-2xl font-semibold mb-3" style="color: var(--color-primary);">授課師資</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="p-4 rounded-lg" style="background-color: var(--bg-card); border: 1px solid #e7e5e4;">
+                                    <h3 class="font-bold text-lg tag-chen">陳家麟 教授</h3>
+                                    <p class="text-sm mt-2" style="color: var(--text-muted);">負責課程前半段 (Session 1-5)，聚焦於互聯網思維、顧客導向、數位創新、產品設計及商業模式。</p>
+                                </div>
+                                <div class="p-4 rounded-lg" style="background-color: var(--bg-card); border: 1px solid #e7e5e4;">
+                                    <h3 class="font-bold text-lg tag-guo">郭瑞祥 教授</h3>
+                                    <p class="text-sm mt-2" style="color: var(--text-muted);">負責課程後半段 (Session 6-10)，聚焦於推動數位策略、價值導向策略、數位轉型及數位領導力。</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-semibold mb-3" style="color: var(--color-primary);">學習材料 (Learning Materials)</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="font-bold mb-2">主要參考書籍</h4>
+                                    <ul class="list-disc list-inside space-y-1 text-sm" style="color: var(--text-muted);">
+                                        <li>「數位轉型全攻略」 (黃俊堯 著)</li>
+                                        <li>「Driving Digital Strategy」 (Sunil Gupta 著)</li>
+                                        <li>「哈佛最熱門的價值策略課」 (Felix Oberholzer-Gee 著)</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold mb-2">指定個案</h4>
+                                    <ul class="list-disc list-inside space-y-1 text-sm" style="color: var(--text-muted);">
+                                        <li>FLUX 新創公司</li>
+                                        <li>蝦皮購物 2024</li>
+                                        <li>紐約時報付費牆</li>
+                                        <li>Mastercard: 打造無現金的世界</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <section class="lg:col-span-1">
+                        <h2 class="text-2xl font-semibold mb-3 text-center" style="color: var(--color-primary);">評分政策 (Grading Policy)</h2>
+                        <div class="p-4 rounded-lg" style="background-color: var(--bg-card); border: 1px solid #e7e5e4;">
+                            <div class="chart-container">
+                                <canvas id="gradingChart"></canvas>
+                            </div>
+                            <ul class="mt-4 text-center space-y-1">
+                                <li><span class="font-bold">40%</span> 課堂參與</li>
+                                <li><span class="font-bold">30%</span> 個案作業 (2 份)</li>
+                                <li><span class="font-bold">30%</span> 期末報告</li>
+                            </ul>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <div id="content-schedule" class="content-pane hidden">
+                <section>
+                    <h2 class="text-2xl font-semibold mb-3" style="color: var(--color-primary);">課程進度表</h2>
+                    <p class="text-base leading-relaxed mb-6" style="color: var(--text-body);">
+                        本課程共 12 堂課。您可以使用下方的篩選器快速找到特定老師的課程或特定類型的活動。點擊任一堂課的卡片，即可查看該堂課的詳細內容、指定教材與個案研討問題。
+                    </p>
+                    <div class="flex flex-wrap gap-4 mb-6 p-4 rounded-lg" style="background-color: var(--bg-card); border: 1px solid #e7e5e4;">
+                        <div>
+                            <label for="filter-instructor" class="block text-sm font-medium" style="color: var(--text-muted);">依教師篩選：</label>
+                            <select id="filter-instructor" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="all">所有教師</option>
+                                <option value="陳家麟">陳家麟</option>
+                                <option value="郭瑞祥">郭瑞祥</option>
+                                <option value="陳家麟/郭瑞祥">共同授課</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="filter-type" class="block text-sm font-medium" style="color: var(--text-muted);">依類型篩選：</label>
+                            <select id="filter-type" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="all">所有類型</option>
+                                <option value="lecture">理論/講授</option>
+                                <option value="case">個案討論</option>
+                                <option value="activity">活動/工作坊</option>
+                                <option value="report">演講/報告</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="session-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    </div>
+                </section>
+            </div>
+
+            <div id="content-assignments" class="content-pane hidden">
+                <section>
+                    <h2 class="text-2xl font-semibold mb-3" style="color: var(--color-primary);">重要任務與評分</h2>
+                    <p class="text-base leading-relaxed mb-6" style="color: var(--text-body);">
+                        本區塊彙總了所有與評分相關的任務，包含四次個案作業與期末報告。請注意每次個案作業的負責組別（單號組或雙號組）。評分佔比請參考右方的圖表。
+                    </p>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 space-y-4">
+                            <h3 class="text-xl font-semibold mb-2">任務列表</h3>
+                            <div id="assignment-list" class="space-y-3">
+                            </div>
+                        </div>
+                        <div class="lg:col-span-1">
+                             <h3 class="text-xl font-semibold mb-2 text-center">評分佔比</h3>
+                            <div class="p-4 rounded-lg" style="background-color: var(--bg-card); border: 1px solid #e7e5e4;">
+                                <div class="chart-container">
+                                    <canvas id="gradingChart-assignments"></canvas>
+                                </div>
+                                <ul class="mt-4 text-center space-y-1">
+                                    <li><span class="font-bold">40%</span> 課堂參與</li>
+                                    <li><span class="font-bold">30%</span> 個案作業 (2 份)</li>
+                                    <li><span class="font-bold">30%</span> 期末報告</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div id="session-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+        <div class="modal-backdrop fixed inset-0"></div>
+        <div class="w-full max-w-3xl rounded-lg shadow-xl relative max-h-[90vh] overflow-y-auto" style="background-color: var(--bg-card);">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 id="modal-title" class="text-xl font-bold" style="color: var(--color-primary);"></h3>
+                <button id="modal-close" class="text-2xl" style="color: var(--text-muted);">&times;</button>
+            </div>
+            <div id="modal-body" class="p-6 space-y-4">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sessionData = [
+                { id: 1, date: '10/1', title: '重新定義顧客導向、重新定義企業', instructor: '陳家麟', type: 'lecture',
+                  content: ['數位與互聯網時代商業發展之新趨勢', '應用場景與支付場景創新', '生成式AI應用場景-創新創意、行銷、賦能生產力'],
+                  materials: 'Mini-Cases: Nvidia、Google PaLM、Metaverse、Microsoft Azure B2C、Bank of America、螞蟻金服、4Gamers、Tesla vs. BYD',
+                  activity: '台大鬆餅屋的獲利模式' },
+                { id: 2, date: '10/8', title: '數位變局的經營', instructor: '陳家麟', type: 'case',
+                  content: ['數位創新的本質', '目標客群輪廓與客群經營', '數位市場的定價及補貼模式'],
+                  materials: 'Case: FLUX 新創公司 (單號組作業)',
+                  caseDesc: 'FLUX 新創公司由台大學生創辦，在 Kickstarter 募得164萬美元。其關鍵成功因素為何？公司在聲名大噪後應如何因應未來的挑戰？',
+                  caseQuestions: [
+                      '1. 試分析 FLUX以未成熟的產品原型在群眾募資平台上成功募得160萬美元的關鍵因素為何？',
+                      '2. 試從個案中的資訊分析新創公司透過數位平台募資的優缺點。',
+                      '3. 請討論你對FLUX未來經營走向的看法。'
+                  ] },
+                { id: 3, date: '10/15', title: '數位產品服務設計', instructor: '陳家麟', type: 'activity',
+                  content: ['用戶體驗(UX)與顧客旅程地圖 (Customer Journey Map)', '顧客終身價值(CLV)', '數位產品服務設計創新'],
+                  materials: '',
+                  activity: '數位產品服務設計工作坊' },
+                { id: 4, date: '10/22', title: '市場機會開發與數位溝通', instructor: '陳家麟', type: 'activity',
+                  content: ['數位市場機會開發', '數位時代說故事的藝術', '應援經濟與Z世代數位溝通'],
+                  materials: 'Mini-Cases: TikTok、Shark Tank、BCG Impactful Communication Guide、浪live、字節跳動、bilibili',
+                  activity: '每組將對期末報告的「需求」部分進行簡短的口頭報告' },
+                { id: 5, date: '10/29', title: '數位轉型及商業模式創新', instructor: '陳家麟', type: 'case',
+                  content: ['數位市場商業模式創新賽局', '「迴聲室效應」與「韋伯定律」', '數位轉型 PIVOT 模型'],
+                  materials: 'Case: 蝦皮購物 2024 (雙號組作業)',
+                  caseDesc: '蝦皮購物 2015 進入台灣，2022年起轉虧為盈。蝦皮的轉型及關鍵成功因素為何？未來又將如何面臨電商市場激烈的挑戰？',
+                  caseQuestions: [
+                      '1. 蝦皮購物在台灣電商市場的經營策略為何？',
+                      '2. 從客群經營的角度，分析蝦皮購物如何在短期間快速成長之關鍵因素？',
+                      '3. 蝦皮購物可否持續獲利？該如何因應下階段的挑戰？'
+                  ] },
+                { id: 6, date: '11/5', title: '推動數位策略', instructor: '郭瑞祥', type: 'lecture',
+                  content: ['重新想像你的企業', '重新檢視價值鏈', '重新連結顧客', '重塑你的組織'],
+                  materials: '「Driving Digital Strategy」, Sunil Gupta 著',
+                  activity: '隨堂討論 Amazon 個案' },
+                { id: 7, date: '11/12', title: '價值導向策略', instructor: '郭瑞祥', type: 'lecture',
+                  content: ['打造優異績效', '為顧客創造價值'],
+                  materials: '「哈佛最熱門的價值策略課」, Felix Oberholzer-Gee 著',
+                  activity: '隨堂討論 Best Buy 個案' },
+                { id: 8, date: '11/19', title: '媒體數位轉型', instructor: '郭瑞祥', type: 'case',
+                  content: [],
+                  materials: 'Case: 紐約時報付費牆 (單號組作業)',
+                  caseDesc: '2011年《紐約時報》網站設立付費牆，成功吸引了39萬數位版訂戶。這項付費牆策略的未來仍不明朗。這道付費牆是否奏效？',
+                  caseQuestions: [
+                      '1. 付費牆是否有效？',
+                      '2. 就產品策略與定價策略而言，您如何評估目前的付費牆？',
+                      '3. 為了實現這項數位轉型，《紐約時報》需要具備哪些新技能與能力？'
+                  ] },
+                { id: 9, date: '11/26', title: '數位領導力', instructor: '郭瑞祥', type: 'case',
+                  content: [],
+                  materials: 'Case: Mastercard: 打造無現金的世界 (雙號組作業)',
+                  caseDesc: '2021年底，Mastercard 執行長思考如何讓公司持續成功。在支付產業格局不斷演變下 (如區塊鏈、加密貨幣)，Mastercard 是否已為下個十年做好準備？',
+                  caseQuestions: [
+                      '1. Banga 在2010年接任執行長時，接手的是一間什麼樣的公司？',
+                      '2. 他在任期內如何轉型這家公司？哪些方面讓你印象最深刻？為什麼？',
+                      '3. Mastercard 今日面臨哪些威脅與機會？Miebach 應該如何引領公司邁向未來？'
+                  ] },
+                { id: 10, date: '12/3', title: '制定策略與價值圖', instructor: '郭瑞祥', type: 'lecture',
+                  content: ['為員工、供應商創造價值', '制定策略與價值圖'],
+                  materials: '「哈佛最熱門的價值策略課」, Felix Oberholzer-Gee 著',
+                  activity: '隨堂討論 Uber、Tiktok 個案' },
+                { id: 11, date: '12/10', title: '專題演講', instructor: '陳家麟/郭瑞祥', type: 'report',
+                  content: [],
+                  materials: '',
+                  activity: '' },
+                { id: 12, date: '12/17', title: '期末報告', instructor: '陳家麟/郭瑞祥', type: 'report',
+                  content: ['在期末報告中，小組將制定策略發展一個在數位市場上新的產品/服務/商業模式或改進一個既有的產品/服務/商業模式，例如新的數位服務或銷售平台、或結合AI的產品、服務或商業模式。'],
+                  materials: '以每組口頭簡報方式進行，另繳交報告投影片。',
+                  activity: '' }
+            ];
+
+            const assignmentData = [
+                { session: 'Session 2', title: '個案作業 1: FLUX 新創公司', group: '單號組',
+                  desc: 'FLUX 新創公司由台大學生創辦，在 Kickstarter 募得164萬美元。',
+                  questions: [
+                      '1. 試分析 FLUX以未成熟的產品原型在群眾募資平台上成功募得160萬美元的關鍵因素為何？',
+                      '2. 試從個案中的資訊分析新創公司透過數位平台募資的優缺點。',
+                      '3. 請討論你對FLUX未來經營走向的看法。'
+                  ] },
+                { session: 'Session 5', title: '個案作業 2: 蝦皮購物 2024', group: '雙號組',
+                  desc: '蝦皮購物 2015 進入台灣，2022年起轉虧為盈。',
+                  questions: [
+                      '1. 蝦皮購物在台灣電商市場的經營策略為何？',
+                      '2. 從客群經營的角度，分析蝦皮購物如何在短期間快速成長之關鍵因素？',
+                      '3. 蝦皮購物可否持續獲利？該如何因應下階段的挑戰？'
+                  ] },
+                { session: 'Session 8', title: '個案作業 3: 紐約時報付費牆', group: '單號組',
+                  desc: '2011年《紐約時報》網站設立付費牆，成功吸引了39萬數位版訂戶。',
+                  questions: [
+                      '1. 付費牆是否有效？',
+                      '2. 就產品策略與定價策略而言,您如何評估目前的付費牆？',
+                      '3. 為了實現這項數位轉型，《紐約時報》需要具備哪些新技能與能力？'
+                  ] },
+                { session: 'Session 9', title: '個案作業 4: Mastercard', group: '雙號組',
+                  desc: 'Mastercard 在支付產業格局不斷演變下，是否已為下個十年做好準備？',
+                  questions: [
+                      '1. Banga在2010年接任執行長時，接手的是一間什麼樣的公司？',
+                      '2. 他在任期內如何轉型這家公司？哪些方面讓你印象最深刻？為什麼？',
+                      '3. Mastercard今日面臨哪些威脅與機會？Miebach應該如何引領公司邁向未來？'
+                  ] },
+                { session: 'Session 12', title: '期末報告', group: '所有組別',
+                  desc: '制定策略發展一個在數位市場上新的產品/服務/商業模式或改進一個既有的產品/服務/商業模式。',
+                  questions: ['以每組口頭簡報方式進行，另繳交報告投影片。', '評分將根據你報告中的分析和討論,策略可行性,整體報告的組織,及報告技巧。'] }
+            ];
+
+            const gradingData = {
+                labels: ['課堂參與 (40%)', '個案作業 (30%)', '期末報告 (30%)'],
+                data: [40, 30, 30],
+                colors: ['#3b82f6', '#f97316', '#10b981']
+            };
+
+            function createChart(canvasId) {
+                const ctx = document.getElementById(canvasId);
+                if (!ctx) return;
+                
+                new Chart(ctx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: gradingData.labels,
+                        datasets: [{
+                            data: gradingData.data,
+                            backgroundColor: gradingData.colors,
+                            borderColor: 'var(--bg-card)',
+                            borderWidth: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                enabled: true,
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.label || '';
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '70%'
+                    }
+                });
+            }
+
+            createChart('gradingChart');
+            createChart('gradingChart-assignments');
+
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const contentPanes = document.querySelectorAll('.content-pane');
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    navButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    const targetId = button.getAttribute('data-target');
+                    contentPanes.forEach(pane => {
+                        if (pane.id === targetId) {
+                            pane.classList.remove('hidden');
+                        } else {
+                            pane.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            const sessionGrid = document.getElementById('session-grid');
+            const modal = document.getElementById('session-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const modalClose = document.getElementById('modal-close');
+            const modalBackdrop = document.querySelector('.modal-backdrop');
+
+            function getTypeTag(type) {
+                if (type.includes('case')) return `<span class="tag tag-case">個案討論</span>`;
+                if (type.includes('activity')) return `<span class="tag tag-activity">活動/工作坊</span>`;
+                if (type.includes('report')) return `<span class="tag tag-report">演講/報告</span>`;
+                return `<span class="tag tag-lecture">理論講授</span>`;
+            }
+
+            function getInstructorTag(instructor) {
+                if (instructor === '陳家麟') return `<span class="tag tag-chen">陳家麟</span>`;
+                if (instructor === '郭瑞祥') return `<span class="tag tag-guo">郭瑞祥</span>`;
+                return `<span class="tag tag-chen">陳家麟</span> <span class="tag tag-guo">郭瑞祥</span>`;
+            }
+
+            sessionData.forEach(session => {
+                const card = document.createElement('div');
+                card.className = 'session-card flex flex-col justify-between p-4 rounded-lg cursor-pointer';
+                card.style.backgroundColor = 'var(--bg-card)';
+                card.dataset.instructor = session.instructor;
+                card.dataset.type = session.type;
+                card.dataset.id = session.id;
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-semibold" style="color: var(--color-accent);">${session.date} (S${session.id})</span>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">${session.title}</h3>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        ${getInstructorTag(session.instructor)}
+                        ${getTypeTag(session.type)}
+                    </div>
+                `;
+                card.addEventListener('click', ()_ => showSessionDetail(session.id));
+                sessionGrid.appendChild(card);
+            });
+
+            function showSessionDetail(id) {
+                const session = sessionData.find(s => s.id === id);
+                if (!session) return;
+
+                modalTitle.textContent = `Session ${session.id}: ${session.title}`;
+                
+                let bodyHtml = `<p class="text-sm"><span class="font-bold">日期:</span> ${session.date} | <span class="font-bold">教師:</span> ${session.instructor}</p>`;
+                
+                if (session.content.length > 0) {
+                    bodyHtml += '<h4 class="font-bold mt-4 mb-2">本堂內容</h4>';
+                    bodyHtml += '<ul class="list-disc list-inside space-y-1" style="color: var(--text-muted);">';
+                    session.content.forEach(item => {
+                        bodyHtml += `<li>${item}</li>`;
+                    });
+                    bodyHtml += '</ul>';
+                }
+
+                if (session.activity) {
+                    bodyHtml += `<h4 class="font-bold mt-4 mb-2">課堂活動</h4><p style="color: var(--text-muted);">${session.activity}</p>`;
+                }
+
+                if (session.materials) {
+                    bodyHtml += `<h4 class="font-bold mt-4 mb-2">指定材料</h4><p style="color: var(--text-muted);">${session.materials}</p>`;
+                }
+
+                if (session.caseDesc) {
+                    bodyHtml += `<h4 class="font-bold mt-4 mb-2">個案說明</h4><p class="text-sm leading-relaxed" style="color: var(--text-muted); background-color: var(--bg-main); padding: 12px; border-radius: 8px;">${session.caseDesc}</p>`;
+                }
+                
+                if (session.caseQuestions && session.caseQuestions.length > 0) {
+                    bodyHtml += '<h4 class="font-bold mt-4 mb-2">個案研討問題</h4>';
+                    bodyHtml += '<ol class="list-decimal list-inside space-y-2" style="color: var(--text-muted);">';
+                    session.caseQuestions.forEach(q => {
+                        bodyHtml += `<li>${q}</li>`;
+                    });
+                    bodyHtml += '</ol>';
+                }
+
+                modalBody.innerHTML = bodyHtml;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+
+            modalClose.addEventListener('click', closeModal);
+            modalBackdrop.addEventListener('click', closeModal);
+
+            const filterInstructor = document.getElementById('filter-instructor');
+            const filterType = document.getElementById('filter-type');
+
+            function filterSessions() {
+                const instructor = filterInstructor.value;
+                const type = filterType.value;
+                const cards = document.querySelectorAll('.session-card');
+
+                cards.forEach(card => {
+                    const matchInstructor = (instructor === 'all') || (card.dataset.instructor === instructor);
+                    const matchType = (type === 'all') || (card.dataset.type === type);
+                    
+                    if (matchInstructor && matchType) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+            }
+
+            filterInstructor.addEventListener('change', filterSessions);
+            filterType.addEventListener('change', filterSessions);
+
+            const assignmentList = document.getElementById('assignment-list');
+            assignmentData.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'rounded-lg border border-gray-300';
+                div.style.backgroundColor = 'var(--bg-card)';
+                
+                div.innerHTML = `
+                    <button class="w-full text-left p-4 flex justify-between items-center assignment-toggle">
+                        <div>
+                            <span class="text-xs font-semibold" style="color: var(--color-accent);">${item.session} / ${item.group}</span>
+                            <h4 class="font-semibold text-base">${item.title}</h4>
+                        </div>
+                        <span class="text-2xl font-light" style="color: var(--text-muted);">+</span>
+                    </button>
+                    <div class="assignment-content hidden p-4 border-t border-gray-200">
+                        <p class="text-sm mb-3" style="color: var(--text-muted);">${item.desc}</p>
+                        <h5 class="font-bold mb-2 text-sm">研討問題/說明：</h5>
+                        <ul class="list-decimal list-inside space-y-2 text-sm" style="color: var(--text-muted);">
+                            ${item.questions.map(q => `<li>${q}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                assignmentList.appendChild(div);
+            });
+
+            assignmentList.addEventListener('click', (e) => {
+                const toggle = e.target.closest('.assignment-toggle');
+                if (!toggle) return;
+
+                const content = toggle.nextElementSibling;
+                const icon = toggle.querySelector('span:last-child');
+                
+                if (content.classList.contains('hidden')) {
+                    content.classList.remove('hidden');
+                    icon.textContent = '−';
+                } else {
+                    content.classList.add('hidden');
+                    icon.textContent = '+';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
