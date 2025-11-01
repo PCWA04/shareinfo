@@ -1,296 +1,307 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>科技管理報告：綠覓商城摘要</title>
+    <title>綠覓商城 - AI驅動的永續生活風格</title>
     <!-- 載入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 載入 Inter 字體 -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <style>
-        /* 使用 Inter 字體 */
+        /* 使用 Inter 字體作為主要字體，並提供 fallback */
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #f4f8f4; /* 柔和的淺綠色背景 */
         }
-        /* 標籤切換樣式 */
-        .tab-content {
-            display: none;
+        .hero-bg {
+            /* 模擬永續和自然的漸層背景 */
+            background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
         }
-        .tab-content.active {
+        .ai-glow {
+            /* 模擬 AI 智慧的光芒效果 */
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+        .section-header::after {
+            content: '';
             display: block;
+            width: 80px;
+            height: 4px;
+            background-color: #4CAF50; /* 綠色 */
+            margin: 10px auto 0;
+            border-radius: 2px;
         }
-        .tab-btn.active {
-            border-color: #10B981; /* Green-500 */
-            color: #10B981;
-            background-color: #ECFDF5; /* Green-50 */
+        /* 隱藏/顯示功能介紹的樣式 */
+        .feature-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        .feature-item.open .feature-content {
+            max-height: 500px; /* 足夠大的高度以顯示內容 */
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            transition: max-height 0.7s ease-in, padding 0.7s ease-in;
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 p-4 md:p-8">
+<body class="text-gray-800">
 
-    <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-        
-        <!-- 標題 -->
-        <header class="bg-gradient-to-r from-cyan-600 to-emerald-500 p-6 md:p-8">
-            <h1 class="text-2xl md:text-3xl font-bold text-white">科技管理期中報告</h1>
-            <h2 class="text-xl md:text-2xl font-semibold text-cyan-100 mt-1">綠覓商城 (GreenFinds Mall) 商業計畫摘要</h2>
-        </header>
-
-        <div class="p-6 md:p-8">
-            <!-- 互動標籤 -->
-            <div class="mb-6 border-b border-gray-200">
-                <nav class="flex flex-wrap -mb-px space-x-2 md:space-x-4" aria-label="Tabs">
-                    <button class_name="tab-btn active" onclick="changeTab(event, 'tab-overview')">
-                        公司概覽
-                    </button>
-                    <button class_name="tab-btn" onclick="changeTab(event, 'tab-strategy')">
-                        核心策略
-                    </button>
-                    <button class_name="tab-btn" onclick="changeTab(event, 'tab-swot')">
-                        SWOT 分析
-                    </button>
-                    <button class_name="tab-btn" onclick="changeTab(event, 'tab-market')">
-                        市場挑戰 & 五力分析
-                    </button>
+    <!-- 導覽列 (Navigation) -->
+    <header class="sticky top-0 z-50 bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0">
+                    <a href="#" class="text-2xl font-bold text-green-600 tracking-wider">綠覓商城 <span class="text-sm font-normal text-gray-500">LvMi Mall</span></a>
+                </div>
+                <!-- 菜單項目 (桌面版) -->
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#about" class="text-gray-600 hover:text-green-600 transition duration-300">關於我們</a>
+                    <a href="#features" class="text-gray-600 hover:text-green-600 transition duration-300">核心特色</a>
+                    <a href="#products" class="text-gray-600 hover:text-green-600 transition duration-300">精選好物</a>
+                    <a href="#vision" class="text-gray-600 hover:text-green-600 transition duration-300">永續願景</a>
                 </nav>
+                <!-- CTA 按鈕 -->
+                <a href="#contact" class="hidden md:inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-full shadow-sm text-white bg-green-500 hover:bg-green-600 transition duration-300">
+                    立即體驗
+                </a>
             </div>
+        </div>
+    </header>
 
-            <!-- 標籤內容 -->
-            <div id="tab-panels">
+    <!-- 英雄區塊 (Hero Section) - 突出 AI 與永續 -->
+    <section class="hero-bg py-20 md:py-32">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl sm:text-6xl font-extrabold text-gray-900 leading-tight mb-4">
+                AI 重新定義，您的<span class="text-green-600">永續生活風格</span>
+            </h1>
+            <p class="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
+                綠覓商城：AI 驅動電子商務的先驅，為您精準策劃智慧科技、永續設計與個人化健康商品。
+            </p>
+            <div class="mt-8 flex justify-center space-x-4">
+                <a href="#features" class="px-8 py-3 text-lg font-medium rounded-full text-white bg-green-700 hover:bg-green-800 transition duration-300 transform hover:scale-105 ai-glow">
+                    探索 AI 推薦
+                </a>
+                <a href="#vision" class="px-8 py-3 text-lg font-medium rounded-full text-green-700 bg-white border border-green-700 hover:bg-green-100 transition duration-300 transform hover:scale-105">
+                    了解我們的永續承諾
+                </a>
+            </div>
+        </div>
+    </section>
 
-                <!-- 1. 公司概覽 -->
-                <div id="tab-overview" class="tab-content active animate-fade-in">
-                    <h3 class="text-2xl font-semibold text-cyan-700 mb-4">公司概覽</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
-                            <h4 class="font-bold text-lg text-gray-700">公司名稱</h4>
-                            <p class="text-lg">綠覓商城 (GreenFinds Mall)</p>
-                        </div>
-                        <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
-                            <h4 class="font-bold text-lg text-gray-700">產業類型</h4>
-                            <p class="text-lg">AI 驅動的電子商務</p>
-                        </div>
-                        <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
-                            <h4 class="font-bold text-lg text-gray-700">創立時間</h4>
-                            <p class="text-lg">2025年10月 (新創公司)</p>
-                        </div>
-                        <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
-                            <h4 class="font-bold text-lg text-gray-700">資本額</h4>
-                            <p class="text-lg">新台幣 5 億元</p>
-                        </div>
-                        <div class="bg-gray-50 p-4 rounded-lg shadow-inner col-span-1 md:col-span-2">
-                            <h4 class="font-bold text-lg text-gray-700">企業願景</h4>
-                            <p class="text-lg">以AI重新定義個人化與永續購物體驗，打造消費者專屬的線上生活風格。</p>
-                        </div>
-                        <div class="bg-gray-50 p-4 rounded-lg shadow-inner col-span-1 md:col-span-2">
-                            <h4 class="font-bold text-lg text-gray-700">團隊組成 (約 150 人)</h4>
-                            <ul class="list-disc list-inside mt-2 space-y-1 text-lg">
-                                <li><span class="font-semibold text-emerald-600">60%</span> AI 技術人才</li>
-                                <li><span class="font-semibold text-emerald-600">25%</span> 選品專家</li>
-                                <li><span class="font-semibold text-emerald-600">15%</span> 行銷與營運人員</li>
-                            </ul>
-                        </div>
+    <!-- 核心特色區塊 (Core Features) -->
+    <section id="features" class="py-16 md:py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="section-header text-3xl font-bold text-center mb-12">我們的核心優勢</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+
+                <!-- 特色 1: AI 驅動的個人化 -->
+                <div class="bg-gray-50 p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300 feature-item">
+                    <div class="flex items-center mb-4 cursor-pointer" onclick="toggleFeature(this)">
+                        <svg class="w-8 h-8 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.791 2-4 2s-4-.895-4-2 1.791-2 4-2 4 .895 4 2zm12-3c0 1.105-1.791 2-4 2s-4-.895-4-2 1.791-2 4-2 4 .895 4 2zM9 10h.01M15 10h.01"></path></svg>
+                        <h3 class="text-xl font-semibold text-gray-900 flex-grow">創新的 AI 推薦系統</h3>
+                        <svg class="w-6 h-6 text-green-600 transform transition duration-300 arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                    <div class="feature-content">
+                        <p class="text-gray-600">
+                            我們的核心競爭力源自高比例的 AI 人才（60%），確保擁有更靈活的系統與推薦模型。根據您的生活風格、健康偏好和永續理念，精準推送最適合您的商品，告別無效率的搜索。
+                        </p>
                     </div>
                 </div>
 
-                <!-- 2. 核心策略 -->
-                <div id="tab-strategy" class="tab-content animate-fade-in">
-                    <h3 class="text-2xl font-semibold text-cyan-700 mb-4">核心策略</h3>
-                    <div class="space-y-6">
-                        <div class="bg-gray-50 p-5 rounded-lg shadow-inner">
-                            <h4 class="font-bold text-lg text-gray-700">市場定位 & 營運模式</h4>
-                            <p class="text-lg mt-1">定位為「智慧零售商」，採「技術優先、輕資產」的營運模式。</p>
-                        </div>
-                        <div class="bg-gray-50 p-5 rounded-lg shadow-inner">
-                            <h4 class="font-bold text-lg text-gray-700">核心競爭優勢</h4>
-                            <p class="text-lg mt-1">技術導向文化、高比例AI人才、靈活的系統與個人化深度策展的推薦模型。</p>
-                        </div>
-                        <div class="bg-gray-50 p-5 rounded-lg shadow-inner">
-                            <h4 class="font-bold text-lg text-gray-700">產品服務</h4>
-                            <ul class="list-disc list-inside mt-2 space-y-1 text-lg">
-                                <li>智慧生活科技</li>
-                                <li>永續設計商品</li>
-                                <li>個人化健康與保健</li>
-                            </ul>
-                        </div>
-                         <div class="bg-gray-50 p-5 rounded-lg shadow-inner">
-                            <h4 class="font-bold text-lg text-gray-700">目標客群</h4>
-                            <ul class="list-disc list-inside mt-2 space-y-1 text-lg">
-                                <li>追求多元商品、對價格敏感的族群。</li>
-                                <li>生活忙碌、注重配送速度的族群。</li>
-                                <li>3C產品愛好者、經常上網的族群。</li>
-                            </ul>
-                        </div>
-                        <div class="bg-gray-50 p-5 rounded-lg shadow-inner">
-                            <h4 class="font-bold text-lg text-gray-700">物流 & 永續策略</h4>
-                            <p class="text-lg mt-1"><span class="font-semibold">物流：</span>自建與合作並行的物流網絡，以低運費為吸引力。</p>
-                            <p class="text-lg mt-1"><span class="font-semibold">永續：</span>推動綠色購物、環保無包裝、使用再生紙箱。</p>
-                        </div>
+                <!-- 特色 2: 永續設計與環保物流 -->
+                <div class="bg-gray-50 p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300 feature-item">
+                    <div class="flex items-center mb-4 cursor-pointer" onclick="toggleFeature(this)">
+                        <svg class="w-8 h-8 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <h3 class="text-xl font-semibold text-gray-900 flex-grow">綠色購物與環保承諾</h3>
+                        <svg class="w-6 h-6 text-green-600 transform transition duration-300 arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                    <div class="feature-content">
+                        <p class="text-gray-600">
+                            我們推動「綠色購物計畫」，承諾環保無包裝，並使用再生紙箱簡化流程。物流策略方面，我們自建與合作並行，以「低運費」為主要吸引力，實現永續且高效的配送。
+                        </p>
                     </div>
                 </div>
 
-                <!-- 3. SWOT 分析 -->
-                <div id="tab-swot" class="tab-content animate-fade-in">
-                    <h3 class="text-2xl font-semibold text-cyan-700 mb-4">SWOT 分析</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Strengths (優勢) -->
-                        <div class="bg-green-50 border border-green-200 p-5 rounded-lg">
-                            <h4 class="text-xl font-semibold text-green-700">S - 優勢 (Strengths)</h4>
-                            <ul class="list-disc list-inside mt-3 space-y-2">
-                                <li>後入市場優勢 (可借鏡前人經驗)</li>
-                                <li>技術導向 (60% AI 人才)</li>
-                                <li>創新的 AI 功能與彈性系統</li>
-                            </ul>
-                        </div>
-                        <!-- Weaknesses (劣勢) -->
-                        <div class="bg-red-50 border border-red-200 p-5 rounded-lg">
-                            <h4 class="text-xl font-semibold text-red-700">W - 劣勢 (Weaknesses)</h4>
-                            <ul class="list-disc list-inside mt-3 space-y-2">
-                                <li>品牌知名度不足</li>
-                                <li>顧客忠誠度尚未建立</li>
-                                <li>營運規模與物流挑戰</li>
-                                <li>初期用戶數據較少</li>
-                            </ul>
-                        </div>
-                        <!-- Opportunities (機會) -->
-                        <div class="bg-blue-50 border border-blue-200 p-5 rounded-lg">
-                            <h4 class="text-xl font-semibold text-blue-700">O - 機會 (Opportunities)</h4>
-                            <ul class="list-disc list-inside mt-3 space-y-2">
-                                <li>OMO (線上線下整合) 趨勢</li>
-                                <li>永續消費意識抬頭</li>
-                            </ul>
-                        </div>
-                        <!-- Threats (威脅) -->
-                        <div class="bg-yellow-50 border border-yellow-300 p-5 rounded-lg">
-                            <h4 class="text-xl font-semibold text-yellow-700">T - 威脅 (Threats)</h4>
-                            <ul class="list-disc list-inside mt-3 space-y-2">
-                                <li>激烈的價格與補貼戰</li>
-                                <li>數據隱私法規日趨嚴格</li>
-                                <li>高科技人才短缺且昂貴</li>
-                                <li>市場高度競爭 (國內外巨頭)</li>
-                            </ul>
-                        </div>
+                <!-- 特色 3: 策展品質與智慧零售商定位 -->
+                <div class="bg-gray-50 p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300 feature-item">
+                    <div class="flex items-center mb-4 cursor-pointer" onclick="toggleFeature(this)">
+                        <svg class="w-8 h-8 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        <h3 class="text-xl font-semibold text-gray-900 flex-grow">精選策展與多元商品</h3>
+                        <svg class="w-6 h-6 text-green-600 transform transition duration-300 arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                    <div class="feature-content">
+                        <p class="text-gray-600">
+                            我們的市場定位為「智慧零售商」，提供智慧生活科技、永續設計商品、個人化健康與保健、以及高潛力新創產品。專業選品專家確保了商品策展的深度與品質，為您打造專屬線上生活風格。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 精選商品展示區 (Curated Products) -->
+    <section id="products" class="py-16 md:py-24 bg-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="section-header text-3xl font-bold text-center mb-12">精選策劃：永續與創新</h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                <!-- 產品卡 1: 智慧生活科技 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden transition duration-300 hover:shadow-2xl">
+                    <img src="https://placehold.co/600x400/10B981/ffffff?text=Smart+Gadget" alt="" onerror="this.onerror=null;this.src='https://placehold.co/600x400/10B981/ffffff?text=智慧科技';" class="w-full h-48 object-cover">
+                    <div class="p-4">
+                        <h4 class="text-lg font-bold text-gray-900 mb-1">AI 智慧家居控制器</h4>
+                        <p class="text-sm text-green-600 mb-3">#智慧生活科技</p>
+                        <p class="text-gray-600 text-sm">高效能、低功耗，由 AI 優化能源使用，實現真正的智能節能。</p>
+                        <button class="mt-4 w-full py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-300">查看詳情</button>
                     </div>
                 </div>
 
-                <!-- 4. 市場挑戰 & 五力分析 -->
-                <div id="tab-market" class="tab-content animate-fade-in">
-                    <h3 class="text-2xl font-semibold text-cyan-700 mb-4">市場挑戰 & 五力分析</h3>
-                    
-                    <!-- 主要挑戰 -->
-                    <div class="mb-8">
-                        <h4 class="text-xl font-semibold text-gray-700 mb-3">現有主要挑戰</h4>
-                        <div class="space-y-4">
-                            <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
-                                <h5 class="font-bold text-red-600">持續技術創新</h5>
-                                <p>競爭對手 (如 momo) 已與微軟等巨頭深度合作，需大量研發投入以維持領先。</p>
-                            </div>
-                            <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
-                                <h5 class="font-bold text-red-600">營運成本增加</h5>
-                                <p>物流與人力成本攀升，與消費者對「低價、高速配送」的期望產生矛盾。</p>
-                            </div>
-                            <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
-                                <h5 class="font-bold text-red-600">國際競爭激烈</h5>
-                                <p>全球性電商 (如 蝦皮、酷澎) 在資金、定價策略、行銷投入上具備強大優勢。</p>
-                            </div>
-                            <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
-                                <h5 class="font-bold text-red-600">市場飽和與成長趨緩</h5>
-                                <p>台灣電商市場已趨成熟，難以從現有競爭對手中奪取大量份額。</p>
-                            </div>
-                        </div>
+                <!-- 產品卡 2: 永續設計商品 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden transition duration-300 hover:shadow-2xl">
+                    <img src="https://placehold.co/600x400/4CAF50/ffffff?text=Sustainable+Design" alt="" onerror="this.onerror=null;this.src='https://placehold.co/600x400/4CAF50/ffffff?text=永續設計';" class="w-full h-48 object-cover">
+                    <div class="p-4">
+                        <h4 class="text-lg font-bold text-gray-900 mb-1">再生竹纖維餐具組</h4>
+                        <p class="text-sm text-green-600 mb-3">#永續設計商品</p>
+                        <p class="text-gray-600 text-sm">100% 可生物降解，設計簡約時尚，讓環保融入日常生活。</p>
+                        <button class="mt-4 w-full py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-300">查看詳情</button>
                     </div>
+                </div>
 
-                    <!-- 五力分析 -->
-                    <div>
-                        <h4 class="text-xl font-semibold text-gray-700 mb-3">五力分析 (摘要)</h4>
-                        <div class="bg-red-50 border border-red-200 p-5 rounded-lg">
-                            <h5 class="text-xl font-semibold text-red-700">現有競爭者的威脅：<span class="font-bold">極高</span></h5>
-                            <p class="mt-2 text-lg">
-                                市場由本土巨頭 (momo, PChome) 與國際業者 (蝦皮, 酷澎) 主導。
-                            </p>
-                            <ul class="list-disc list-inside mt-2 space-y-1">
-                                <li>momo 在 2024 年市佔率近 20% (營收 1,125.64 億元)。</li>
-                                <li>國際業者以雄厚資本進行「價格補貼」與「低價策略」，壓縮利潤空間。</li>
-                                <li>領導者 (momo+Google, PChome+AGV) 積極投入 AI 與智慧物流，大幅提高新進者的競爭門檻。</li>
-                            </ul>
-                        </div>
+                <!-- 產品卡 3: 個人化健康與保健 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden transition duration-300 hover:shadow-2xl">
+                    <img src="https://placehold.co/600x400/38B2AC/ffffff?text=Health+Wellness" alt="" onerror="this.onerror=null;this.src='https://placehold.co/600x400/38B2AC/ffffff?text=健康保健';" class="w-full h-48 object-cover">
+                    <div class="p-4">
+                        <h4 class="text-lg font-bold text-gray-900 mb-1">訂製膳食補充方案</h4>
+                        <p class="text-sm text-green-600 mb-3">#個人化健康</p>
+                        <p class="text-gray-600 text-sm">結合 AI 分析，為您的個人健康數據提供專屬的營養建議。</p>
+                        <button class="mt-4 w-full py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-300">查看詳情</button>
+                    </div>
+                </div>
+
+                <!-- 產品卡 4: 高潛力新創 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden transition duration-300 hover:shadow-2xl">
+                    <img src="https://placehold.co/600x400/34D399/ffffff?text=Startup+Innovation" alt="" onerror="this.onerror=null;this.src='https://placehold.co/600x400/34D399/ffffff?text=高潛力新創';" class="w-full h-48 object-cover">
+                    <div class="p-4">
+                        <h4 class="text-lg font-bold text-gray-900 mb-1">彈性訂單化設計服務</h4>
+                        <p class="text-sm text-green-600 mb-3">#高潛力新創</p>
+                        <p class="text-gray-600 text-sm">支持原創設計師，提供功能性盲盒產品開發等創新商業模式。</p>
+                        <button class="mt-4 w-full py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-300">查看詳情</button>
                     </div>
                 </div>
 
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- JavaScript 邏輯 -->
+    <!-- 企業目標與願景 (Vision) -->
+    <section id="vision" class="py-16 md:py-24 bg-teal-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="section-header text-3xl font-bold text-center mb-12">企業目標：以技術創新引領未來</h2>
+            
+            <div class="md:flex md:space-x-10 items-center">
+                
+                <!-- 願景文字區塊 -->
+                <div class="md:w-1/2 mb-8 md:mb-0">
+                    <p class="text-xl text-gray-700 mb-6 border-l-4 border-green-600 pl-4">
+                        綠覓商城以「技術優先、輕資產」的營運模式，致力於克服市場飽和與國際競爭的挑戰。我們將「AI 人才稀缺」轉化為核心優勢，打造頂尖技術團隊，持續技術創新。
+                    </p>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <svg class="w-6 h-6 text-green-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.382a12.001 12.001 0 00-14.792 0m11.516-2.583a12.001 12.001 0 00-14.792 0m11.516-2.583a12.001 12.001 0 00-14.792 0"></path></svg>
+                            <p class="ml-3 text-lg font-medium text-gray-900">技術導向企業文化：60% AI人才比例，確保系統靈活性。</p>
+                        </div>
+                        <div class="flex items-start">
+                            <svg class="w-6 h-6 text-green-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-10a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <p class="ml-3 text-lg font-medium text-gray-900">核心價值：個人化商品推薦、智慧搜尋、商品種類齊全。</p>
+                        </div>
+                        <div class="flex items-start">
+                            <svg class="w-6 h-6 text-green-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.25 14.75a7 7 0 10-14 0 7 7 0 0014 0zM12 7v7m0 7v-3"></path></svg>
+                            <p class="ml-3 text-lg font-medium text-gray-900">OMO 策略：虛實整合新品發布與線上生態打造。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 視覺化元素 (SWOT/挑戰圖示) -->
+                <div class="md:w-1/2">
+                    <!-- 使用一個簡單的圓形圖示來代表企業目標和技術核心 -->
+                    <div class="w-full h-80 flex items-center justify-center bg-white rounded-full p-8 shadow-xl ai-glow">
+                         <svg class="w-3/4 h-3/4 text-green-700" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- 核心 - AI -->
+                            <circle cx="50" cy="50" r="40" stroke="#4CAF50" stroke-width="4" opacity="0.1"/>
+                            <!-- 外環 - 永續 -->
+                            <circle cx="50" cy="50" r="30" fill="#E8F5E9"/>
+                            <!-- 閃電 (AI/技術) -->
+                            <path d="M55 25 L45 50 L55 50 L45 75" stroke="#1B5E20" stroke-width="2" fill="none" transform="rotate(10 50 50)"/>
+                            <!-- 葉子 (永續) -->
+                            <path d="M50 20 C40 10, 30 40, 50 50 C70 40, 60 10, 50 20 Z" fill="#4CAF50" transform="translate(10, 10) scale(0.4)"/>
+                            <path d="M50 20 C40 10, 30 40, 50 50 C70 40, 60 10, 50 20 Z" fill="#4CAF50" transform="translate(-5, 10) scale(0.4) rotate(90 50 50)"/>
+                             <text x="50" y="55" text-anchor="middle" font-size="12" font-weight="bold" fill="#1B5E20">LvMi</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 聯絡與行動呼籲 (CTA & Contact) -->
+    <section id="contact" class="py-16 md:py-20 bg-green-700 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl font-bold mb-4">準備好打造您的綠色智能生活了嗎？</h2>
+            <p class="text-lg opacity-90 mb-8">立即註冊，體驗我們為您量身打造的個人化 AI 購物旅程。</p>
+            <div class="flex justify-center">
+                <a href="#" class="px-10 py-4 text-xl font-semibold rounded-full text-green-700 bg-white hover:bg-gray-100 transition duration-300 shadow-xl transform hover:scale-105">
+                    立即註冊
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 頁腳 (Footer) -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
+            <p>&copy; 2025 綠覓商城 LvMi Mall. 保留所有權利。</p>
+            <p class="mt-2 text-gray-400">AI 驅動 | 永續承諾 | 智慧零售商</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Feature Toggle and Arrow Rotation -->
     <script>
-        // 設定 CSS 樣式
-        const style = document.createElement('style');
-        style.innerHTML = `
-            .tab-btn {
-                padding: 0.75rem 1rem;
-                font-size: 0.9rem;
-                font-weight: 600;
-                color: #4B5563; /* Gray-600 */
-                border-bottom: 3px solid transparent;
-                cursor: pointer;
-                transition: all 0.2s ease-in-out;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-            }
-            .tab-btn:hover {
-                background-color: #F9FAFB; /* Gray-50 */
-                border-color: #D1D5DB; /* Gray-300 */
-            }
-            .tab-btn.active {
-                border-color: #0694A2; /* Cyan-600 */
-                color: #0694A2;
-                background-color: #F0FDFA; /* Cyan-50 */
-            }
-            .tab-content {
-                display: none;
-            }
-            .tab-content.active {
-                display: block;
-            }
-            /* 簡易淡入動畫 */
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(10px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            .animate-fade-in {
-                animation: fadeIn 0.4s ease-out;
-            }
-        `;
-        document.head.appendChild(style);
+        /**
+         * 切換功能區塊的展開/收合
+         * @param {HTMLElement} element - 點擊的父元素 (包含箭頭和標題)
+         */
+        function toggleFeature(element) {
+            // 找到最近的 .feature-item 父級
+            const item = element.closest('.feature-item');
+            // 找到內容區塊
+            const content = item.querySelector('.feature-content');
+            // 找到箭頭圖示
+            const arrow = item.querySelector('.arrow-icon');
 
-        // 預設顯示第一個標籤
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('tab-overview').classList.add('active');
-            document.querySelector('.tab-btn').classList.add('active');
-        });
-
-        // 標籤切換函數
-        function changeTab(event, tabID) {
-            // 隱藏所有內容
-            const tabContents = document.querySelectorAll('.tab-content');
-            tabContents.forEach(content => {
-                content.classList.remove('active');
-            });
-
-            // 移除所有按鈕的 active 狀態
-            const tabButtons = document.querySelectorAll('.tab-btn');
-            tabButtons.forEach(button => {
-                button.classList.remove('active');
-            });
-
-            // 顯示點擊的內容
-            document.getElementById(tabID).classList.add('active');
-
-            // 標記點擊的按鈕
-            event.currentTarget.classList.add('active');
+            if (item.classList.contains('open')) {
+                // 如果已開啟，則關閉
+                item.classList.remove('open');
+                arrow.classList.remove('rotate-180');
+            } else {
+                // 如果已關閉，則開啟
+                item.classList.add('open');
+                arrow.classList.add('rotate-180');
+            }
         }
-    </script>
 
+        // 當窗口載入完成後，確保初始的箭頭方向正確
+        window.onload = function() {
+            // 初始時關閉所有內容區塊，確保 CSS 過渡生效
+            document.querySelectorAll('.feature-item').forEach(item => {
+                item.classList.remove('open');
+                item.querySelector('.arrow-icon').classList.remove('rotate-180');
+            });
+        };
+    </script>
 </body>
 </html>
