@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科技管理報告：綠覓商城摘要</title>
+    <!-- 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 載入 Inter 字體 -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <style>
+        /* 使用 Inter 字體 */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* 標籤切換樣式 */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-btn.active {
+            border-color: #10B981; /* Green-500 */
+            color: #10B981;
+            background-color: #ECFDF5; /* Green-50 */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 p-4 md:p-8">
+
+    <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        
+        <!-- 標題 -->
+        <header class="bg-gradient-to-r from-cyan-600 to-emerald-500 p-6 md:p-8">
+            <h1 class="text-2xl md:text-3xl font-bold text-white">科技管理期中報告</h1>
+            <h2 class="text-xl md:text-2xl font-semibold text-cyan-100 mt-1">綠覓商城 (GreenFinds Mall) 商業計畫摘要</h2>
+        </header>
+
+        <div class="p-6 md:p-8">
+            <!-- 互動標籤 -->
+            <div class="mb-6 border-b border-gray-200">
+                <nav class="flex flex-wrap -mb-px space-x-2 md:space-x-4" aria-label="Tabs">
+                    <button class_name="tab-btn active" onclick="changeTab(event, 'tab-overview')">
+                        公司概覽
+                    </button>
+                    <button class_name="tab-btn" onclick="changeTab(event, 'tab-strategy')">
+                        核心策略
+                    </button>
+                    <button class_name="tab-btn" onclick="changeTab(event, 'tab-swot')">
+                        SWOT 分析
+                    </button>
+                    <button class_name="tab-btn" onclick="changeTab(event, 'tab-market')">
+                        市場挑戰 & 五力分析
+                    </button>
+                </nav>
+            </div>
+
+            <!-- 標籤內容 -->
+            <div id="tab-panels">
+
+                <!-- 1. 公司概覽 -->
+                <div id="tab-overview" class="tab-content active animate-fade-in">
+                    <h3 class="text-2xl font-semibold text-cyan-700 mb-4">公司概覽</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
+                            <h4 class="font-bold text-lg text-gray-700">公司名稱</h4>
+                            <p class="text-lg">綠覓商城 (GreenFinds Mall)</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
+                            <h4 class="font-bold text-lg text-gray-700">產業類型</h4>
+                            <p class="text-lg">AI 驅動的電子商務</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
+                            <h4 class="font-bold text-lg text-gray-700">創立時間</h4>
+                            <p class="text-lg">2025年10月 (新創公司)</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
+                            <h4 class="font-bold text-lg text-gray-700">資本額</h4>
+                            <p class="text-lg">新台幣 5 億元</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg shadow-inner col-span-1 md:col-span-2">
+                            <h4 class="font-bold text-lg text-gray-700">企業願景</h4>
+                            <p class="text-lg">以AI重新定義個人化與永續購物體驗，打造消費者專屬的線上生活風格。</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg shadow-inner col-span-1 md:col-span-2">
+                            <h4 class="font-bold text-lg text-gray-700">團隊組成 (約 150 人)</h4>
+                            <ul class="list-disc list-inside mt-2 space-y-1 text-lg">
+                                <li><span class="font-semibold text-emerald-600">60%</span> AI 技術人才</li>
+                                <li><span class="font-semibold text-emerald-600">25%</span> 選品專家</li>
+                                <li><span class="font-semibold text-emerald-600">15%</span> 行銷與營運人員</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 核心策略 -->
+                <div id="tab-strategy" class="tab-content animate-fade-in">
+                    <h3 class="text-2xl font-semibold text-cyan-700 mb-4">核心策略</h3>
+                    <div class="space-y-6">
+                        <div class="bg-gray-50 p-5 rounded-lg shadow-inner">
+                            <h4 class="font-bold text-lg text-gray-700">市場定位 & 營運模式</h4>
+                            <p class="text-lg mt-1">定位為「智慧零售商」，採「技術優先、輕資產」的營運模式。</p>
+                        </div>
+                        <div class="bg-gray-50 p-5 rounded-lg shadow-inner">
+                            <h4 class="font-bold text-lg text-gray-700">核心競爭優勢</h4>
+                            <p class="text-lg mt-1">技術導向文化、高比例AI人才、靈活的系統與個人化深度策展的推薦模型。</p>
+                        </div>
+                        <div class="bg-gray-50 p-5 rounded-lg shadow-inner">
+                            <h4 class="font-bold text-lg text-gray-700">產品服務</h4>
+                            <ul class="list-disc list-inside mt-2 space-y-1 text-lg">
+                                <li>智慧生活科技</li>
+                                <li>永續設計商品</li>
+                                <li>個人化健康與保健</li>
+                            </ul>
+                        </div>
+                         <div class="bg-gray-50 p-5 rounded-lg shadow-inner">
+                            <h4 class="font-bold text-lg text-gray-700">目標客群</h4>
+                            <ul class="list-disc list-inside mt-2 space-y-1 text-lg">
+                                <li>追求多元商品、對價格敏感的族群。</li>
+                                <li>生活忙碌、注重配送速度的族群。</li>
+                                <li>3C產品愛好者、經常上網的族群。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 p-5 rounded-lg shadow-inner">
+                            <h4 class="font-bold text-lg text-gray-700">物流 & 永續策略</h4>
+                            <p class="text-lg mt-1"><span class="font-semibold">物流：</span>自建與合作並行的物流網絡，以低運費為吸引力。</p>
+                            <p class="text-lg mt-1"><span class="font-semibold">永續：</span>推動綠色購物、環保無包裝、使用再生紙箱。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. SWOT 分析 -->
+                <div id="tab-swot" class="tab-content animate-fade-in">
+                    <h3 class="text-2xl font-semibold text-cyan-700 mb-4">SWOT 分析</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Strengths (優勢) -->
+                        <div class="bg-green-50 border border-green-200 p-5 rounded-lg">
+                            <h4 class="text-xl font-semibold text-green-700">S - 優勢 (Strengths)</h4>
+                            <ul class="list-disc list-inside mt-3 space-y-2">
+                                <li>後入市場優勢 (可借鏡前人經驗)</li>
+                                <li>技術導向 (60% AI 人才)</li>
+                                <li>創新的 AI 功能與彈性系統</li>
+                            </ul>
+                        </div>
+                        <!-- Weaknesses (劣勢) -->
+                        <div class="bg-red-50 border border-red-200 p-5 rounded-lg">
+                            <h4 class="text-xl font-semibold text-red-700">W - 劣勢 (Weaknesses)</h4>
+                            <ul class="list-disc list-inside mt-3 space-y-2">
+                                <li>品牌知名度不足</li>
+                                <li>顧客忠誠度尚未建立</li>
+                                <li>營運規模與物流挑戰</li>
+                                <li>初期用戶數據較少</li>
+                            </ul>
+                        </div>
+                        <!-- Opportunities (機會) -->
+                        <div class="bg-blue-50 border border-blue-200 p-5 rounded-lg">
+                            <h4 class="text-xl font-semibold text-blue-700">O - 機會 (Opportunities)</h4>
+                            <ul class="list-disc list-inside mt-3 space-y-2">
+                                <li>OMO (線上線下整合) 趨勢</li>
+                                <li>永續消費意識抬頭</li>
+                            </ul>
+                        </div>
+                        <!-- Threats (威脅) -->
+                        <div class="bg-yellow-50 border border-yellow-300 p-5 rounded-lg">
+                            <h4 class="text-xl font-semibold text-yellow-700">T - 威脅 (Threats)</h4>
+                            <ul class="list-disc list-inside mt-3 space-y-2">
+                                <li>激烈的價格與補貼戰</li>
+                                <li>數據隱私法規日趨嚴格</li>
+                                <li>高科技人才短缺且昂貴</li>
+                                <li>市場高度競爭 (國內外巨頭)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. 市場挑戰 & 五力分析 -->
+                <div id="tab-market" class="tab-content animate-fade-in">
+                    <h3 class="text-2xl font-semibold text-cyan-700 mb-4">市場挑戰 & 五力分析</h3>
+                    
+                    <!-- 主要挑戰 -->
+                    <div class="mb-8">
+                        <h4 class="text-xl font-semibold text-gray-700 mb-3">現有主要挑戰</h4>
+                        <div class="space-y-4">
+                            <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
+                                <h5 class="font-bold text-red-600">持續技術創新</h5>
+                                <p>競爭對手 (如 momo) 已與微軟等巨頭深度合作，需大量研發投入以維持領先。</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
+                                <h5 class="font-bold text-red-600">營運成本增加</h5>
+                                <p>物流與人力成本攀升，與消費者對「低價、高速配送」的期望產生矛盾。</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
+                                <h5 class="font-bold text-red-600">國際競爭激烈</h5>
+                                <p>全球性電商 (如 蝦皮、酷澎) 在資金、定價策略、行銷投入上具備強大優勢。</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
+                                <h5 class="font-bold text-red-600">市場飽和與成長趨緩</h5>
+                                <p>台灣電商市場已趨成熟，難以從現有競爭對手中奪取大量份額。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 五力分析 -->
+                    <div>
+                        <h4 class="text-xl font-semibold text-gray-700 mb-3">五力分析 (摘要)</h4>
+                        <div class="bg-red-50 border border-red-200 p-5 rounded-lg">
+                            <h5 class="text-xl font-semibold text-red-700">現有競爭者的威脅：<span class="font-bold">極高</span></h5>
+                            <p class="mt-2 text-lg">
+                                市場由本土巨頭 (momo, PChome) 與國際業者 (蝦皮, 酷澎) 主導。
+                            </p>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>momo 在 2024 年市佔率近 20% (營收 1,125.64 億元)。</li>
+                                <li>國際業者以雄厚資本進行「價格補貼」與「低價策略」，壓縮利潤空間。</li>
+                                <li>領導者 (momo+Google, PChome+AGV) 積極投入 AI 與智慧物流，大幅提高新進者的競爭門檻。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript 邏輯 -->
+    <script>
+        // 設定 CSS 樣式
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .tab-btn {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: #4B5563; /* Gray-600 */
+                border-bottom: 3px solid transparent;
+                cursor: pointer;
+                transition: all 0.2s ease-in-out;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+            .tab-btn:hover {
+                background-color: #F9FAFB; /* Gray-50 */
+                border-color: #D1D5DB; /* Gray-300 */
+            }
+            .tab-btn.active {
+                border-color: #0694A2; /* Cyan-600 */
+                color: #0694A2;
+                background-color: #F0FDFA; /* Cyan-50 */
+            }
+            .tab-content {
+                display: none;
+            }
+            .tab-content.active {
+                display: block;
+            }
+            /* 簡易淡入動畫 */
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.4s ease-out;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 預設顯示第一個標籤
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('tab-overview').classList.add('active');
+            document.querySelector('.tab-btn').classList.add('active');
+        });
+
+        // 標籤切換函數
+        function changeTab(event, tabID) {
+            // 隱藏所有內容
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // 移除所有按鈕的 active 狀態
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // 顯示點擊的內容
+            document.getElementById(tabID).classList.add('active');
+
+            // 標記點擊的按鈕
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+
+</body>
+</html>
