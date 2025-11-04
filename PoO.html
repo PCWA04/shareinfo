@@ -325,14 +325,6 @@
                 <p class="mb-2"><span class="font-bold text-red-300">演唱者：</span> ${song.singer}</p>
                 <p class="mb-2"><span class="font-bold text-red-300">歌曲含義：</span> ${song.meaning}</p>
                 <p><span class="font-bold text-red-300">主題情感：</span> ${song.emotion}</p>
-                
-                ${song.url ? 
-                `<p class="mt-4 pt-3 border-t border-gray-700 text-center">
-                    <a href="${song.url}" target="_blank" class="text-gold hover:underline font-semibold text-lg">
-                        🔗 點此聆聽 YouTube 音樂版本
-                    </a>
-                </p>`
-                : ''}
             `;
             
             // 點擊事件
