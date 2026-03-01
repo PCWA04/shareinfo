@@ -2,395 +2,433 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VideaHealth 策略與商業模式互動分析</title>
+    <!-- 確保手機版正確縮放且禁用雙擊放大以提升 App 體驗 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VideaHealth 行動策略分析</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease-in-out; }
-        .tab-content.active { display: block; opacity: 1; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent; /* 移除點擊閃爍 */
+        }
         
+        /* 視圖切換動畫 */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        .view-section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 折疊選單動畫 */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .accordion-content.expanded {
+            max-height: 800px; /* 足夠大的高度以容納內容 */
+        }
+
+        /* 手機版圖表容器 */
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 350px;
-            max-height: 400px;
-        }
-        @media (max-width: 640px) {
-            .chart-container { height: 280px; }
+            height: 250px; /* 手機上較適宜的高度 */
+            max-height: 300px;
         }
 
-        .icon-circle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            font-size: 24px;
+        /* 隱藏滾動條但保留滾動功能 */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen">
+<body class="bg-slate-50 text-slate-800">
 
-<!-- Chosen Palette: Slate Backgrounds, Blue-700 & Teal-600 Accents, White Cards -->
-<!-- Application Structure Plan: The SPA uses a tabbed dashboard architecture. This structure was chosen to prevent cognitive overload and excessive scrolling. It categorizes the report into three logical phases: 1. Core Technology (AI Factory), 2. Market Application (Business Models), 3. Financial Realization (Revenue). Users can navigate non-linearly. Interactive cards and dynamic charts allow users to drill down into specific data points without leaving the current context. -->
-<!-- Visualization & Content Choices: 
-1. AI Factory Modules: Goal - Organize/Inform. Method - Grid of cards with Unicode icons. Justification - Clear visual separation of the 4 steps without using complex SVGs.
-2. Competitive Advantage Stats: Goal - Inform/Highlight. Method - Chart.js Bar Chart. Justification - Quantifies the performance improvements (25% more detection, 30-50% less misdiagnosis) visually. Library - Chart.js (Canvas).
-3. Business Models: Goal - Compare/Details. Method - Interactive list triggering a detail pane. Justification - Allows deep dive into value props, benefits, and challenges of each model without cluttering the screen. 
-4. Financial Impact: Goal - Inform/Compare. Method - Chart.js Bar Chart. Justification - Visualizes the $700k to +15% revenue jump for dentists. Library - Chart.js (Canvas). 
-Confirming NO SVG graphics used. NO Mermaid JS used. -->
+<!-- Chosen Palette: Slate Backgrounds, Blue-600 Main Action, Emerald/Teal highlights -->
+<!-- Application Structure Plan: Mobile-First App Layout. Features a fixed top header with branding, a scrollable main content area with bottom padding, and a fixed bottom navigation bar for ergonomic thumb reach. Content is restructured into vertical cards and accordions (expandable lists) to avoid horizontal scrolling and maintain a clean reading flow on narrow screens. -->
+<!-- Visualization & Content Choices:
+1. Bottom Nav: Goal - Easy navigation. Method - Fixed footer with icons. 
+2. AI Factory: Goal - Readability. Method - Stacked cards with left-aligned icons.
+3. Business Models: Goal - Detail exploration without losing context. Method - Accordion UI. Users tap a model to expand its details vertically.
+4. Charts: Goal - Visual impact on small screens. Method - Chart.js with constrained height (250px) and hidden legends to maximize data area. -->
 <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 
-    <header class="bg-gradient-to-r from-blue-800 to-teal-700 text-white shadow-md sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-6 py-6">
-            <div class="flex items-center gap-3">
-                <span class="text-4xl">🦷</span>
-                <div>
-                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight">VideaHealth 互動策略報告</h1>
-                    <p class="text-blue-100 text-sm md:text-base mt-1">牙科人工智慧工廠與商模策略分析</p>
-                </div>
+    <!-- 頂部標題列 (Sticky) -->
+    <header class="fixed top-0 w-full z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="px-5 py-3 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-xl shadow-md">
+                🦷
+            </div>
+            <div>
+                <h1 class="text-lg font-bold leading-tight text-slate-800">VideaHealth 策略解析</h1>
+                <p class="text-xs text-blue-600 font-medium">牙科 AI 商業模式</p>
             </div>
         </div>
     </header>
 
-    <nav class="bg-white border-b border-slate-200 shadow-sm sticky top-[88px] md:top-[96px] z-40">
-        <div class="max-w-6xl mx-auto px-6 flex overflow-x-auto hide-scrollbar">
-            <button class="nav-btn px-6 py-4 font-semibold text-blue-700 border-b-2 border-blue-700 whitespace-nowrap transition-colors" data-target="tab-factory">
-                🏭 1. AI 工廠與競爭優勢
+    <!-- 主要內容區 (需預留上下空間給 Header 和 Bottom Nav) -->
+    <main class="pt-20 pb-24 px-4 max-w-md mx-auto min-h-screen">
+
+        <!-- 視圖 1: AI 工廠 -->
+        <section id="view-factory" class="view-section active">
+            <div class="mb-6">
+                <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full mb-2">核心技術</span>
+                <h2 class="text-2xl font-bold mb-2">建構人工智慧工廠</h2>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    VideaHealth 將「人工智慧工廠」定義為四個核心模組的組織框架，而非實體工廠。這賦予了公司快速迭代與高準確度的優勢。
+                </p>
+            </div>
+
+            <!-- 四大模組卡片 (垂直堆疊) -->
+            <div class="space-y-3 mb-8">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-start">
+                    <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-2xl flex-shrink-0">📊</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 mb-1">1. 資料匯流</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">收集近 1,000 萬筆紀錄，確保多樣性。由 25+ 名牙醫進行專業標註。</p>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-start">
+                    <div class="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center text-2xl flex-shrink-0">🧠</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 mb-1">2. 演算法開發</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">採監督式學習，強調「模組化設計」，便於將複雜演算法分解測試。</p>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-start">
+                    <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-2xl flex-shrink-0">🔬</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 mb-1">3. 實驗平台</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">強調即時實驗，根據臨床醫師回饋，在靈敏度與精確度間尋找平衡。</p>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-start">
+                    <div class="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-2xl flex-shrink-0">💻</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 mb-1">4. 軟體基礎設施</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">建立統一資料湖與彈性介面，定位 AI 為「提供第二意見的助理」。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 圖表區塊 -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="font-bold text-slate-800 mb-1 flex items-center gap-2">📈 臨床成效與優勢</h3>
+                <p class="text-xs text-slate-500 mb-4">平均檢測出比牙醫多 25% 的疾病。</p>
+                <div class="chart-container">
+                    <canvas id="mobileAdvantageChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- 視圖 2: 商業模式 (手風琴設計) -->
+        <section id="view-business" class="view-section">
+            <div class="mb-6">
+                <span class="inline-block px-3 py-1 bg-teal-100 text-teal-800 text-xs font-bold rounded-full mb-2">市場進入</span>
+                <h2 class="text-2xl font-bold mb-2">潛在商業模式</h2>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    針對不同目標客群，VideaHealth 評估了三種主要的市場進入策略。點擊下方卡片展開詳細資訊。
+                </p>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Accordion Item 1 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <button class="accordion-btn w-full p-4 flex items-center justify-between bg-white focus:outline-none" onclick="toggleAccordion(this)">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">🛡️</span>
+                            <div class="text-left">
+                                <h3 class="font-bold text-slate-800">模式 A：保險公司</h3>
+                                <p class="text-xs text-blue-600 font-medium">成本優化模式</p>
+                            </div>
+                        </div>
+                        <span class="text-slate-400 transition-transform duration-300 icon-arrow">▼</span>
+                    </button>
+                    <div class="accordion-content bg-slate-50 border-t border-slate-100">
+                        <div class="p-4 space-y-4">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-500 uppercase mb-1">💡 價值主張</h4>
+                                <p class="text-sm text-slate-700">利用 AI 自動審核並批准部分索賠，標記複雜案件供牙科顧問審查。</p>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-500 uppercase mb-1">📈 預估效益</h4>
+                                <p class="text-sm text-slate-700">為保險公司節省 30% 到 60% 索賠審查成本 (顧問年花費約 3~5 億美元)。</p>
+                            </div>
+                            <div class="bg-orange-100/50 p-3 rounded-lg border border-orange-100">
+                                <h4 class="text-xs font-bold text-orange-700 uppercase mb-1">⚠️ 挑戰與限制</h4>
+                                <p class="text-sm text-orange-900">某些州法規規定只有持照顧問才能拒賠，AI 自動拒賠可能引發監管問題。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accordion Item 2 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <button class="accordion-btn w-full p-4 flex items-center justify-between bg-white focus:outline-none" onclick="toggleAccordion(this)">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">👨‍⚕️</span>
+                            <div class="text-left">
+                                <h3 class="font-bold text-slate-800">模式 B：單獨牙醫</h3>
+                                <p class="text-xs text-teal-600 font-medium">增收與輔助模式</p>
+                            </div>
+                        </div>
+                        <span class="text-slate-400 transition-transform duration-300 icon-arrow">▼</span>
+                    </button>
+                    <div class="accordion-content bg-slate-50 border-t border-slate-100">
+                        <div class="p-4 space-y-4">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-500 uppercase mb-1">💡 價值主張</h4>
+                                <p class="text-sm text-slate-700">AI 作為精準輔助工具，找出遺漏病灶，增加病患對選擇性治療的接受度。</p>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-500 uppercase mb-1">📈 預估效益</h4>
+                                <p class="text-sm text-slate-700">每年幫助牙醫增加高達 15% 的收入，並加快與保險公司的溝通速度。</p>
+                            </div>
+                            <div class="bg-emerald-100/50 p-3 rounded-lg border border-emerald-100">
+                                <h4 class="text-xs font-bold text-emerald-700 uppercase mb-1">🌟 策略優勢</h4>
+                                <p class="text-sm text-emerald-900">直接提升前線醫療品質與診所營收，成為有力的行銷與醫病溝通工具。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accordion Item 3 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <button class="accordion-btn w-full p-4 flex items-center justify-between bg-white focus:outline-none" onclick="toggleAccordion(this)">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">🏢</span>
+                            <div class="text-left">
+                                <h3 class="font-bold text-slate-800">模式 C：DSO 組織</h3>
+                                <p class="text-xs text-indigo-600 font-medium">企業級擴展模式</p>
+                            </div>
+                        </div>
+                        <span class="text-slate-400 transition-transform duration-300 icon-arrow">▼</span>
+                    </button>
+                    <div class="accordion-content bg-slate-50 border-t border-slate-100">
+                        <div class="p-4 space-y-4">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-500 uppercase mb-1">💡 價值主張</h4>
+                                <p class="text-sm text-slate-700">協助 DSO 監控旗下診所醫療品質，識別需培訓的牙醫並提供第二意見。</p>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-500 uppercase mb-1">📈 預估效益</h4>
+                                <p class="text-sm text-slate-700">提升整體的品牌信任度與醫療標準，為經驗不足的年輕牙醫增強信心。</p>
+                            </div>
+                            <div class="bg-emerald-100/50 p-3 rounded-lg border border-emerald-100">
+                                <h4 class="text-xs font-bold text-emerald-700 uppercase mb-1">🌟 策略優勢</h4>
+                                <p class="text-sm text-emerald-900">B2B 企業級銷售更具可行性，DSO 擁有將技術擴展到眾多診所的決策權。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 視圖 3: 營收策略 -->
+        <section id="view-revenue" class="view-section">
+            <div class="mb-6">
+                <span class="inline-block px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full mb-2">財務規劃</span>
+                <h2 class="text-2xl font-bold mb-2">營收與收費模式</h2>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    根據前面的商業模式與財務數據，VideaHealth 可延伸出以下三種收費策略。
+                </p>
+            </div>
+
+            <!-- 收入影響圖表 -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6">
+                <h3 class="font-bold text-slate-800 mb-1 flex items-center gap-2">💰 診所營收提升模擬</h3>
+                <p class="text-xs text-slate-500 mb-4">導入 AI 預估增加 15% 年收入。</p>
+                <div class="chart-container">
+                    <canvas id="mobileRevenueChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 收費模式清單 -->
+            <div class="space-y-3">
+                <div class="bg-white p-4 rounded-xl border-l-4 border-blue-500 shadow-sm">
+                    <div class="flex justify-between items-start mb-1">
+                        <h4 class="font-bold text-slate-800">1. 按件計酬 / 抽成</h4>
+                        <span class="text-xs font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded">保險公司</span>
+                    </div>
+                    <p class="text-xs text-slate-600 mt-2">根據 AI 成功處理案件量收單筆處理費，或從省下的 30~60% 審查成本中獲取比例分潤。(目前顧問審查成本約 $6/件)。</p>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border-l-4 border-teal-500 shadow-sm">
+                    <div class="flex justify-between items-start mb-1">
+                        <h4 class="font-bold text-slate-800">2. SaaS 軟體訂閱費</h4>
+                        <span class="text-xs font-bold text-teal-500 bg-teal-50 px-2 py-1 rounded">單獨牙醫</span>
+                    </div>
+                    <p class="text-xs text-slate-600 mt-2">將軟體包裝為月費/年費訂閱制。一般診所年營收約 $70 萬美元，AI 可助其增加 15% 收入，創造強大購買誘因。</p>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border-l-4 border-indigo-500 shadow-sm">
+                    <div class="flex justify-between items-start mb-1">
+                        <h4 class="font-bold text-slate-800">3. 企業級授權費</h4>
+                        <span class="text-xs font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded">大型 DSO</span>
+                    </div>
+                    <p class="text-xs text-slate-600 mt-2">針對大型組織（如年收破 15 億的 Heartland Dental），根據旗下診所或使用量收取整體授權與維護費。</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 底部導覽列 (Bottom Navigation) -->
+    <nav class="fixed bottom-0 w-full z-50 bg-white border-t border-slate-200 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <!-- iOS 底部安全區域適應 -->
+        <div class="max-w-md mx-auto flex justify-around items-center px-2 py-2">
+            
+            <button class="nav-btn active flex flex-col items-center p-2 w-1/3 text-blue-600 transition-colors" data-target="view-factory">
+                <span class="text-2xl mb-1 drop-shadow-sm">🏭</span>
+                <span class="text-[10px] font-bold">AI 工廠</span>
             </button>
-            <button class="nav-btn px-6 py-4 font-semibold text-slate-500 border-b-2 border-transparent hover:text-blue-600 whitespace-nowrap transition-colors" data-target="tab-business">
-                🎯 2. 潛在商業模式
+            
+            <button class="nav-btn flex flex-col items-center p-2 w-1/3 text-slate-400 hover:text-slate-600 transition-colors" data-target="view-business">
+                <span class="text-2xl mb-1 grayscale opacity-60">🎯</span>
+                <span class="text-[10px] font-bold">商業模式</span>
             </button>
-            <button class="nav-btn px-6 py-4 font-semibold text-slate-500 border-b-2 border-transparent hover:text-blue-600 whitespace-nowrap transition-colors" data-target="tab-revenue">
-                💰 3. 營收與收費模式
+            
+            <button class="nav-btn flex flex-col items-center p-2 w-1/3 text-slate-400 hover:text-slate-600 transition-colors" data-target="view-revenue">
+                <span class="text-2xl mb-1 grayscale opacity-60">💰</span>
+                <span class="text-[10px] font-bold">收費策略</span>
             </button>
+
         </div>
     </nav>
 
-    <main class="max-w-6xl mx-auto px-6 py-8">
-
-        <section id="tab-factory" class="tab-content active">
-            <div class="mb-8">
-                <h2 class="text-2xl font-bold text-slate-800 mb-3">建構人工智慧工廠</h2>
-                <p class="text-slate-600 leading-relaxed bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                    本區塊旨在解析 VideaHealth 的核心技術基礎。VideaHealth 將「人工智慧工廠」定義為一個包含四個核心模組的組織框架，而非實體工廠。這套架構賦予了公司快速迭代與高準確度的競爭優勢。您可以透過下方圖表與模組卡片，了解其運作機制與具體成效。
-                </p>
-            </div>
-
-            <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="text-2xl">⚙️</span> 四大核心模組</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="icon-circle bg-blue-100 text-blue-700 mb-3">📊</div>
-                    <h4 class="font-bold text-lg mb-2">資料匯流</h4>
-                    <p class="text-sm text-slate-600">收集近 1,000 萬筆 X 光片與記錄，確保多樣性以減少偏見。由 25+ 名兼職牙醫進行專業標註。</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="icon-circle bg-teal-100 text-teal-700 mb-3">🧠</div>
-                    <h4 class="font-bold text-lg mb-2">演算法開發</h4>
-                    <p class="text-sm text-slate-600">採監督式學習，強調「模組化設計」，將複雜演算法分解為小組件以便快速測試調整。</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="icon-circle bg-purple-100 text-purple-700 mb-3">🔬</div>
-                    <h4 class="font-bold text-lg mb-2">實驗平台</h4>
-                    <p class="text-sm text-slate-600">獲 IRB 許可後盡早讓臨床醫生使用。根據回饋在「靈敏度與精確度」間尋找最佳平衡。</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="icon-circle bg-orange-100 text-orange-700 mb-3">💻</div>
-                    <h4 class="font-bold text-lg mb-2">軟體基礎設施</h4>
-                    <p class="text-sm text-slate-600">建立統一「資料湖」與彈性介面，將 AI 定位為「提供第二意見的助理」，尊重牙醫專業。</p>
-                </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2"><span class="text-2xl">📈</span> 競爭優勢與臨床影響</h3>
-                <p class="text-sm text-slate-500 mb-6">AI 工廠帶來的規模化能力，使其能在短時間內創造出極高準確度的輔助模型。</p>
-                
-                <div class="chart-container">
-                    <canvas id="advantageChart"></canvas>
-                </div>
-
-                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                        <h4 class="font-bold text-blue-800 mb-1">快速迭代與客製化</h4>
-                        <p class="text-sm text-blue-900">完善的基礎設施使 Videa 能夠比競爭對手更快地測試、迭代產品，並根據特定客戶需求調整解決方案。</p>
-                    </div>
-                    <div class="bg-teal-50 p-4 rounded-lg border border-teal-100">
-                        <h4 class="font-bold text-teal-800 mb-1">規模化能力</h4>
-                        <p class="text-sm text-teal-900">使用相同的自動化基礎設施作為藍圖，快速開發識別多種不同牙科病理的模型，節省時間與金錢。</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="tab-business" class="tab-content">
-            <div class="mb-8">
-                <h2 class="text-2xl font-bold text-slate-800 mb-3">潛在商業模式 (市場進入策略)</h2>
-                <p class="text-slate-600 leading-relaxed bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                    本區塊剖析 VideaHealth 將技術推向市場的三條潛在路徑。我們將市場劃分為保險公司、單一牙醫與大型醫療組織 (DSO)。點擊下方不同客群的按鈕，即可互動探索針對該客群的專屬價值主張、預估效益以及面臨的挑戰。
-                </p>
-            </div>
-
-            <div class="flex flex-col lg:flex-row gap-6">
-                <div class="w-full lg:w-1/3 space-y-3">
-                    <button class="model-btn w-full text-left p-5 rounded-xl border-2 border-blue-600 bg-blue-50 shadow-sm transition-all" data-model="a">
-                        <div class="flex items-center gap-3 mb-1">
-                            <span class="text-2xl">🛡️</span>
-                            <h3 class="font-bold text-lg text-slate-800">模式 A：保險公司</h3>
-                        </div>
-                        <p class="text-sm text-slate-600">成本優化模式</p>
-                    </button>
-                    <button class="model-btn w-full text-left p-5 rounded-xl border-2 border-transparent bg-white hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all" data-model="b">
-                        <div class="flex items-center gap-3 mb-1">
-                            <span class="text-2xl">👨‍⚕️</span>
-                            <h3 class="font-bold text-lg text-slate-800">模式 B：單獨執業牙醫</h3>
-                        </div>
-                        <p class="text-sm text-slate-600">增收與輔助模式</p>
-                    </button>
-                    <button class="model-btn w-full text-left p-5 rounded-xl border-2 border-transparent bg-white hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all" data-model="c">
-                        <div class="flex items-center gap-3 mb-1">
-                            <span class="text-2xl">🏢</span>
-                            <h3 class="font-bold text-lg text-slate-800">模式 C：DSO 組織</h3>
-                        </div>
-                        <p class="text-sm text-slate-600">企業級擴展模式</p>
-                    </button>
-                </div>
-
-                <div class="w-full lg:w-2/3">
-                    <div id="model-details" class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 h-full">
-                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-                            <span id="detail-icon" class="text-4xl">🛡️</span>
-                            <div>
-                                <h3 id="detail-title" class="text-2xl font-bold text-slate-800">針對付款方（保險公司）的「成本優化模式」</h3>
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-6">
-                            <div>
-                                <h4 class="text-sm font-bold text-blue-600 uppercase tracking-wider mb-2 flex items-center gap-2"><span>💡</span> 價值主張</h4>
-                                <p id="detail-value" class="text-slate-700 bg-slate-50 p-4 rounded-lg">利用 AI 自動審核並批准部分索賠，標記複雜案件供牙科顧問審查。</p>
-                            </div>
-                            
-                            <div>
-                                <h4 class="text-sm font-bold text-teal-600 uppercase tracking-wider mb-2 flex items-center gap-2"><span>📈</span> 預估效益</h4>
-                                <p id="detail-benefit" class="text-slate-700 bg-teal-50 p-4 rounded-lg">預計可為保險公司節省 30% 到 60% 的索賠審查成本（保險業每年在牙科顧問上花費約 3~5 億美元）。</p>
-                            </div>
-
-                            <div>
-                                <h4 id="detail-challenge-title" class="text-sm font-bold text-orange-600 uppercase tracking-wider mb-2 flex items-center gap-2"><span>⚠️</span> 挑戰與限制</h4>
-                                <p id="detail-challenge" class="text-slate-700 bg-orange-50 p-4 rounded-lg">法規限制，某些州規定只有持照牙科顧問才能拒絕索賠，AI 自動拒賠可能引發監管問題。</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="tab-revenue" class="tab-content">
-            <div class="mb-8">
-                <h2 class="text-2xl font-bold text-slate-800 mb-3">潛在的營收與收費模式評估</h2>
-                <p class="text-slate-600 leading-relaxed bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                    本區塊將商業模式轉化為具體的財務收費策略。針對不同的客戶特性，VideaHealth 可採取按件計酬、SaaS 訂閱或企業級授權等彈性方案。您可以透過財務影響圖表與策略清單，了解這些模式如何創造實質營收。
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="space-y-4">
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start gap-4">
-                        <div class="icon-circle bg-blue-100 text-blue-700 flex-shrink-0">🏷️</div>
-                        <div>
-                            <h3 class="font-bold text-lg text-slate-800 mb-1">1. 按件計酬 / 成本抽成 (Usage-based)</h3>
-                            <span class="inline-block bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded mb-2">針對保險公司</span>
-                            <ul class="text-sm text-slate-600 list-disc list-inside space-y-1">
-                                <li>背景：保險顧問每次審查索賠的報酬約 $6 美元。</li>
-                                <li>方式：根據 AI 成功處理的案件量收取單筆處理費，或從省下的 30~60% 成本中抽成。</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start gap-4">
-                        <div class="icon-circle bg-teal-100 text-teal-700 flex-shrink-0">🔄</div>
-                        <div>
-                            <h3 class="font-bold text-lg text-slate-800 mb-1">2. 軟體服務訂閱費 (SaaS Subscription)</h3>
-                            <span class="inline-block bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded mb-2">針對單獨執業牙醫</span>
-                            <ul class="text-sm text-slate-600 list-disc list-inside space-y-1">
-                                <li>背景：牙科診所平均年營收約 $70 萬美元。</li>
-                                <li>方式：將軟體包裝成定期訂閱服務（月/年費），收取穩定的使用授權費。</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start gap-4">
-                        <div class="icon-circle bg-indigo-100 text-indigo-700 flex-shrink-0">🏢</div>
-                        <div>
-                            <h3 class="font-bold text-lg text-slate-800 mb-1">3. 企業級授權費 (Enterprise Licensing)</h3>
-                            <span class="inline-block bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded mb-2">針對大型 DSO</span>
-                            <ul class="text-sm text-slate-600 list-disc list-inside space-y-1">
-                                <li>背景：針對如 Heartland Dental 等年營收超 $15 億的大型組織。</li>
-                                <li>方式：根據旗下診所數量或系統總使用量，收取整體的軟體授權與年度維護費用。</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <h3 class="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2"><span class="text-2xl">📊</span> 單一診所財務效益模擬</h3>
-                    <p class="text-sm text-slate-500 mb-6">導入 AI 作為輔助工具，不僅提升醫療品質，更可實質提升選擇性治療的接受度，進而增加營收。</p>
-                    
-                    <div class="chart-container">
-                        <canvas id="revenueChart"></canvas>
-                    </div>
-                    <p class="text-center text-xs text-slate-400 mt-2">* 單位：萬美元。基於個案平均資料估算。</p>
-                </div>
-            </div>
-        </section>
-    </main>
+    <!-- 針對 iOS PWA 支援安全區域 -->
+    <style>
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        }
+    </style>
 
     <script>
-        // Data Storage for Business Models
-        const businessModels = {
-            a: {
-                icon: '🛡️',
-                title: '針對付款方（保險公司）的「成本優化模式」',
-                value: '利用 AI 自動審核並批准部分索賠，標記複雜案件供牙科顧問審查。',
-                benefit: '預計可為保險公司節省 30% 到 60% 的索賠審查成本（保險業每年在牙科顧問上花費約 3~5 億美元）。',
-                challengeTitle: '<span>⚠️</span> 挑戰與限制',
-                challengeText: '法規限制，某些州規定只有持照牙科顧問才能拒絕索賠，AI 自動拒賠可能引發監管問題。',
-                challengeClass: 'text-orange-600',
-                challengeBg: 'bg-orange-50'
-            },
-            b: {
-                icon: '👨‍⚕️',
-                title: '針對單獨執業牙醫的「增收與輔助模式」',
-                value: '將 AI 作為精準的輔助工具，幫助牙醫找出遺漏的病灶，增加病患對選擇性治療的接受度與信任感。',
-                benefit: '每年可幫助牙醫增加高達 15% 的收入，同時加快與保險公司的溝通與理賠速度。',
-                challengeTitle: '<span>🌟</span> 策略優勢',
-                challengeText: '直接提升前線醫療品質與診所營收，成為有力的行銷與醫病溝通工具。',
-                challengeClass: 'text-emerald-600',
-                challengeBg: 'bg-emerald-50'
-            },
-            c: {
-                icon: '🏢',
-                title: '針對牙科服務組織 (DSO) 的「企業級擴展模式」',
-                value: '協助 DSO 監控並確保旗下診所提供一致且高品質的醫療服務，快速識別需要培訓的牙醫。',
-                benefit: '為經驗不足的牙醫提供第二意見以增強信心，並提升整體的品牌信任度與醫療標準。',
-                challengeTitle: '<span>🌟</span> 策略優勢',
-                challengeText: 'B2B 企業級銷售模式更具可行性，因為 DSO 擁有將技術一次性擴展到眾多診所的基礎設施與決策權。',
-                challengeClass: 'text-emerald-600',
-                challengeBg: 'bg-emerald-50'
-            }
-        };
+        // --- 狀態與圖表實例 ---
+        let advantageChartInstance = null;
+        let revenueChartInstance = null;
 
-        // State Management
-        let currentChart1 = null;
-        let currentChart2 = null;
-
-        // Core Interaction Handling: Tab Switching
+        // --- 底部導覽列切換邏輯 ---
         const navBtns = document.querySelectorAll('.nav-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
+        const viewSections = document.querySelectorAll('.view-section');
 
         navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const targetId = btn.getAttribute('data-target');
                 
-                // Update styling
+                // 1. 更新按鈕視覺狀態
                 navBtns.forEach(b => {
-                    b.classList.remove('text-blue-700', 'border-blue-700');
-                    b.classList.add('text-slate-500', 'border-transparent');
+                    b.classList.remove('text-blue-600', 'active');
+                    b.classList.add('text-slate-400');
+                    b.querySelector('span:first-child').classList.add('grayscale', 'opacity-60');
+                    b.querySelector('span:first-child').classList.remove('drop-shadow-sm');
                 });
-                btn.classList.add('text-blue-700', 'border-blue-700');
-                btn.classList.remove('text-slate-500', 'border-transparent');
+                
+                btn.classList.add('text-blue-600', 'active');
+                btn.classList.remove('text-slate-400');
+                btn.querySelector('span:first-child').classList.remove('grayscale', 'opacity-60');
+                btn.querySelector('span:first-child').classList.add('drop-shadow-sm');
 
-                // Switch tabs
-                tabContents.forEach(tab => tab.classList.remove('active'));
+                // 2. 切換視圖
+                viewSections.forEach(section => {
+                    section.classList.remove('active');
+                });
                 document.getElementById(targetId).classList.add('active');
 
-                // Render charts if applicable
-                if (targetId === 'tab-factory') renderAdvantageChart();
-                if (targetId === 'tab-revenue') renderRevenueChart();
-            });
-        });
-
-        // Core Interaction Handling: Business Model Selection
-        const modelBtns = document.querySelectorAll('.model-btn');
-        const detailIcon = document.getElementById('detail-icon');
-        const detailTitle = document.getElementById('detail-title');
-        const detailValue = document.getElementById('detail-value');
-        const detailBenefit = document.getElementById('detail-benefit');
-        const detailChallengeTitle = document.getElementById('detail-challenge-title');
-        const detailChallenge = document.getElementById('detail-challenge');
-
-        modelBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const modelKey = btn.getAttribute('data-model');
-                const data = businessModels[modelKey];
-
-                // Update active state
-                modelBtns.forEach(b => {
-                    b.classList.remove('border-blue-600', 'bg-blue-50');
-                    b.classList.add('border-transparent', 'bg-white');
-                });
-                btn.classList.add('border-blue-600', 'bg-blue-50');
-                btn.classList.remove('border-transparent', 'bg-white');
-
-                // Update content
-                detailIcon.textContent = data.icon;
-                detailTitle.textContent = data.title;
-                detailValue.textContent = data.value;
-                detailBenefit.textContent = data.benefit;
+                // 3. 延遲重繪圖表 (確保 display:block 後 canvas 取得正確寬高)
+                setTimeout(() => {
+                    if (targetId === 'view-factory') renderAdvantageChart();
+                    if (targetId === 'view-revenue') renderRevenueChart();
+                }, 50); // 微小延遲等待 DOM 渲染
                 
-                detailChallengeTitle.innerHTML = data.challengeTitle;
-                detailChallengeTitle.className = `text-sm font-bold uppercase tracking-wider mb-2 flex items-center gap-2 ${data.challengeClass}`;
-                detailChallenge.textContent = data.challengeText;
-                detailChallenge.className = `text-slate-700 p-4 rounded-lg ${data.challengeBg}`;
+                // 4. 自動滾動到頂部
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         });
 
-        // Chart Rendering Functions
-        function renderAdvantageChart() {
-            const ctx = document.getElementById('advantageChart').getContext('2d');
-            if (currentChart1) currentChart1.destroy();
+        // --- 折疊選單 (Accordion) 邏輯 ---
+        function toggleAccordion(btn) {
+            const content = btn.nextElementSibling;
+            const arrow = btn.querySelector('.icon-arrow');
+            
+            // 關閉其他已展開的
+            document.querySelectorAll('.accordion-content').forEach(el => {
+                if (el !== content && el.classList.contains('expanded')) {
+                    el.classList.remove('expanded');
+                    el.previousElementSibling.querySelector('.icon-arrow').style.transform = 'rotate(0deg)';
+                }
+            });
 
-            currentChart1 = new Chart(ctx, {
+            // 切換當前
+            content.classList.toggle('expanded');
+            
+            if (content.classList.contains('expanded')) {
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // --- 圖表繪製函式 ---
+        function renderAdvantageChart() {
+            const ctx = document.getElementById('mobileAdvantageChart');
+            if(!ctx) return;
+            
+            if (advantageChartInstance) {
+                advantageChartInstance.destroy();
+            }
+
+            advantageChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['檢測出額外疾病比例 (+25%)', '降低疾病未發現/誤診率 (-40%)'],
+                    labels: ['額外檢出率', '降低誤診率'],
                     datasets: [{
-                        label: '成效指標 (%)',
-                        data: [25, 40], // Using 40 as mid point for 30-50% range
-                        backgroundColor: ['rgba(59, 130, 246, 0.7)', 'rgba(20, 184, 166, 0.7)'],
-                        borderColor: ['rgb(29, 78, 216)', 'rgb(13, 148, 136)'],
-                        borderWidth: 1,
-                        borderRadius: 6
+                        label: '成效 %',
+                        data: [25, 40], // 40 代表 30-50% 區間
+                        backgroundColor: ['rgba(37, 99, 235, 0.8)', 'rgba(13, 148, 136, 0.8)'],
+                        borderRadius: 8,
+                        barThickness: 40
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    indexAxis: 'y', // 手機版改為橫向長條圖更易閱讀
                     plugins: {
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) { label += ': '; }
-                                    if (context.parsed.y !== null) { label += context.parsed.y + '%'; }
-                                    if(context.dataIndex === 1) label += " (依據報告30%~50%區間估算)";
-                                    return label;
+                                    let val = context.parsed.x + '%';
+                                    if(context.dataIndex === 1) val += ' (30~50%)';
+                                    return ' ' + val;
                                 }
                             }
                         }
                     },
                     scales: {
-                        y: {
-                            beginAtZero: true,
+                        x: { 
+                            beginAtZero: true, 
                             max: 60,
-                            ticks: { callback: function(value) { return value + "%" } }
+                            grid: { color: '#f1f5f9' },
+                            ticks: { font: {size: 10} }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { font: {size: 11, weight: 'bold'} }
                         }
                     }
                 }
@@ -398,21 +436,23 @@ Confirming NO SVG graphics used. NO Mermaid JS used. -->
         }
 
         function renderRevenueChart() {
-            const ctx = document.getElementById('revenueChart').getContext('2d');
-            if (currentChart2) currentChart2.destroy();
+            const ctx = document.getElementById('mobileRevenueChart');
+            if(!ctx) return;
 
-            currentChart2 = new Chart(ctx, {
+            if (revenueChartInstance) {
+                revenueChartInstance.destroy();
+            }
+
+            revenueChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['未導入 AI 輔助', '導入 AI 輔助 (+15%)'],
+                    labels: ['一般診所', 'AI 輔助 (+15%)'],
                     datasets: [{
-                        label: '平均年營收 (萬美元)',
-                        data: [70, 80.5], // 70 * 1.15 = 80.5
-                        backgroundColor: ['rgba(148, 163, 184, 0.6)', 'rgba(59, 130, 246, 0.8)'],
-                        borderColor: ['rgb(100, 116, 139)', 'rgb(37, 99, 235)'],
-                        borderWidth: 1,
-                        borderRadius: 6,
-                        barPercentage: 0.6
+                        label: '年營收 (萬美元)',
+                        data: [70, 80.5], 
+                        backgroundColor: ['#cbd5e1', '#3b82f6'],
+                        borderRadius: 8,
+                        barPercentage: 0.7
                     }]
                 },
                 options: {
@@ -421,28 +461,38 @@ Confirming NO SVG graphics used. NO Mermaid JS used. -->
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `$${context.parsed.y} 萬美元`;
-                                }
-                            }
+                            callbacks: { label: (ctx) => `$${ctx.parsed.y} 萬` }
                         }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            title: { display: true, text: '萬美元 (USD)' }
+                            grid: { color: '#f1f5f9' },
+                            ticks: { font: {size: 10} }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: {size: 11, weight: 'bold'} }
                         }
                     }
                 }
             });
         }
 
-        // Initialize first chart on load
-        window.onload = () => {
+        // --- 初始化 ---
+        function initApp() {
             renderAdvantageChart();
-        };
+            
+            // 預設展開第一個商業模式
+            const firstAccordion = document.querySelector('.accordion-btn');
+            if(firstAccordion) toggleAccordion(firstAccordion);
+        }
 
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
     </script>
 </body>
 </html>
