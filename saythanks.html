@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博幼中心感謝卡彙整 - 台大 EMBA 門外社</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        body { font-family: 'Noto Sans TC', sans-serif; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .card-container { scroll-snap-type: x mandatory; }
+        .card-item { scroll-snap-align: center; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 pb-20">
+
+    <!-- Header -->
+    <header class="bg-white px-6 pt-10 pb-6 shadow-sm border-b border-slate-100 sticky top-0 z-50">
+        <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="heart" class="w-6 h-6 text-rose-500 fill-rose-500"></i>
+            <h1 class="text-xl font-bold tracking-tight">台大 EMBA 門外社</h1>
+        </div>
+        <p class="text-slate-500 text-sm mb-6">博幼偏鄉學童參訪感謝卡彙整</p>
+        
+        <!-- Tabs -->
+        <div class="flex bg-slate-100 p-1 rounded-xl" id="tabs">
+            <button onclick="switchCenter('hualien')" id="tab-hualien" class="flex-1 py-2 text-sm font-medium rounded-lg transition-all bg-rose-500 text-white shadow-md">花蓮</button>
+            <button onclick="switchCenter('yilan')" id="tab-yilan" class="flex-1 py-2 text-sm font-medium rounded-lg transition-all text-slate-500">宜蘭</button>
+            <button onclick="switchCenter('keelung')" id="tab-keelung" class="flex-1 py-2 text-sm font-medium rounded-lg transition-all text-slate-500">基隆</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-md mx-auto px-4 mt-8">
+        <div class="flex items-center justify-between mb-4 px-2">
+            <div class="flex items-center gap-2">
+                <i data-lucide="map-pin" id="center-icon" class="w-4 h-4 text-rose-500"></i>
+                <span class="font-semibold text-slate-700" id="center-title">花蓮中心 的感謝</span>
+            </div>
+            <span class="text-xs bg-white px-2 py-1 rounded-full shadow-sm text-slate-400" id="page-indicator">1 / 15</span>
+        </div>
+
+        <!-- Carousel -->
+        <div class="relative group">
+            <div id="carousel" class="flex overflow-x-auto hide-scrollbar gap-4 pb-4 card-container">
+                <!-- Cards will be injected here -->
+            </div>
+            
+            <!-- Arrows -->
+            <button onclick="scrollPrev()" class="absolute left-[-12px] top-1/2 -translate-y-1/2 z-10 p-2 bg-white rounded-full shadow-lg border border-slate-100">
+                <i data-lucide="chevron-left" class="w-5 h-5 text-slate-600"></i>
+            </button>
+            <button onclick="scrollNext()" class="absolute right-[-12px] top-1/2 -translate-y-1/2 z-10 p-2 bg-white rounded-full shadow-lg border border-slate-100">
+                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-600"></i>
+            </button>
+        </div>
+
+        <div class="text-center mt-6">
+            <p class="text-xs text-slate-400 flex items-center justify-center gap-1">
+                <i data-lucide="swipe" class="w-3 h-3"></i> 左右滑動看更多卡片
+            </p>
+        </div>
+    </main>
+
+    <script>
+        const data = {
+            hualien: {
+                name: "花蓮中心",
+                color: "rose",
+                messages: [
+                    { content: "謝謝你們資助我們這次到台大校園參訪的費用，讓我們有機會走進台大，親自感受大學的學習環境。這次的參訪對我來說是很難得的體驗。", author: "一九" },
+                    { content: "謝謝你們讓我們有機會走進校園、了解學習環境與校園文化，收穫良多、受益匪淺。也讓我的升學目標更清楚♡", author: "博幼同學" },
+                    { content: "感謝台大門外社 EMBA 的哥哥姐姐們：讓我們博幼基金會能夠來台大參觀科系展覽會。", author: "博幼同學" },
+                    { content: "感謝你們帶領我們來台大的參訪，能讓我們更好的規劃未來。", author: "博幼同學" },
+                    { content: "很感謝各位學長學姐讓我知道台大的各種科系，而且我感覺這裡的人都非常和善，有希望我想來這裡讀書。", author: "學生 楊淳淳" },
+                    { content: "謝謝你們贊助，讓我們來台大的參訪跟社團，也讓我們看到這麼感人的演講，謝謝你們。", author: "博幼同學" },
+                    { content: "邀請我們到台大來做參訪，我也對這裡感興趣。也謝謝您們讓我們參加杜鵑花節的演講和參觀。", author: "博幼同學" },
+                    { content: "感謝邀請和贊助，讓我更進一步認識大學社團與系所，還有就是最印象深刻的是導覽員介紹舊圖書館的外部設計。", author: "吳家馨" },
+                    { content: "在這裡我看到了讀書以外的活動，許多社團都未曾見過，讓我對它們感到非常好奇。", author: "瑜玟" },
+                    { content: "謝謝你們讓我來到臺灣大學，謝謝你們讓 know 每個大學都不同，也讓我知道不同的學系。", author: "博幼花蓮 同學" },
+                    { content: "今天是第二次參加，感謝再次邀請，讓我能來台大認識新世界。收穫滿滿。", author: "博欽" },
+                    { content: "謝謝你們給我們機會看看台大校園內，我很開心。今天聽的講座也讓自己收穫滿滿。", author: "楊思○" },
+                    { content: "謝謝你們贊助。如果沒有你們的贊助我可能一輩子都不會來台大。以後我會加倍努力。", author: "花蓮博幼中心 同學" },
+                    { content: "讓我們能更進一步了解上大學時會有哪些事，並且更確定自己未來到底要選擇哪一條路走。", author: "博幼同學" },
+                    { content: "這次再來到台大已經是高三了，今年就要上大學了。因為有你們的贊助，讓我更認識台大，謝謝你們！", author: "詠晴" }
+                ]
+            },
+            yilan: {
+                name: "宜蘭中心",
+                color: "emerald",
+                messages: [
+                    { content: "感謝提供校園導覽和午餐，中午的講師內容讓我印象深刻。對我來說這些資源都很難得。", author: "游佳琪" },
+                    { content: "我參加此活動已經有兩次，活動過程以及中餐等都十分滿意，感謝學長姐的幫助。", author: "宜蘭中心 同學" },
+                    { content: "Thank you 台大的哥哥姐姐們讓我們認識台大。再次知道大學的科系及風氣，很讓我不可思議。", author: "博幼同學" },
+                    { content: "謝謝大哥哥、大姐姐帶我們參觀台大，有了解到每一棟樓是做什麼的，告訴我們這間學校的歷史！", author: "古昊恩" },
+                    { content: "今天謝謝學長學姐帶我們，讓我知道大學原來有很多科系可以讀，希望下次能再來。", author: "博幼同學" },
+                    { content: "謝謝門外社的學長姐們帶領我們參觀所有科系，謝謝你們。", author: "以勒" },
+                    { content: "因為你們的資助可以讓我們來到台大又認識一個好的大學，謝謝學長姐們！", author: "詩妤" },
+                    { content: "謝謝你們幫我們拍照，還提供我們好吃的便當和飲料。真的很感謝你們。", author: "博幼同學" },
+                    { content: "謝謝學長學姊讓我們有機會來到台大，有這麼好的活動體驗，讓大家知道大學的豐富性。", author: "博幼同學" },
+                    { content: "感謝各位支持我們來到杜鵑花節，使我們有機會探索不同的未來。", author: "清靜心" },
+                    { content: "謝謝大學長學姐們為我們介紹台大的建築與以前的歷史，讓我想了解更多這裡的一切。", author: "劉懷" },
+                    { content: "感謝 EMBA 的學長姐們為了這次活動付出努力，讓孩子們認識許多社會上的知識。", author: "佳美" },
+                    { content: "謝謝今天你們的陪伴。在同行的時候聊到一些未來，你們就是進入我人生中的貴人。", author: "承恩" },
+                    { content: "謝謝社團的學長學姐讓我們有這麼好的活動體驗，能夠讓大家知道不同的東西。", author: "博幼同學" },
+                    { content: "謝謝你們陪我們走了一路，了解校園環境，一起聽演講。更重要的是你們的「熱情」和「樂觀」。", author: "何艾" },
+                    { content: "讓我了解了很多上課沒學過的東西。也讓我知道各個科系在做什麼。", author: "張淋琳" },
+                    { content: "謝謝帶我們認識台大的校園與科系，為我們的未來規劃可以有更多選項。", author: "博幼同學" }
+                ]
+            },
+            keelung: {
+                name: "基隆中心",
+                color: "sky",
+                messages: [
+                    { content: "感謝今天的所有人，和主辦單位。", author: "基隆中心 同學" },
+                    { content: "謝謝你們讓我有機會能來台大參觀。雖然我沒有積極參觀，但我對每個地方都有努力記住了。學姐真的很漂亮...", author: "基隆中心 同學" },
+                    { content: "謝謝今天帶我們的大哥哥、大姐姐，今天很開心，帶我們去參訪社團。辛苦了。", author: "基隆中心 同學" },
+                    { content: "感謝這次第一組的各位輔導，很開心、也很聊得來。", author: "基隆中心 同學" },
+                    { content: "感謝大師兄無私分享。", author: "基隆中心 同學" }
+                ]
+            }
+        };
+
+        let currentCenterKey = 'hualien';
+        const carousel = document.getElementById('carousel');
+
+        function renderCards() {
+            const center = data[currentCenterKey];
+            const colorClass = center.color;
+            carousel.innerHTML = center.messages.map((msg, index) => `
+                <div class="flex-shrink-0 w-full card-item">
+                    <div class="h-full min-h-[350px] bg-white rounded-3xl p-8 shadow-xl border-b-8 border-${colorClass}-200 relative overflow-hidden flex flex-col">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-${colorClass}-50 rounded-bl-full -mr-12 -mt-12 opacity-50"></div>
+                        <i data-lucide="message-circle" class="absolute top-6 left-6 w-10 h-10 text-${colorClass}-500 opacity-20"></i>
+                        <div class="relative z-10 mt-6 flex-grow">
+                            <p class="text-slate-700 text-lg leading-relaxed font-medium">「${msg.content}」</p>
+                        </div>
+                        <div class="mt-8 pt-6 border-t border-slate-50 flex items-end justify-between relative z-10">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-${colorClass}-500 flex items-center justify-center">
+                                    <i data-lucide="graduation-cap" class="w-4 h-4 text-white"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-400">敬上的學生</p>
+                                    <p class="text-sm font-bold text-slate-800">${msg.author}</p>
+                                </div>
+                            </div>
+                            <i data-lucide="heart" class="w-6 h-6 text-${colorClass}-500 opacity-20"></i>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+            updateIndicator();
+        }
+
+        function switchCenter(key) {
+            currentCenterKey = key;
+            const center = data[key];
+            
+            // Update tabs UI
+            ['hualien', 'yilan', 'keelung'].forEach(k => {
+                const btn = document.getElementById(`tab-${k}`);
+                const c = data[k].color;
+                if (k === key) {
+                    btn.className = `flex-1 py-2 text-sm font-medium rounded-lg transition-all bg-${c}-500 text-white shadow-md`;
+                } else {
+                    btn.className = `flex-1 py-2 text-sm font-medium rounded-lg transition-all text-slate-500`;
+                }
+            });
+
+            document.getElementById('center-title').innerText = `${center.name} 的感謝`;
+            document.getElementById('center-icon').className = `w-4 h-4 text-${center.color}-500`;
+            
+            renderCards();
+            carousel.scrollLeft = 0;
+        }
+
+        function updateIndicator() {
+            const index = Math.round(carousel.scrollLeft / carousel.offsetWidth);
+            document.getElementById('page-indicator').innerText = `${index + 1} / ${data[currentCenterKey].messages.length}`;
+        }
+
+        function scrollNext() {
+            carousel.scrollBy({ left: carousel.offsetWidth, behavior: 'smooth' });
+        }
+
+        function scrollPrev() {
+            carousel.scrollBy({ left: -carousel.offsetWidth, behavior: 'smooth' });
+        }
+
+        carousel.addEventListener('scroll', updateIndicator);
+        window.onload = () => {
+            renderCards();
+            lucide.createIcons();
+        };
+    </script>
+</body>
+</html>
