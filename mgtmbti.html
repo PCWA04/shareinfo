@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBTI 職場性格測驗 - 自動計分系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f1f5f9;
+        }
+        .option-card {
+            transition: all 0.2s ease;
+        }
+        input[type="radio"]:checked + .option-content {
+            border-color: #0f172a;
+            background-color: #f8fafc;
+            box-shadow: inset 0 0 0 2px #0f172a;
+        }
+        .function-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+        /* 功能標籤顏色 */
+        .bg-te { background-color: #e0f2fe; color: #0369a1; }
+        .bg-ti { background-color: #f0f9ff; color: #075985; }
+        .bg-fe { background-color: #fdf2f8; color: #be185d; }
+        .bg-fi { background-color: #fff1f2; color: #9f1239; }
+        .bg-se { background-color: #f0fdf4; color: #15803d; }
+        .bg-si { background-color: #f7fee7; color: #4d7c0f; }
+        .bg-ne { background-color: #fff7ed; color: #c2410c; }
+        .bg-ni { background-color: #fffbeb; color: #b45309; }
+        
+        @media print {
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body class="py-10 px-4">
+
+    <div class="max-w-4xl mx-auto bg-white shadow-2xl rounded-3xl overflow-hidden border border-slate-200">
+        <!-- Header -->
+        <div class="bg-slate-900 text-white p-10 text-center relative overflow-hidden">
+            <div class="relative z-10">
+                <h1 class="text-4xl font-black mb-3 tracking-tight">MBTI 職場性格測驗</h1>
+                <p class="text-slate-400 text-lg font-medium">深入分析你的心智功能偏好</p>
+            </div>
+            <div class="absolute -top-10 -right-10 w-40 h-40 bg-slate-800 rounded-full opacity-50"></div>
+        </div>
+
+        <!-- Instructions -->
+        <div id="instructionPanel" class="p-6 bg-amber-50 border-b border-amber-100 text-center">
+            <p class="text-amber-800 font-medium">💡 提示：請憑直覺填答。選擇最符合你「天生傾向」而非「職場要求」的選項。</p>
+        </div>
+
+        <!-- Quiz Form -->
+        <form id="quizForm" class="p-8 md:p-12 space-y-12">
+            <div id="questionsContainer" class="space-y-16"></div>
+
+            <div class="pt-10">
+                <button type="button" onclick="calculateResult()" class="w-full bg-indigo-600 text-white py-5 rounded-2xl font-bold text-xl hover:bg-indigo-700 transition shadow-xl transform hover:-translate-y-1">
+                    完成測驗，查看深度解析表格
+                </button>
+            </div>
+        </form>
+
+        <!-- Result Section -->
+        <div id="resultSection" class="hidden animate-in fade-in duration-700">
+            <div class="p-8 md:p-12">
+                <div class="text-center mb-12">
+                    <h2 class="text-xl text-slate-500 font-bold uppercase tracking-widest">你的測驗結果</h2>
+                    <div id="mbtiCode" class="text-8xl font-black text-slate-900 my-4 tracking-tighter"></div>
+                    <p class="text-slate-500 text-lg">一張圖掌握你的心智功能偏好</p>
+                </div>
+                
+                <!-- 4 Dimensions Summary -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+                    <div id="dim1" class="p-5 rounded-2xl bg-slate-50 border border-slate-100 text-center"></div>
+                    <div id="dim2" class="p-5 rounded-2xl bg-slate-50 border border-slate-100 text-center"></div>
+                    <div id="dim3" class="p-5 rounded-2xl bg-slate-50 border border-slate-100 text-center"></div>
+                    <div id="dim4" class="p-5 rounded-2xl bg-slate-50 border border-slate-100 text-center"></div>
+                </div>
+
+                <!-- Cognitive Functions TABLE -->
+                <div class="mb-12 overflow-x-auto">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+                        <span class="bg-indigo-600 w-2 h-8 rounded-full mr-4"></span>
+                        心智功能分析表
+                    </h3>
+                    <table class="w-full text-left border-collapse bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200">
+                        <thead>
+                            <tr class="bg-slate-900 text-white">
+                                <th class="p-4 font-bold text-sm uppercase">功能位階</th>
+                                <th class="p-4 font-bold text-sm uppercase">縮寫</th>
+                                <th class="p-4 font-bold text-sm uppercase">名稱</th>
+                                <th class="p-4 font-bold text-sm uppercase">職場行為描述</th>
+                            </tr>
+                        </thead>
+                        <tbody id="functionTableBody">
+                            <!-- JS will inject rows here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Reasoning Logic Panel -->
+                <div class="bg-slate-50 rounded-3xl p-8 border border-slate-200 mb-10">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+                        <span class="bg-teal-500 w-2 h-8 rounded-full mr-4"></span>
+                        推理邏輯回顧 (依據您的 MBTI)
+                    </h3>
+                    <div id="logicSteps" class="space-y-4 text-slate-700 leading-relaxed">
+                        <!-- Logic steps will be generated here -->
+                    </div>
+                </div>
+
+                <div class="mt-12 text-center no-print">
+                    <button type="button" onclick="window.print()" class="bg-slate-800 text-white px-8 py-3 rounded-full font-bold hover:bg-slate-700 transition mr-4">
+                        列印/儲存結果
+                    </button>
+                    <button type="button" onclick="window.location.reload()" class="bg-slate-200 text-slate-700 px-8 py-3 rounded-full font-bold hover:bg-slate-300 transition">
+                        重新測驗
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { id: 1, q: "面對跨部門的協作需求時，你通常會：", a: "敲定時間開個簡短會議，透過口頭溝通與討論來對齊目標。", b: "先打好完整的企劃或訊息，再傳送給對方確認。" },
+            { id: 2, q: "在團隊討論中，如果你的意見跟大眾不同，你通常會：", a: "堅持立場，直到有人能提出更有力的邏輯或證據說服我。", b: "評估現場氣氛。如果堅持會傷感情，可能會先保留意見。" },
+            { id: 3, q: "如果今天的工作計畫臨時取消，多出了 1 小時的空檔，你會：", a: "立刻尋找下一件待辦事項，確保時間被有效地組織與利用。", b: "隨性處理一些感興趣的小事，享受這種自由感。" },
+            { id: 4, q: "學習一個新工作或新技能，你比較喜歡：", a: "跟著步驟一步步操作，從實作中學習。", b: "先了解整體邏輯架構，並嘗試發掘不同的用法。" },
+            { id: 5, q: "臨時被主管拉進一個完全沒準備的討論，你表現最自然的方式是：", a: "邊聽邊發言，透過對話來激發自己的觀點。", b: "先記錄大家的重點，等腦袋消化完後再簡短表達。" },
+            { id: 6, q: "當老闆交辦一個從未做過的新專案時，你首先會關注：", a: "過去是否有類似案例或相關 SOP 可以參考。", b: "這個專案背後的長期意義，以及它可能帶來的各種可能性。" },
+            { id: 7, q: "面對週末突如其來的加班通知，你覺得最困擾的地方是：", a: "已經規畫好的私人行程被硬生生打亂，整體的掌控感消失了。", b: "雖然可以配合，但覺得毫無預警的變動讓工作變得很沉重。" },
+            { id: 8, q: "面對一整天連續、密集的會議，你的體感通常是：", a: "覺得大腦轉動得很快，甚至會因此感到更有精神。", b: "即使會議內容順利，結束後仍會感到疲憊。" },
+            { id: 9, q: "當團隊中有同事因為價值觀不同而產生僵局時，你通常會：", a: "站在中立角度，根據公司的目標與邏輯分析誰的方案更有效率。", b: "關注雙方的互動情緒，試著尋找能讓大家在和諧氣氛下共事的折衷點。" },
+            { id: 10, q: "對於辦公室的「潛規則」，你的態度是：", a: "這是職場現實的一部分，我會觀察現狀並務實應對。", b: "我更在乎這背後的權力架構與各種可能造成的長期影響。" },
+            { id: 11, q: "剛換到一個新的環境工作，你通常會如何認識新同事？", a: "趁午餐或茶水間碰面時，主動開啟話題自我介紹。", b: "先觀察大家的互動與職責，等待合適的公事契機再交談。" },
+            { id: 12, q: "你傾向如何管理你的待辦清單？", a: "看到清單被劃掉才安心。", b: "保持清單的開放性，隨時調整優先順序。" },
+            { id: 13, q: "看到同事在工作上出了明顯的低級錯誤，你的第一直覺反應是：", a: "思考這個錯誤會對專案造成什麼後果，以及如何修正。", b: "擔心同事現在的心情，以及他是否正承受著巨大的壓力。" },
+            { id: 14, q: "當主管對你的表現給予負面回饋時，你內心最先產生的念頭是：", a: "「他說的內容合乎邏輯嗎？具體的事實依據是什麼？」", b: "「他對我的印象變差了嗎？這會影響我們之後的合作關係嗎？」" },
+            { id: 15, q: "在一個忙碌的下午，主管突然走過來問：「大家現在有空聊一下新想法嗎？」你的內心反應是：", a: "覺得正好可以換個節奏工作，很樂意參與討論並拋出想法。", b: "感到被打斷，希望能趕快結束討論、回到原本的工作。" },
+            { id: 16, q: "在會議中討論問題時，你最不能忍受的是：", a: "討論太過空泛、沒有重點，卻不談具體如何解決問題。", b: "太糾結於細節，卻忽略了整件事的大方向。" },
+            { id: 17, q: "當你正在進行一項工作，主管突然衝進來說有另一件急事，你的反應是：", a: "感到被打斷的焦躁，會想趕快把手邊的事做完再換。", b: "覺得沒關係，隨時切換工作節奏對我來說並不困難。" },
+            { id: 18, q: "同事通常會用哪種形容詞形容你？", a: "「你做事非常穩重，細節都注意到了。」", b: "「你很有遠見和創意，常有令人驚喜的想法。」" },
+            { id: 19, q: "當你必須拒絕一個合作夥伴的不合理要求時，你傾向：", a: "清楚列出合約條款與邏輯理由，專業且客觀地說明原因。", b: "委婉地表達困難，並強調雙方關係的重要性，尋求諒解。" },
+            { id: 20, q: "如果可以選擇自己的工作任務，你會比較喜歡哪種性質的工作任務？", a: "目標明確、流程清晰，可以按計畫有條理地推進到結束。", b: "充滿變數與新鮮感，可以隨時根據新狀況調整做法。" }
+        ];
+
+        const functionData = {
+            'Te': { name: '外向思考', desc: '建立秩序與效率。善於制定規則、規範，並以客觀邏輯推動目標達成。' },
+            'Ti': { name: '內向思考', desc: '追求邏輯嚴密。接收新訊時會對比內在邏輯框架，抓出矛盾並解決問題。' },
+            'Fe': { name: '外向情感', desc: '維護人際和諧。致力於團隊凝聚，能敏銳感受他人情緒並建立連結。' },
+            'Fi': { name: '內向情感', desc: '堅持核心價值。依據個人信念採取行動，不輕易妥協於不合價值觀的事物。' },
+            'Se': { name: '外向實感', desc: '把握當下機會。透過五感接收資訊，對現實環境的細節反應極其敏銳。' },
+            'Si': { name: '內向實感', desc: '依循經驗導向。依賴過去的記憶與既有印象來處理現狀，做事穩健踏實。' },
+            'Ne': { name: '外向直覺', desc: '探索各種可能。喜歡延伸聯想，從現有資訊中激發出多種創新的選擇。' },
+            'Ni': { name: '內向直覺', desc: '洞察未來趨勢。擁有強大的第六感與預見力，能掌握事物的核心本質與長期走向。' }
+        };
+
+        const container = document.getElementById('questionsContainer');
+        questions.forEach((q, index) => {
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <div class="flex items-start space-x-4">
+                    <span class="bg-slate-900 text-white w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm mt-1">${index + 1}</span>
+                    <div class="flex-grow">
+                        <h3 class="text-xl font-bold text-slate-800 mb-6">${q.q}</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q${q.id}" value="a" class="hidden peer" required>
+                                <div class="option-content h-full p-6 border-2 border-slate-100 rounded-2xl group-hover:border-indigo-200 transition-all">
+                                    <p class="text-slate-700 leading-relaxed font-medium">${q.a}</p>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q${q.id}" value="b" class="hidden peer">
+                                <div class="option-content h-full p-6 border-2 border-slate-100 rounded-2xl group-hover:border-indigo-200 transition-all">
+                                    <p class="text-slate-700 leading-relaxed font-medium">${q.b}</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+
+        function getFunctionStack(code) {
+            const [EorI, SorN, TorF, JorP] = code.split('');
+            const opp = { 'E':'I', 'I':'E', 'S':'N', 'N':'S', 'T':'F', 'F':'T', 'e':'i', 'i':'e' };
+            let dom, aux, tert, inf;
+
+            if (JorP === 'P') {
+                const pFunc = SorN + 'e';
+                const jFunc = TorF + 'i';
+                if (EorI === 'E') { dom = pFunc; aux = jFunc; }
+                else { dom = jFunc; aux = pFunc; }
+            } else {
+                const jFunc = TorF + 'e';
+                const pFunc = SorN + 'i';
+                if (EorI === 'E') { dom = jFunc; aux = pFunc; }
+                else { dom = pFunc; aux = jFunc; }
+            }
+
+            tert = opp[aux[0]] + opp[aux[1]]; 
+            inf = opp[dom[0]] + opp[dom[1]];
+
+            return [dom, aux, tert, inf];
+        }
+
+        function generateLogicSteps(code) {
+            const [EorI, SorN, TorF, JorP] = code.split('');
+            const stack = getFunctionStack(code);
+            
+            const steps = [
+                `<strong>步驟 ①：先看最後一個字母 (${JorP})</strong><br>因為您是 ${JorP === 'J' ? 'J (判斷型)' : 'P (感知型)'}，您的外向功能是 ${JorP === 'J' ? '判斷功能 (T/F)' : '感知功能 (S/N)'}。所以您的外向功能是 <strong>${stack.find(f => f.endsWith('e'))}</strong>。`,
+                `<strong>步驟 ②：中間功能一內一外</strong><br>既然 ${stack.find(f => f.endsWith('e'))} 是外向，那另一個中間功能 ${stack.find(f => f.endsWith('i'))[0]} 就必須是內向，即 <strong>${stack.find(f => f.endsWith('i'))}</strong>。`,
+                `<strong>步驟 ③：看第一個字母 (${EorI}) 決定主導</strong><br>您是 ${EorI === 'E' ? 'E (外向型)' : 'I (內向型)'}，所以您的主導功能是${EorI === 'E' ? '外向' : '內向'}的那一個，即 <strong>${stack[0]}</strong>。`,
+                `<strong>步驟 ④：推出第三與第四功能</strong><br>依據對極理論，第三功能是輔助功能的相反 (即 <strong>${stack[2]}</strong>)，第四功能是主導功能的相反 (即 <strong>${stack[3]}</strong>)。`
+            ];
+            
+            return steps.map(s => `<p class="border-l-4 border-slate-200 pl-4 py-2">${s}</p>`).join('');
+        }
+
+        function calculateResult() {
+            const form = document.getElementById('quizForm');
+            const formData = new FormData(form);
+            if (Array.from(formData.keys()).length < 20) {
+                alert("請完成所有 20 道題目後再查看結果。");
+                return;
+            }
+
+            const answers = {};
+            for (let [key, value] of formData.entries()) {
+                answers[key.replace('q', '')] = value;
+            }
+
+            const dims = {
+                EI: [1, 5, 8, 11, 15],
+                SN: [4, 6, 10, 16, 18],
+                TF: [2, 9, 13, 14, 19],
+                JP: [3, 7, 12, 17, 20]
+            };
+
+            const getRes = (arr, a, b) => {
+                let countA = 0;
+                arr.forEach(id => { if (answers[id] === 'a') countA++; });
+                return countA >= 3 ? a : b;
+            };
+
+            const code = getRes(dims.EI, 'E', 'I') + getRes(dims.SN, 'S', 'N') + getRes(dims.TF, 'T', 'F') + getRes(dims.JP, 'J', 'P');
+
+            document.getElementById('quizForm').classList.add('hidden');
+            document.getElementById('instructionPanel').classList.add('hidden');
+            document.getElementById('resultSection').classList.remove('hidden');
+            document.getElementById('mbtiCode').innerText = code;
+            
+            const labels = { 'E':'外向型', 'I':'內向型', 'S':'實感型', 'N':'直覺型', 'T':'思考型', 'F':'情感型', 'J':'判斷型', 'P':'感知型' };
+            const subLabels = ['能量來源', '資訊接收', '決策方式', '生活處事'];
+            code.split('').forEach((char, i) => {
+                document.getElementById(`dim${i+1}`).innerHTML = `
+                    <span class="block text-xs text-slate-400 font-bold mb-1">${subLabels[i]}</span>
+                    <strong class="text-xl text-slate-800">${char} ${labels[char]}</strong>
+                `;
+            });
+
+            // Populate Table
+            const stack = getFunctionStack(code);
+            const stackLabels = ['主導功能 (Dominant)', '輔助功能 (Auxiliary)', '第三功能 (Tertiary)', '第四功能 (Inferior)'];
+            const tableBody = document.getElementById('functionTableBody');
+            tableBody.innerHTML = '';
+            
+            stack.forEach((func, i) => {
+                const data = functionData[func];
+                const row = document.createElement('tr');
+                row.className = "border-b border-slate-100 hover:bg-slate-50 transition";
+                row.innerHTML = `
+                    <td class="p-4 text-slate-500 font-medium">${stackLabels[i]}</td>
+                    <td class="p-4 font-bold"><span class="function-tag bg-${func.toLowerCase()}">${func}</span></td>
+                    <td class="p-4 font-bold text-slate-800">${data.name}</td>
+                    <td class="p-4 text-sm text-slate-600 leading-relaxed">${data.desc}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Generate Logic Steps Text
+            document.getElementById('logicSteps').innerHTML = generateLogicSteps(code);
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
