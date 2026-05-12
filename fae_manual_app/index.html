@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FAE 維修手冊查詢助手</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
+  </head>
+  <body>
+    <main class="container">
+      <h1>FAE 維修手冊查詢助手</h1>
+      <p class="hint">上傳維修手冊 PDF，輸入現場症狀或錯誤碼，快速取得排查步驟。</p>
+
+      <section class="card">
+        <label for="pdfFile">1) 上傳 PDF 手冊</label>
+        <input id="pdfFile" type="file" accept="application/pdf" />
+        <small id="loadState">尚未載入文件。</small>
+      </section>
+
+      <section class="card">
+        <label for="query">2) 輸入問題（例如：E102、無法開機、馬達異音）</label>
+        <textarea id="query" rows="3" placeholder="請描述症狀、機型、錯誤碼與最近異動"></textarea>
+        <button id="searchBtn">查詢並引導排查</button>
+      </section>
+
+      <section class="card">
+        <h2>診斷引導</h2>
+        <div id="result" class="result empty">等待查詢...</div>
+      </section>
+    </main>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
