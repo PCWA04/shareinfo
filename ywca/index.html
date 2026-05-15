@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>你的珍奶，藏著你在YWCA的角色密碼</title>
+<link rel="canonical" href="https://boba-quiz.pages.dev/">
+<meta name="description" content="甜度、冰塊、珍珠的選擇，找出你在YWCA裡天生扮演的位置。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://boba-quiz.pages.dev/">
+<meta property="og:title" content="你的珍奶，藏著你在YWCA的角色密碼">
+<meta property="og:description" content="甜度、冰塊、珍珠的選擇，解鎖你的YWCA角色密碼。">
+<meta property="og:image" content="https://boba-quiz.pages.dev/og-home.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="你的珍奶，藏著你在YWCA的角色密碼">
+<meta name="twitter:description" content="甜度、冰塊、珍珠的選擇，解鎖你的YWCA角色密碼。">
+<meta name="twitter:image" content="https://boba-quiz.pages.dev/og-home.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500&family=LXGW+WenKai+TC&family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FFF4E3;
+  --cream-deep:#F5E6CC;
+  --milk:#E8C9A0;
+  --tea:#A8754A;
+  --tea-deep:#6B4226;
+  --boba:#2C1810;
+  --ink:#1F1410;
+  --pink:#F4A5A5;
+  --leader:#E63946;
+  --reformer:#5B4B8A;
+  --funner:#F4A261;
+  --advocate:#2A9D8F;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+html,body{
+  min-height:100%;
+  background:var(--cream);
+  font-family:'Fraunces','LXGW WenKai TC','Noto Serif TC',serif;
+  color:var(--ink);
+  overflow-x:hidden;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background-image:
+    radial-gradient(circle at 12% 18%, var(--boba) 6px, transparent 7px),
+    radial-gradient(circle at 88% 22%, var(--boba) 4px, transparent 5px),
+    radial-gradient(circle at 25% 75%, var(--boba) 5px, transparent 6px),
+    radial-gradient(circle at 70% 85%, var(--boba) 7px, transparent 8px),
+    radial-gradient(circle at 50% 45%, var(--tea) 3px, transparent 4px),
+    radial-gradient(circle at 92% 60%, var(--tea) 4px, transparent 5px),
+    radial-gradient(circle at 8% 50%, var(--tea) 3px, transparent 4px);
+  opacity:.12;
+  pointer-events:none;
+  z-index:0;
+}
+
+.app{
+  position:relative;
+  z-index:1;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:32px 20px 60px;
+}
+
+.lang-toggle{
+  position:fixed;
+  top:20px;
+  left:20px;
+  z-index:50;
+  display:flex;
+  background:white;
+  border:2.5px solid var(--tea-deep);
+  border-radius:50px;
+  padding:4px;
+  box-shadow:4px 4px 0 var(--milk);
+  font-family:'Fraunces','Noto Serif TC',serif;
+  font-weight:700;
+}
+.lang-btn{
+  background:transparent;
+  border:none;
+  padding:8px 16px;
+  font-size:15px;
+  font-family:inherit;
+  font-weight:700;
+  color:var(--tea-deep);
+  cursor:pointer;
+  border-radius:40px;
+  transition:all .2s;
+}
+.lang-btn.active{
+  background:var(--tea-deep);
+  color:var(--cream);
+}
+.lang-btn:hover:not(.active){
+  background:var(--cream-deep);
+}
+
+.ywca-logo{
+  position:fixed;
+  top:18px;
+  right:20px;
+  z-index:50;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:8px 12px;
+  background:rgba(255,255,255,.9);
+  border:2px solid rgba(107,66,38,.18);
+  border-radius:12px;
+  box-shadow:4px 4px 0 rgba(232,201,160,.85);
+}
+.ywca-logo svg{
+  width:78px;
+  height:auto;
+  display:block;
+}
+.ywca-logo-text{
+  font-family:Arial,'Noto Serif TC',sans-serif;
+  font-size:15px;
+  line-height:1.15;
+  font-weight:700;
+  color:#5f5a54;
+  white-space:nowrap;
+  letter-spacing:.01em;
+}
+.ywca-logo-text span{
+  display:block;
+  font-size:12px;
+  margin-top:4px;
+  letter-spacing:.04em;
+}
+@media (max-width:640px){
+  .app{padding-top:112px;}
+  .ywca-logo{
+    top:64px;
+    left:20px;
+    right:auto;
+  }
+  .ywca-logo svg{width:58px;}
+  .ywca-logo-text{font-size:12px;}
+  .ywca-logo-text span{font-size:9px;}
+}
+
+.screen{display:none; width:100%; max-width:760px;}
+.screen.active{display:block; animation:fadeUp .55s ease-out;}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(18px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+.hero{
+  text-align:center;
+  padding:30px 0 16px;
+  position:relative;
+}
+
+.hero .kicker{
+  display:inline-block;
+  font-family:'Caveat',cursive;
+  font-size:28px;
+  color:var(--tea);
+  transform:rotate(-3deg);
+  background:var(--cream-deep);
+  padding:6px 18px;
+  border-radius:30px;
+  border:2px dashed var(--tea);
+  margin-bottom:18px;
+}
+
+.hero h1{
+  font-family:'Fraunces','Noto Serif TC',serif;
+  font-weight:900;
+  font-size:clamp(36px,6.5vw,60px);
+  line-height:1.1;
+  letter-spacing:-.005em;
+  color:var(--tea-deep);
+  margin-bottom:14px;
+}
+
+.hero h1 .accent{
+  color:var(--leader);
+  position:relative;
+  display:inline-block;
+}
+.hero h1 .accent::after{
+  content:"";
+  position:absolute;
+  left:-4px;right:-4px;bottom:6px;
+  height:14px;
+  background:var(--pink);
+  z-index:-1;
+  border-radius:8px;
+  opacity:.55;
+}
+
+.hero p.lead{
+  font-size:18px;
+  color:var(--tea-deep);
+  max-width:540px;
+  margin:0 auto 28px;
+  line-height:1.7;
+}
+
+.hero-cup{
+  width:200px;
+  height:240px;
+  margin:0 auto 24px;
+  position:relative;
+  animation:wobble 4s ease-in-out infinite;
+}
+@keyframes wobble{
+  0%,100%{transform:rotate(-2deg);}
+  50%{transform:rotate(2deg);}
+}
+
+.btn-primary{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  background:var(--tea-deep);
+  color:var(--cream);
+  font-family:'Fraunces','Noto Serif TC',serif;
+  font-weight:700;
+  font-size:20px;
+  padding:18px 42px;
+  border:none;
+  border-radius:50px;
+  cursor:pointer;
+  box-shadow:0 6px 0 var(--boba),0 10px 24px rgba(44,24,16,.25);
+  transition:transform .15s, box-shadow .15s;
+  letter-spacing:.02em;
+}
+.btn-primary:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 0 var(--boba),0 12px 30px rgba(44,24,16,.3);
+}
+.btn-primary:active{
+  transform:translateY(4px);
+  box-shadow:0 2px 0 var(--boba),0 4px 10px rgba(44,24,16,.2);
+}
+
+.tags{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:10px;
+  margin-top:24px;
+}
+.tag{
+  font-size:14px;
+  background:white;
+  border:1.5px solid var(--milk);
+  color:var(--tea-deep);
+  padding:6px 14px;
+  border-radius:20px;
+  font-family:'Fraunces','LXGW WenKai TC',sans-serif;
+  font-weight:500;
+}
+
+.q-stage{
+  display:grid;
+  grid-template-columns:240px 1fr;
+  gap:36px;
+  align-items:start;
+  margin-top:20px;
+}
+@media (max-width:720px){
+  .q-stage{grid-template-columns:1fr; gap:20px;}
+  .cup-aside{margin:0 auto; max-width:200px;}
+}
+
+.cup-aside{
+  position:sticky;
+  top:24px;
+  text-align:center;
+}
+.cup-svg{width:100%; height:auto; max-width:220px;}
+
+.progress-text{
+  font-family:'Caveat',cursive;
+  font-size:26px;
+  color:var(--tea-deep);
+  margin-top:10px;
+}
+
+.pearls-row{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  margin-top:8px;
+}
+.pearl-dot{
+  width:14px;height:14px;border-radius:50%;
+  background:var(--cream-deep);
+  border:2px solid var(--milk);
+  transition:all .3s;
+}
+.pearl-dot.done{
+  background:var(--boba);
+  border-color:var(--boba);
+  transform:scale(1.15);
+}
+
+.q-card{
+  background:white;
+  border-radius:24px;
+  padding:32px 28px;
+  border:3px solid var(--tea-deep);
+  box-shadow:8px 8px 0 var(--milk);
+  position:relative;
+}
+.q-card::before{
+  content:attr(data-num);
+  position:absolute;
+  top:-22px; left:24px;
+  background:var(--leader);
+  color:white;
+  font-family:'Caveat',cursive;
+  font-size:24px;
+  padding:6px 18px;
+  border-radius:20px;
+  border:3px solid var(--tea-deep);
+  font-weight:700;
+}
+
+.q-title{
+  font-family:'Fraunces','Noto Serif TC',serif;
+  font-weight:700;
+  font-size:24px;
+  color:var(--tea-deep);
+  margin-bottom:6px;
+  line-height:1.3;
+}
+.q-sub{
+  font-size:15px;
+  color:var(--tea);
+  margin-bottom:22px;
+  font-style:italic;
+}
+
+.options{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.opt{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  background:var(--cream);
+  border:2px solid var(--milk);
+  border-radius:16px;
+  padding:14px 18px;
+  font-family:'Fraunces','LXGW WenKai TC',sans-serif;
+  font-size:16px;
+  color:var(--ink);
+  text-align:left;
+  cursor:pointer;
+  transition:all .2s;
+  width:100%;
+  line-height:1.4;
+}
+.opt:hover{
+  background:white;
+  border-color:var(--tea);
+  transform:translateX(4px);
+}
+.opt .emoji{
+  font-size:28px;
+  flex-shrink:0;
+}
+.opt .label{
+  flex:1;
+  font-weight:500;
+}
+.opt .arrow{
+  opacity:0;
+  font-size:22px;
+  color:var(--tea);
+  transition:opacity .2s, transform .2s;
+}
+.opt:hover .arrow{
+  opacity:1;
+  transform:translateX(2px);
+}
+
+.result-wrap{
+  text-align:center;
+  padding-top:20px;
+}
+.result-kicker{
+  font-family:'Caveat',cursive;
+  font-size:26px;
+  color:var(--tea);
+  margin-bottom:8px;
+}
+.result-name{
+  font-family:'Fraunces','Noto Serif TC',serif;
+  font-weight:900;
+  font-size:clamp(38px,7vw,64px);
+  line-height:1.05;
+  margin-bottom:8px;
+  letter-spacing:-.01em;
+}
+.result-tagline{
+  font-size:19px;
+  color:var(--tea-deep);
+  margin-bottom:24px;
+  font-style:italic;
+  font-family:'Fraunces','Noto Serif TC',serif;
+}
+
+.result-card{
+  background:white;
+  border:3px solid var(--tea-deep);
+  border-radius:28px;
+  padding:32px 28px;
+  box-shadow:10px 10px 0 var(--milk);
+  text-align:left;
+  margin-bottom:24px;
+}
+
+.result-grid{
+  display:grid;
+  grid-template-columns:200px 1fr;
+  gap:28px;
+  align-items:start;
+}
+@media (max-width:600px){
+  .result-grid{grid-template-columns:1fr; text-align:center;}
+  .result-grid .cup-result{margin:0 auto;}
+}
+
+.cup-result{width:200px;height:240px;position:relative;}
+
+.result-section{margin-bottom:18px;}
+.result-section h3{
+  font-family:'Fraunces','Noto Serif TC',serif;
+  font-weight:700;
+  font-size:17px;
+  color:var(--ink);
+  margin-bottom:8px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.result-section h3::before{
+  content:"";
+  width:18px;height:18px;
+  background:var(--leader);
+  border-radius:50%;
+  display:inline-block;
+}
+.result-section p{
+  font-size:16px;
+  line-height:1.75;
+  color:var(--ink);
+}
+
+.recipe-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:6px;
+}
+.recipe-chip{
+  background:var(--cream-deep);
+  border:1.5px solid var(--milk);
+  padding:6px 14px;
+  border-radius:20px;
+  font-size:14px;
+  color:var(--tea-deep);
+  font-weight:500;
+}
+
+.partners{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:8px;
+}
+@media (max-width:480px){.partners{grid-template-columns:1fr;}}
+.partner{
+  background:var(--cream);
+  border:2px solid var(--milk);
+  border-radius:14px;
+  padding:12px;
+  font-size:14px;
+  line-height:1.5;
+}
+.partner b{display:block; color:var(--tea-deep); margin-bottom:2px; font-weight:700;}
+
+.share-row{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+
+.btn-secondary{
+  background:transparent;
+  color:var(--tea-deep);
+  border:2.5px solid var(--tea-deep);
+  font-family:'Fraunces','Noto Serif TC',serif;
+  font-weight:700;
+  font-size:17px;
+  padding:14px 28px;
+  border-radius:50px;
+  cursor:pointer;
+  transition:all .2s;
+}
+.btn-secondary:hover{
+  background:var(--tea-deep);
+  color:var(--cream);
+}
+
+.btn-share-trigger{
+  background:var(--leader);
+  box-shadow:0 6px 0 var(--boba),0 10px 24px rgba(230,57,70,.22);
+}
+.btn-share-trigger:hover{
+  box-shadow:0 8px 0 var(--boba),0 12px 30px rgba(230,57,70,.28);
+}
+.btn-facebook{
+  background:#1877F2;
+  box-shadow:0 6px 0 #0D3B78,0 10px 24px rgba(24,119,242,.22);
+}
+.btn-facebook:hover{
+  box-shadow:0 8px 0 #0D3B78,0 12px 30px rgba(24,119,242,.28);
+}
+.btn-instagram{
+  background:#C13584;
+  box-shadow:0 6px 0 #6B1D49,0 10px 24px rgba(193,53,132,.22);
+}
+.btn-instagram:hover{
+  box-shadow:0 8px 0 #6B1D49,0 12px 30px rgba(193,53,132,.28);
+}
+.btn-line{
+  background:#06C755;
+  box-shadow:0 6px 0 #047A36,0 10px 24px rgba(6,199,85,.22);
+}
+.btn-line:hover{
+  box-shadow:0 8px 0 #047A36,0 12px 30px rgba(6,199,85,.28);
+}
+.btn-x{
+  background:#111;
+  box-shadow:0 6px 0 #000,0 10px 24px rgba(0,0,0,.2);
+}
+.btn-x:hover{
+  box-shadow:0 8px 0 #000,0 12px 30px rgba(0,0,0,.28);
+}
+.btn-threads{
+  background:#4D4D4D;
+  box-shadow:0 6px 0 #222,0 10px 24px rgba(0,0,0,.18);
+}
+.btn-threads:hover{
+  box-shadow:0 8px 0 #222,0 12px 30px rgba(0,0,0,.24);
+}
+.share-row .btn-primary,
+.share-row .btn-secondary{
+  min-width:190px;
+  justify-content:center;
+}
+
+.share-modal{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(31,20,16,.42);
+}
+.share-modal.active{display:flex;}
+.share-dialog{
+  width:min(440px,100%);
+  background:white;
+  border:3px solid var(--tea-deep);
+  border-radius:24px;
+  box-shadow:10px 10px 0 var(--milk);
+  padding:24px;
+  text-align:center;
+}
+.share-dialog h3{
+  font-size:24px;
+  color:var(--tea-deep);
+  margin-bottom:16px;
+}
+.share-options{
+  display:grid;
+  gap:12px;
+}
+.share-option{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+.share-close{
+  margin-top:14px;
+  padding:10px 18px;
+  font-size:15px;
+}
+
+.float-bubble{
+  position:fixed;
+  border-radius:50%;
+  background:var(--boba);
+  pointer-events:none;
+  z-index:0;
+  animation:floatUp 3s ease-out forwards;
+}
+@keyframes floatUp{
+  0%{transform:translateY(0) scale(0); opacity:0;}
+  20%{opacity:.7; transform:translateY(-30px) scale(1);}
+  100%{transform:translateY(-100vh) scale(.8); opacity:0;}
+}
+
+.confetti{
+  position:fixed;
+  width:12px;height:12px;
+  border-radius:50%;
+  pointer-events:none;
+  z-index:5;
+}
+
+.footer-note{
+  text-align:center;
+  font-size:13px;
+  color:var(--tea);
+  margin-top:24px;
+  font-family:'Caveat',cursive;
+  letter-spacing:.05em;
+}
+</style>
+</head>
+<body>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-zh" onclick="setLang('zh')">中文</button>
+  <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+</div>
+
+<div class="ywca-logo" aria-label="YWCA Taiwan">
+  <svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <path d="M60 88 10 4h100z" fill="#0055A4"/>
+    <path d="M60 72 27 16h66z" fill="#fff"/>
+    <path d="M60 86 18 16h84z" fill="#0055A4"/>
+    <rect x="16" y="26" width="88" height="24" fill="#0055A4" stroke="#fff" stroke-width="2"/>
+    <text x="60" y="44" text-anchor="middle" font-family="Georgia,serif" font-size="22" font-weight="700" fill="#fff" letter-spacing="4">YWCA</text>
+  </svg>
+  <div class="ywca-logo-text">
+    中華民國基督教女青年會協會
+    <span>YOUNG WOMEN'S CHRISTIAN<br>ASSOCIATION OF TAIWAN, R.O.C.</span>
+  </div>
+</div>
+
+<div class="app">
+
+<section class="screen active" id="screen-start">
+  <div class="hero">
+    <span class="kicker" id="t-kicker"></span>
+    <div class="hero-cup">
+      <svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+        <rect x="92" y="10" width="14" height="60" fill="#F4A5A5" stroke="#1F1410" stroke-width="3" rx="3"/>
+        <ellipse cx="100" cy="62" rx="68" ry="10" fill="#E8C9A0" stroke="#1F1410" stroke-width="3"/>
+        <path d="M40,62 L60,228 Q60,235 70,235 L130,235 Q140,235 140,228 L160,62 Z"
+              fill="#FFF4E3" stroke="#1F1410" stroke-width="3"/>
+        <clipPath id="cup-clip-hero">
+          <path d="M40,62 L60,228 Q60,235 70,235 L130,235 Q140,235 140,228 L160,62 Z"/>
+        </clipPath>
+        <g clip-path="url(#cup-clip-hero)">
+          <rect x="0" y="90" width="200" height="160" fill="#C8956D"/>
+          <path d="M0,92 Q50,84 100,92 T200,92 L200,80 L0,80 Z" fill="#D4A57E"/>
+          <circle cx="72" cy="210" r="9" fill="#2C1810"/>
+          <circle cx="92" cy="218" r="9" fill="#2C1810"/>
+          <circle cx="115" cy="212" r="9" fill="#2C1810"/>
+          <circle cx="80" cy="195" r="9" fill="#2C1810"/>
+          <circle cx="108" cy="195" r="9" fill="#2C1810"/>
+          <circle cx="128" cy="200" r="9" fill="#2C1810"/>
+          <circle cx="95" cy="180" r="8" fill="#2C1810"/>
+        </g>
+        <path d="M52,90 L62,200" stroke="white" stroke-width="4" stroke-linecap="round" opacity=".5"/>
+      </svg>
+    </div>
+    <h1 id="t-title"></h1>
+    <p class="lead" id="t-lead"></p>
+    <button class="btn-primary" id="t-start-btn" onclick="startQuiz()"></button>
+    <div class="tags" id="t-tags"></div>
+  </div>
+</section>
+
+<section class="screen" id="screen-quiz">
+  <div class="q-stage">
+    <aside class="cup-aside">
+      <svg class="cup-svg" id="progress-cup" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+        <rect x="92" y="10" width="14" height="60" fill="#F4A5A5" stroke="#1F1410" stroke-width="3" rx="3"/>
+        <ellipse cx="100" cy="62" rx="68" ry="10" fill="#E8C9A0" stroke="#1F1410" stroke-width="3"/>
+        <path d="M40,62 L60,228 Q60,235 70,235 L130,235 Q140,235 140,228 L160,62 Z"
+              fill="#FFF4E3" stroke="#1F1410" stroke-width="3"/>
+        <clipPath id="cup-clip-progress">
+          <path d="M40,62 L60,228 Q60,235 70,235 L130,235 Q140,235 140,228 L160,62 Z"/>
+        </clipPath>
+        <g clip-path="url(#cup-clip-progress)">
+          <rect id="tea-fill" x="0" y="240" width="200" height="200" fill="#C8956D" style="transition:y 0.7s cubic-bezier(.4,1.4,.5,1);"/>
+          <g id="bobas-group"></g>
+        </g>
+        <path d="M52,90 L62,200" stroke="white" stroke-width="4" stroke-linecap="round" opacity=".5"/>
+      </svg>
+      <div class="progress-text"><span id="q-current">1</span> / 6</div>
+      <div class="pearls-row" id="pearls-row"></div>
+    </aside>
+    <div class="q-card" data-num="Q" id="q-card">
+      <div class="q-title" id="q-title"></div>
+      <div class="q-sub" id="q-sub"></div>
+      <div class="options" id="options"></div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="screen-result">
+  <div class="result-wrap">
+    <div class="result-kicker" id="t-result-kicker"></div>
+    <h2 class="result-name" id="r-name"></h2>
+    <p class="result-tagline" id="r-tagline"></p>
+
+    <div class="result-card">
+      <div class="result-grid">
+        <div class="cup-result" id="cup-result"></div>
+        <div>
+          <div class="result-section">
+            <h3 id="h-desc"></h3>
+            <p id="r-desc"></p>
+          </div>
+          <div class="result-section">
+            <h3 id="h-strength"></h3>
+            <p id="r-strength"></p>
+          </div>
+          <div class="result-section">
+            <h3 id="h-recipe"></h3>
+            <div class="recipe-row" id="r-recipe"></div>
+          </div>
+        </div>
+      </div>
+      <div class="result-section" style="margin-top:20px;">
+        <h3 id="h-partner"></h3>
+        <div class="partners" id="r-partners"></div>
+      </div>
+    </div>
+
+    <div class="share-row">
+      <button class="btn-primary" id="t-ywca-btn" onclick="visitYwca()"></button>
+      <button class="btn-secondary" id="t-restart-btn" onclick="restartQuiz()"></button>
+      <button class="btn-primary btn-facebook" id="t-facebook-btn" onclick="shareToFacebook()"></button>
+      <button class="btn-primary btn-instagram" id="t-instagram-btn" onclick="shareToInstagram()"></button>
+      <button class="btn-primary btn-line" id="t-line-btn" onclick="shareToLine()"></button>
+      <button class="btn-primary btn-x" id="t-x-btn" onclick="shareToX()"></button>
+      <button class="btn-primary btn-threads" id="t-threads-btn" onclick="shareToThreads()"></button>
+      <button class="btn-secondary" id="t-more-share-btn" onclick="shareMore()"></button>
+      <button class="btn-secondary" id="t-copy-link-btn" onclick="copyShareText()"></button>
+    </div>
+    <div class="footer-note" id="t-footer"></div>
+  </div>
+</section>
+
+</div>
+
+<div class="share-modal" id="share-modal" role="dialog" aria-modal="true" aria-labelledby="share-title">
+  <div class="share-dialog">
+    <h3 id="share-title"></h3>
+    <div class="share-options">
+      <button class="btn-primary share-option" id="t-share-fb-btn" onclick="shareToFacebook()"></button>
+      <button class="btn-secondary share-option" id="t-share-ig-btn" onclick="shareToInstagram()"></button>
+    </div>
+    <button class="btn-secondary share-close" id="t-share-close-btn" onclick="closeShareModal()"></button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   ↓↓↓ 把這裡換成你的 YWCA Facebook / Meta 連結 ↓↓↓
+   ↓↓↓ Replace this URL with your YWCA Facebook page    ↓↓↓
+   ============================================================ */
+const YWCA_META_URL = "https://www.facebook.com/YWCATaiwan";
+const SHARE_URL = "https://boba-quiz.pages.dev/";
+
+const T = {
+  zh: {
+    docTitle: "你的珍奶，藏著你在YWCA的角色密碼",
+    kicker: "YWCA × 珍奶人格",
+    title: '你的珍奶，藏著<br>你在<span class="accent">YWCA</span>的角色密碼',
+    lead: "甜度、冰塊、珍珠的選擇，輕鬆作答，解鎖你在YWCA裡天生扮演的位置。",
+    startBtn: "開始測驗 →",
+    tags: ["🥤 6 題", "⏱ 約 2 分鐘", "✨ 4 種角色"],
+    resultKicker: "你的 YWCA 角色是 ——",
+    hDesc: "這就是你",
+    hStrength: "在團隊裡你擅長",
+    hRecipe: "你的專屬珍奶配方",
+    hPartner: "與你互補的隊友",
+    ywcaBtn: "👉 認識台灣 YWCA",
+    restartBtn: "再測一次 ↻",
+    shareBtn: "分享我的結果",
+    facebookBtn: "分享到 Facebook",
+    instagramBtn: "分享到 Instagram",
+    lineBtn: "分享到 LINE",
+    xBtn: "分享到 X",
+    threadsBtn: "分享到 Threads",
+    moreShareBtn: "更多分享",
+    copyLinkBtn: "複製連結",
+    shareChoose: "選擇分享平台",
+    shareFbBtn: "f 分享到 Facebook",
+    shareIgBtn: "◎ 分享到 Instagram",
+    shareCloseBtn: "取消",
+    footer: "— 喝口珍奶，找到你的位置 —",
+    shareText: (n) => `我的 YWCA 珍奶人格是「${n}」！來測測你是哪一種 →`,
+    copyAlert: "已複製分享文字與首頁連結！",
+    instagramCopyAlert: "已複製分享文字與首頁網址，接著可以貼到 Instagram。"
+  },
+  en: {
+    docTitle: "Your boba hides your YWCA role code",
+    kicker: "YWCA × Boba Personality",
+    title: 'Your boba hides<br>your <span class="accent">YWCA</span> role code',
+    lead: "Sugar, ice, and boba: Choose your preferences to unlock your role within YWCA.",
+    startBtn: "Start Quiz →",
+    tags: ["🥤 6 Questions", "⏱ ~2 minutes", "✨ 4 Roles"],
+    resultKicker: "Your YWCA role is ——",
+    hDesc: "That's you",
+    hStrength: "What you bring to the team",
+    hRecipe: "Your signature boba recipe",
+    hPartner: "Teammates who complement you",
+    ywcaBtn: "👉 Follow YWCA",
+    restartBtn: "Try Again ↻",
+    shareBtn: "Share My Result",
+    facebookBtn: "Share to Facebook",
+    instagramBtn: "Share to Instagram",
+    lineBtn: "Share to LINE",
+    xBtn: "Share to X",
+    threadsBtn: "Share to Threads",
+    moreShareBtn: "More Share",
+    copyLinkBtn: "Copy Link",
+    shareChoose: "Choose where to share",
+    shareFbBtn: "f Share to Facebook",
+    shareIgBtn: "◎ Share to Instagram",
+    shareCloseBtn: "Cancel",
+    footer: "— Sip your boba, find your place —",
+    shareText: (n) => `My YWCA boba personality is "${n}"! Take the quiz to find yours →`,
+    copyAlert: "Share text and homepage link copied!",
+    instagramCopyAlert: "Share text and homepage URL copied. Paste them into Instagram."
+  }
+};
+
+const QUESTIONS = [
+  {
+    zh: {
+      title: "走進珍奶店，甜度你都怎麼點？",
+      sub: "別想了，這就是你最自然的選擇。",
+      options: [
+        { emoji:"🍯", label:"全糖！要喝就要喝個過癮" },
+        { emoji:"☕", label:"半糖最剛好，平衡才是王道" },
+        { emoji:"🌱", label:"微糖就好，我比較注意健康" },
+        { emoji:"🍵", label:"無糖！我要喝出茶的本味" }
+      ]
+    },
+    en: {
+      title: "Walking into a boba shop, how do you order sweetness?",
+      sub: "Don't think — what's your most natural pick?",
+      options: [
+        { emoji:"🍯", label:"Full sugar! If I'm drinking it, I'm going all in" },
+        { emoji:"☕", label:"Half sugar is perfect — balance is everything" },
+        { emoji:"🌱", label:"Light sugar — I keep an eye on my health" },
+        { emoji:"🍵", label:"No sugar! I want to taste the real tea" }
+      ]
+    },
+    scores: [[1,0,2,0],[1,0,0,1],[0,1,0,2],[0,2,0,1]]
+  },
+  {
+    zh: {
+      title: "珍珠／波霸要多少？",
+      sub: "決定你的珍奶咀嚼感。",
+      options: [
+        { emoji:"🫧", label:"爆量！沒珍珠喝什麼珍奶" },
+        { emoji:"⚫", label:"正常量就好，經典最對味" },
+        { emoji:"🟤", label:"少珍珠，重點是茶不是料" },
+        { emoji:"🆕", label:"我要換脆波波／芋圓／椰果" }
+      ]
+    },
+    en: {
+      title: "How much boba?",
+      sub: "This decides your chewiness factor.",
+      options: [
+        { emoji:"🫧", label:"Extra! No boba, no point" },
+        { emoji:"⚫", label:"Normal amount — classic is best" },
+        { emoji:"🟤", label:"Less boba — the tea is the star" },
+        { emoji:"🆕", label:"Switch it up: crystal boba, taro balls, coconut jelly" }
+      ]
+    },
+    scores: [[1,0,2,0],[2,0,1,1],[0,1,0,2],[0,2,1,0]]
+  },
+  {
+    zh: {
+      title: "冰塊呢？",
+      sub: "天氣、季節、心情⋯⋯都可能影響你。",
+      options: [
+        { emoji:"🧊", label:"正常冰，這樣才夠涼快" },
+        { emoji:"❄️", label:"少冰，喝起來比較有料" },
+        { emoji:"💧", label:"微冰／去冰，怕喝太冷不舒服" },
+        { emoji:"🔥", label:"溫的，給我健康一點的版本" }
+      ]
+    },
+    en: {
+      title: "And the ice?",
+      sub: "Weather, season, mood — they all play a part.",
+      options: [
+        { emoji:"🧊", label:"Regular ice — that's how it's meant to be" },
+        { emoji:"❄️", label:"Less ice — more drink for my money" },
+        { emoji:"💧", label:"Light or no ice — too cold doesn't sit right with me" },
+        { emoji:"🔥", label:"Warm please — give me the healthier version" }
+      ]
+    },
+    scores: [[1,0,2,0],[2,0,1,1],[0,1,0,2],[0,2,0,2]]
+  },
+  {
+    zh: {
+      title: "茶底你最愛哪一種？",
+      sub: "茶底就像個性的底色。",
+      options: [
+        { emoji:"🍂", label:"經典紅茶，最穩最好喝" },
+        { emoji:"🍃", label:"烏龍／鐵觀音，有層次的選擇" },
+        { emoji:"🍵", label:"抹茶／綠茶，清爽又健康" },
+        { emoji:"🍯", label:"黑糖／四季春，最近流行的我都要" }
+      ]
+    },
+    en: {
+      title: "Your favorite tea base?",
+      sub: "Your tea base is like the undertone of your personality.",
+      options: [
+        { emoji:"🍂", label:"Classic black tea — reliable and delicious" },
+        { emoji:"🍃", label:"Oolong / Tieguanyin — layered and complex" },
+        { emoji:"🍵", label:"Matcha / green tea — fresh and healthy" },
+        { emoji:"🍯", label:"Brown sugar / four seasons — whatever's trending, I'm in" }
+      ]
+    },
+    scores: [[2,0,1,0],[1,2,0,1],[0,1,0,2],[0,1,2,0]]
+  },
+  {
+    zh: {
+      title: "和朋友一起去買珍奶時，你通常⋯⋯",
+      sub: "團體中，你扮演什麼角色？",
+      options: [
+        { emoji:"📣", label:"我說了算！「就買 XX 家的吧」" },
+        { emoji:"🔎", label:"我推薦新店或新口味，大家來試試" },
+        { emoji:"🎉", label:"我帶氣氛，大家一起喝最開心" },
+        { emoji:"💭", label:"我提醒大家：糖分／塑膠杯也要注意" }
+      ]
+    },
+    en: {
+      title: "When buying boba with friends, you usually...",
+      sub: "Which role do you naturally play in a group?",
+      options: [
+        { emoji:"📣", label:"I decide — \"We're going to XX shop\"" },
+        { emoji:"🔎", label:"I suggest new shops or flavors for everyone to try" },
+        { emoji:"🎉", label:"I bring the vibe — drinking together is the best part" },
+        { emoji:"💭", label:"I remind everyone about sugar and plastic cups" }
+      ]
+    },
+    scores: [[2,0,1,0],[0,2,1,0],[1,0,2,0],[0,1,0,2]]
+  },
+  {
+    zh: {
+      title: "假如你最愛的珍奶店倒了，你的第一反應是？",
+      sub: "（沒有要倒，只是測一下你的個性。）",
+      options: [
+        { emoji:"🛠", label:"召集大家，馬上找下一家" },
+        { emoji:"💡", label:"是時候開一間更好的店了" },
+        { emoji:"🥲", label:"傷心三天，再揪朋友一起難過" },
+        { emoji:"📝", label:"思考為什麼會倒，背後有什麼問題" }
+      ]
+    },
+    en: {
+      title: "Your favorite boba shop closed. What's your first reaction?",
+      sub: "(It hasn't actually closed. We're just testing your instincts.)",
+      options: [
+        { emoji:"🛠", label:"Rally the group — find the next one right now" },
+        { emoji:"💡", label:"Time to open a better one ourselves" },
+        { emoji:"🥲", label:"Mourn for three days, then grieve with friends" },
+        { emoji:"📝", label:"Think about WHY it closed — what's the bigger issue" }
+      ]
+    },
+    scores: [[2,0,1,0],[1,2,0,0],[0,0,2,1],[0,1,0,2]]
+  }
+];
+
+const ROLES = {
+  leader: {
+    color:"var(--leader)", cupColor:"#C8956D", pearlColor:"#2C1810", emoji:"👑",
+    zh:{
+      name:"領導者",
+      tagline:"「決定了，就照我的方向走。」",
+      desc:"你是團隊的定心丸。當大家七嘴八舌時，你能快速看清重點，給出明確方向。你的珍奶選擇也一樣——經典、穩定、不浪費時間糾結，因為你知道什麼能讓事情順利完成。",
+      strength:"做決策、扛責任、推動進度。你讓團隊有清楚的方向感，遇到混亂能立刻整隊出發。",
+      recipe:["經典紅茶","正常糖","正常冰","正常珍珠"],
+      partner1:{name:"改革者", desc:"幫你看見新可能性，避免太保守"},
+      partner2:{name:"價值守護者", desc:"幫你檢視決定背後的意義"}
+    },
+    en:{
+      name:"The Leader",
+      tagline:'"Decision made. Let\'s move."',
+      desc:"You are the team's anchor. When everyone's talking at once, you cut through the noise and set a clear direction. Your boba order is the same — classic, consistent, no second-guessing — because you know what it takes to get things done.",
+      strength:"Making decisions, taking responsibility, driving momentum. You give your team a clear sense of direction and rally them when things get messy.",
+      recipe:["Classic Black Tea","Regular Sugar","Regular Ice","Regular Boba"],
+      partner1:{name:"Reformer", desc:"Shows you new possibilities so you don't play it too safe"},
+      partner2:{name:"Values Guardian", desc:"Helps you examine the meaning behind your decisions"}
+    }
+  },
+  reformer: {
+    color:"var(--reformer)", cupColor:"#9C7C5A", pearlColor:"#5B4B8A", emoji:"🔧",
+    zh:{
+      name:"改革者",
+      tagline:"「為什麼一定要這樣做？」",
+      desc:"你是團隊裡的雷達，敏銳察覺哪裡可以更好。你不害怕質疑現狀，也願意嘗試別人沒走過的路。你的珍奶常常是創新口味、特殊配料、或健康版的改良——因為你相信，永遠有更好的版本。",
+      strength:"看出盲點、提出新做法、推動改變。當組織需要進化時，你是那個點火的人。",
+      recipe:["烏龍茶","微糖","去冰","脆波波"],
+      partner1:{name:"領導者", desc:"把你的新點子變成可執行的行動"},
+      partner2:{name:"歡樂組", desc:"讓你的改革過程不會太嚴肅"}
+    },
+    en:{
+      name:"The Reformer",
+      tagline:'"Why does it have to be this way?"',
+      desc:"You are the team's radar — always sensing where things could be better. You're not afraid to question the status quo or take paths no one has walked. Your boba is often a new flavor, an unusual topping, or a healthier remix, because you believe there's always a better version.",
+      strength:"Spotting blind spots, proposing new approaches, driving change. When an organization needs to evolve, you're the spark that lights the way.",
+      recipe:["Oolong Tea","Light Sugar","No Ice","Crystal Boba"],
+      partner1:{name:"Leader", desc:"Turns your ideas into executable action"},
+      partner2:{name:"Fun Crew", desc:"Keeps your reforms from getting too serious"}
+    }
+  },
+  funner: {
+    color:"var(--funner)", cupColor:"#D9986B", pearlColor:"#3D1F0F", emoji:"🎉",
+    zh:{
+      name:"歡樂組",
+      tagline:"「喝啊！活著就是要開心！」",
+      desc:"你是團隊的心臟。你帶來笑聲、能量、和「我們一起」的感覺。沒有你，會議會變得乾巴巴；有你在，連加班都像是辦派對。你的珍奶當然要全糖、爆量珍珠、最潮口味——人生短短，要享受。",
+      strength:"凝聚人心、創造氣氛、化解緊張。你讓人覺得「在這個團隊真的很爽」。",
+      recipe:["黑糖鮮奶","全糖","正常冰","爆量珍珠"],
+      partner1:{name:"領導者", desc:"幫你的熱情找到方向"},
+      partner2:{name:"價值守護者", desc:"提醒你開心之餘的深度"}
+    },
+    en:{
+      name:"The Fun Crew",
+      tagline:'"Drink up! Life\'s meant to be enjoyed!"',
+      desc:"You are the team's heartbeat. You bring laughter, energy, and that 'we're in this together' feeling. Without you, meetings get dry; with you, even overtime feels like a party. Your boba? Full sugar, extra pearls, the trendiest flavor — life is short, enjoy it.",
+      strength:"Building team spirit, creating atmosphere, defusing tension. You make people say, \"I love being on this team.\"",
+      recipe:["Brown Sugar Milk","Full Sugar","Regular Ice","Extra Pearls"],
+      partner1:{name:"Leader", desc:"Gives your energy a clear direction"},
+      partner2:{name:"Values Guardian", desc:"Reminds you of depth beyond the fun"}
+    }
+  },
+  advocate: {
+    color:"var(--advocate)", cupColor:"#A8B89C", pearlColor:"#2A5D4F", emoji:"🌱",
+    zh:{
+      name:"價值守護者",
+      tagline:"「我們為什麼而做，比怎麼做更重要。」",
+      desc:"你是團隊的良心。你在意意義、在意影響、在意每個決定背後的價值。你不只是喝一杯飲料，你會想到塑膠杯、勞權、糖份對健康的影響。你的珍奶總是微糖、少冰、自備環保杯——因為每個小選擇都是表態。",
+      strength:"為團隊守住核心價值、提醒重要的事、推動有意義的議題。你讓組織不只有效率，更有靈魂。",
+      recipe:["綠茶","微糖","微冰","少珍珠"],
+      partner1:{name:"領導者", desc:"把你關心的價值變成具體行動"},
+      partner2:{name:"歡樂組", desc:"讓嚴肅議題也能用輕鬆方式傳遞"}
+    },
+    en:{
+      name:"The Values Guardian",
+      tagline:'"WHY we do it matters more than HOW."',
+      desc:"You are the team's conscience. You care about meaning, impact, and the values behind every decision. You don't just drink a drink — you think about plastic cups, labor rights, and what sugar does to health. Your boba is light sugar, light ice, in your own reusable cup, because every small choice is a statement.",
+      strength:"Protecting your team's core values, raising what matters, championing meaningful causes. You make sure the organization has not just efficiency, but soul.",
+      recipe:["Green Tea","Light Sugar","Light Ice","Less Boba"],
+      partner1:{name:"Leader", desc:"Turns your values into concrete action"},
+      partner2:{name:"Fun Crew", desc:"Makes serious issues land in a lighter way"}
+    }
+  }
+};
+
+let currentQ = 0;
+let scores = [0, 0, 0, 0];
+let currentLang = 'zh';
+let resultRoleKey = null;
+const ROLE_KEYS = ['leader','reformer','funner','advocate'];
+
+function setLang(lang){
+  currentLang = lang;
+  document.documentElement.lang = (lang === 'zh') ? 'zh-Hant' : 'en';
+  document.title = T[lang].docTitle;
+  document.getElementById('btn-zh').classList.toggle('active', lang === 'zh');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  applyStaticText();
+  if(document.getElementById('screen-quiz').classList.contains('active')){
+    renderQuestion(true);
+  }
+  if(document.getElementById('screen-result').classList.contains('active') && resultRoleKey){
+    renderResult(resultRoleKey);
+  }
+}
+
+function applyStaticText(){
+  const t = T[currentLang];
+  document.getElementById('t-kicker').textContent = t.kicker;
+  document.getElementById('t-title').innerHTML = t.title;
+  document.getElementById('t-lead').innerHTML = t.lead;
+  document.getElementById('t-start-btn').textContent = t.startBtn;
+  document.getElementById('t-tags').innerHTML = t.tags.map(x => `<span class="tag">${x}</span>`).join('');
+  document.getElementById('t-result-kicker').textContent = t.resultKicker;
+  document.getElementById('h-desc').textContent = t.hDesc;
+  document.getElementById('h-strength').textContent = t.hStrength;
+  document.getElementById('h-recipe').textContent = t.hRecipe;
+  document.getElementById('h-partner').textContent = t.hPartner;
+  document.getElementById('t-ywca-btn').textContent = t.ywcaBtn;
+  document.getElementById('t-restart-btn').textContent = t.restartBtn;
+  document.getElementById('t-facebook-btn').textContent = t.facebookBtn;
+  document.getElementById('t-instagram-btn').textContent = t.instagramBtn;
+  document.getElementById('t-line-btn').textContent = t.lineBtn;
+  document.getElementById('t-x-btn').textContent = t.xBtn;
+  document.getElementById('t-threads-btn').textContent = t.threadsBtn;
+  document.getElementById('t-more-share-btn').textContent = t.moreShareBtn;
+  document.getElementById('t-copy-link-btn').textContent = t.copyLinkBtn;
+  document.getElementById('share-title').textContent = t.shareChoose;
+  document.getElementById('t-share-fb-btn').textContent = t.shareFbBtn;
+  document.getElementById('t-share-ig-btn').textContent = t.shareIgBtn;
+  document.getElementById('t-share-close-btn').textContent = t.shareCloseBtn;
+  document.getElementById('t-footer').textContent = t.footer;
+}
+
+function startQuiz(){
+  document.getElementById('screen-start').classList.remove('active');
+  document.getElementById('screen-quiz').classList.add('active');
+  currentQ = 0;
+  scores = [0,0,0,0];
+  buildPearls();
+  renderQuestion();
+  spawnFloatBubbles(8);
+}
+
+function buildPearls(){
+  const row = document.getElementById('pearls-row');
+  row.innerHTML = '';
+  for(let i = 0; i < QUESTIONS.length; i++){
+    const d = document.createElement('div');
+    d.className = 'pearl-dot';
+    row.appendChild(d);
+  }
+}
+
+function renderQuestion(silent){
+  const q = QUESTIONS[currentQ][currentLang];
+  const card = document.getElementById('q-card');
+  card.setAttribute('data-num', 'Q' + (currentQ + 1));
+  document.getElementById('q-title').textContent = q.title;
+  document.getElementById('q-sub').textContent = q.sub;
+  document.getElementById('q-current').textContent = currentQ + 1;
+
+  document.querySelectorAll('.pearl-dot').forEach((d, i) => {
+    d.classList.toggle('done', i < currentQ);
+  });
+
+  const fillY = 230 - ((currentQ) / QUESTIONS.length) * 160;
+  document.getElementById('tea-fill').setAttribute('y', fillY);
+
+  if(currentQ > 0){
+    addBobaToProgressCup(currentQ);
+  } else {
+    document.getElementById('bobas-group').innerHTML = '';
+  }
+
+  const optsEl = document.getElementById('options');
+  optsEl.innerHTML = '';
+  q.options.forEach((opt, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `
+      <span class="emoji">${opt.emoji}</span>
+      <span class="label">${opt.label}</span>
+      <span class="arrow">→</span>
+    `;
+    btn.onclick = () => selectOption(idx);
+    optsEl.appendChild(btn);
+  });
+
+  if(!silent){
+    card.style.animation = 'none';
+    card.offsetHeight;
+    card.style.animation = 'fadeUp .45s ease-out';
+  }
+}
+
+function addBobaToProgressCup(idx){
+  const positions = [
+    [75, 215], [100, 218], [125, 213],
+    [85, 200], [115, 200], [70, 190],
+    [105, 185], [130, 195]
+  ];
+  const group = document.getElementById('bobas-group');
+  group.innerHTML = '';
+  for(let i = 0; i < idx + 1 && i < positions.length; i++){
+    const [cx, cy] = positions[i];
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('cx', cx);
+    c.setAttribute('cy', cy);
+    c.setAttribute('r', 8);
+    c.setAttribute('fill', '#2C1810');
+    c.style.opacity = '0';
+    c.style.animation = `fadeIn .5s ease-out ${i*.05}s forwards`;
+    group.appendChild(c);
+  }
+  if(!document.getElementById('boba-anim')){
+    const style = document.createElement('style');
+    style.id = 'boba-anim';
+    style.textContent = '@keyframes fadeIn{to{opacity:1;}}';
+    document.head.appendChild(style);
+  }
+}
+
+function selectOption(idx){
+  const scoreVec = QUESTIONS[currentQ].scores[idx];
+  scoreVec.forEach((s, i) => scores[i] += s);
+  spawnFloatBubbles(5);
+  currentQ++;
+  if(currentQ >= QUESTIONS.length){
+    setTimeout(showResult, 400);
+  } else {
+    setTimeout(() => renderQuestion(), 250);
+  }
+}
+
+function showResult(){
+  document.getElementById('tea-fill').setAttribute('y', 70);
+  addBobaToProgressCup(QUESTIONS.length);
+  document.querySelectorAll('.pearl-dot').forEach(d => d.classList.add('done'));
+
+  let maxIdx = 0;
+  scores.forEach((s, i) => { if(s > scores[maxIdx]) maxIdx = i; });
+  resultRoleKey = ROLE_KEYS[maxIdx];
+
+  renderResult(resultRoleKey);
+
+  document.getElementById('screen-quiz').classList.remove('active');
+  document.getElementById('screen-result').classList.add('active');
+
+  spawnConfetti(ROLES[resultRoleKey].color);
+}
+
+function renderResult(roleKey){
+  const role = ROLES[roleKey];
+  const r = role[currentLang];
+
+  document.getElementById('r-name').innerHTML = role.emoji + ' ' + r.name;
+  document.getElementById('r-name').style.color = role.color;
+  document.getElementById('r-tagline').textContent = r.tagline;
+  document.getElementById('r-desc').textContent = r.desc;
+  document.getElementById('r-strength').textContent = r.strength;
+
+  const styleTag = document.getElementById('result-style') || (() => {
+    const s = document.createElement('style'); s.id = 'result-style'; document.head.appendChild(s); return s;
+  })();
+  styleTag.textContent = `.result-section h3::before{background:${role.color} !important;} .q-card::before{background:${role.color};}`;
+
+  document.getElementById('r-recipe').innerHTML =
+    r.recipe.map(x => `<span class="recipe-chip">${x}</span>`).join('');
+
+  document.getElementById('r-partners').innerHTML = `
+    <div class="partner"><b>${r.partner1.name}</b>${r.partner1.desc}</div>
+    <div class="partner"><b>${r.partner2.name}</b>${r.partner2.desc}</div>
+  `;
+
+  const cupEl = document.getElementById('cup-result');
+  cupEl.innerHTML = `
+    <svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+      <rect x="92" y="10" width="14" height="60" fill="${role.color}" stroke="#1F1410" stroke-width="3" rx="3"/>
+      <ellipse cx="100" cy="62" rx="68" ry="10" fill="#E8C9A0" stroke="#1F1410" stroke-width="3"/>
+      <path d="M40,62 L60,228 Q60,235 70,235 L130,235 Q140,235 140,228 L160,62 Z"
+            fill="#FFF4E3" stroke="#1F1410" stroke-width="3"/>
+      <clipPath id="cup-clip-result"><path d="M40,62 L60,228 Q60,235 70,235 L130,235 Q140,235 140,228 L160,62 Z"/></clipPath>
+      <g clip-path="url(#cup-clip-result)">
+        <rect x="0" y="80" width="200" height="160" fill="${role.cupColor}"/>
+        <path d="M0,82 Q50,74 100,82 T200,82 L200,70 L0,70 Z" fill="${role.cupColor}" opacity=".7"/>
+        <circle cx="72" cy="210" r="9" fill="${role.pearlColor}"/>
+        <circle cx="92" cy="218" r="9" fill="${role.pearlColor}"/>
+        <circle cx="115" cy="212" r="9" fill="${role.pearlColor}"/>
+        <circle cx="80" cy="195" r="9" fill="${role.pearlColor}"/>
+        <circle cx="108" cy="195" r="9" fill="${role.pearlColor}"/>
+        <circle cx="128" cy="200" r="9" fill="${role.pearlColor}"/>
+        <circle cx="95" cy="180" r="8" fill="${role.pearlColor}"/>
+      </g>
+      <path d="M52,90 L62,200" stroke="white" stroke-width="4" stroke-linecap="round" opacity=".5"/>
+      <text x="100" y="155" font-family="Fraunces, Noto Serif TC, serif" font-size="60" font-weight="900"
+            text-anchor="middle" fill="white" opacity=".85">${role.emoji}</text>
+    </svg>
+  `;
+}
+
+function restartQuiz(){
+  document.getElementById('screen-result').classList.remove('active');
+  document.getElementById('screen-start').classList.add('active');
+  resultRoleKey = null;
+}
+
+function shareResult(){
+  document.getElementById('share-modal').classList.add('active');
+}
+
+function closeShareModal(){
+  document.getElementById('share-modal').classList.remove('active');
+}
+
+function getSharePayload(){
+  const role = ROLES[resultRoleKey];
+  const name = role[currentLang].name;
+  const text = T[currentLang].shareText(name);
+  return {
+    title: T[currentLang].docTitle,
+    text,
+    url: SHARE_URL,
+    clipboardText: `${text} ${SHARE_URL}`
+  };
+}
+
+function shareToFacebook(){
+  const payload = getSharePayload();
+  const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(payload.url)}&quote=${encodeURIComponent(payload.text)}`;
+  closeShareModal();
+  window.open(fbUrl, '_blank', 'noopener,noreferrer,width=640,height=640');
+}
+
+async function shareToLine(){
+  const payload = getSharePayload();
+  if(navigator.share){
+    try{
+      await navigator.share({ title: payload.title, text: payload.text, url: payload.url });
+      closeShareModal();
+      return;
+    } catch(err){
+      if(err.name === 'AbortError') return;
+    }
+  }
+  const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(payload.clipboardText)}`;
+  closeShareModal();
+  window.open(lineUrl, '_blank', 'noopener,noreferrer');
+}
+
+function shareToX(){
+  const payload = getSharePayload();
+  const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(payload.text)}&url=${encodeURIComponent(payload.url)}`;
+  closeShareModal();
+  window.open(xUrl, '_blank', 'noopener,noreferrer,width=640,height=640');
+}
+
+function shareToThreads(){
+  const payload = getSharePayload();
+  const threadsUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(payload.clipboardText)}`;
+  closeShareModal();
+  window.open(threadsUrl, '_blank', 'noopener,noreferrer,width=640,height=640');
+}
+
+async function shareMore(){
+  const payload = getSharePayload();
+  if(navigator.share){
+    try{
+      await navigator.share({ title: payload.title, text: payload.text, url: payload.url });
+      closeShareModal();
+      return;
+    } catch(err){
+      if(err.name === 'AbortError') return;
+    }
+  }
+  copyShareText();
+}
+
+async function shareToInstagram(){
+  const payload = getSharePayload();
+  if(navigator.share){
+    try{
+      await navigator.share({ title: payload.title, text: payload.text, url: payload.url });
+      closeShareModal();
+      return;
+    } catch(err){
+      if(err.name === 'AbortError') return;
+    }
+  }
+  if(navigator.clipboard){
+    await navigator.clipboard.writeText(payload.clipboardText);
+    alert(T[currentLang].instagramCopyAlert);
+  } else {
+    alert(payload.clipboardText);
+  }
+  closeShareModal();
+  window.open('https://www.instagram.com/', '_blank');
+}
+
+document.getElementById('share-modal').addEventListener('click', (event) => {
+  if(event.target.id === 'share-modal'){
+    closeShareModal();
+  }
+});
+
+document.addEventListener('keydown', (event) => {
+  if(event.key === 'Escape'){
+    closeShareModal();
+  }
+});
+
+function copyShareText(){
+  const payload = getSharePayload();
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(payload.clipboardText);
+    alert(T[currentLang].copyAlert);
+  }
+}
+
+function visitYwca(){
+  window.open(YWCA_META_URL, '_blank');
+}
+
+function spawnFloatBubbles(n){
+  for(let i = 0; i < n; i++){
+    const b = document.createElement('div');
+    b.className = 'float-bubble';
+    const size = 8 + Math.random() * 14;
+    b.style.width = size + 'px';
+    b.style.height = size + 'px';
+    b.style.left = (Math.random() * 100) + 'vw';
+    b.style.bottom = '-30px';
+    b.style.animationDelay = (Math.random() * .5) + 's';
+    b.style.opacity = .3 + Math.random() * .4;
+    document.body.appendChild(b);
+    setTimeout(() => b.remove(), 3500);
+  }
+}
+
+function spawnConfetti(color){
+  const colors = [color, '#F4A5A5', '#E8C9A0', '#2C1810', '#A8754A'];
+  for(let i = 0; i < 40; i++){
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.background = colors[i % colors.length];
+    c.style.left = (Math.random() * 100) + 'vw';
+    c.style.top = '-20px';
+    const size = 8 + Math.random() * 10;
+    c.style.width = size + 'px';
+    c.style.height = size + 'px';
+    document.body.appendChild(c);
+    const duration = 2 + Math.random() * 1.5;
+    c.animate([
+      { transform:'translateY(0) rotate(0deg)', opacity:1 },
+      { transform:`translateY(110vh) rotate(${360+Math.random()*360}deg)`, opacity:.3 }
+    ], { duration: duration * 1000, easing:'cubic-bezier(.3,.7,.5,1)' });
+    setTimeout(() => c.remove(), duration * 1000);
+  }
+}
+
+applyStaticText();
+</script>
+</body>
+</html>
