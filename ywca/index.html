@@ -618,10 +618,10 @@ body::before{
   top:0;
   width:1080px;
   height:1440px;
-  background:#FFF4E3;
+  background:linear-gradient(180deg,#FFF7EA 0%,#FFF1DD 100%);
   color:#1F1410;
   overflow:hidden;
-  padding:54px;
+  padding:52px;
   font-family:'Fraunces','LXGW WenKai TC','Noto Serif TC',serif;
   z-index:-1;
 }
@@ -630,37 +630,42 @@ body::before{
   position:absolute;
   inset:0;
   background-image:
-    radial-gradient(circle at 8% 12%, #2C1810 12px, transparent 13px),
-    radial-gradient(circle at 90% 8%, #2C1810 9px, transparent 10px),
-    radial-gradient(circle at 94% 92%, #A8754A 11px, transparent 12px),
-    radial-gradient(circle at 12% 88%, #A8754A 9px, transparent 10px),
-    radial-gradient(circle at 50% 52%, #E8C9A0 7px, transparent 8px);
-  opacity:.13;
+    radial-gradient(circle at 7% 10%, rgba(44,24,16,.9) 10px, transparent 11px),
+    radial-gradient(circle at 90% 8%, rgba(44,24,16,.8) 8px, transparent 9px),
+    radial-gradient(circle at 94% 92%, rgba(168,117,74,.8) 10px, transparent 11px),
+    radial-gradient(circle at 11% 88%, rgba(168,117,74,.75) 8px, transparent 9px),
+    radial-gradient(circle at 48% 54%, rgba(232,201,160,.8) 6px, transparent 7px);
+  opacity:.14;
 }
-.share-image-inner{position:relative;height:100%;display:grid;grid-template-rows:auto auto 1fr auto;gap:24px;}
+.share-image-inner{position:relative;height:100%;display:grid;grid-template-rows:auto auto 1fr auto;gap:22px;}
 .share-image-header{text-align:center;}
-.share-image-kicker{font-family:'Caveat','LXGW WenKai TC',cursive;font-size:46px;color:#A8754A;margin-bottom:4px;}
-.share-image-title{font-size:36px;font-weight:900;color:#6B4226;letter-spacing:.02em;}
-.share-image-main{display:grid;grid-template-columns:260px 1fr;gap:28px;align-items:start;}
-.share-image-cup{background:#fff;border:5px solid #6B4226;border-radius:34px;box-shadow:14px 14px 0 #E8C9A0;height:360px;display:flex;align-items:center;justify-content:center;padding:18px;}
-.share-image-cup svg{width:225px;height:285px;}
+.share-image-kicker{font-family:'Caveat','LXGW WenKai TC',cursive;font-size:44px;color:#A8754A;margin-bottom:4px;}
+.share-image-title{font-size:35px;font-weight:900;color:#6B4226;letter-spacing:.02em;}
+.share-image-main{display:grid;grid-template-columns:248px 1fr;gap:26px;align-items:start;background:rgba(255,255,255,.55);border:3px solid rgba(107,66,38,.16);border-radius:34px;padding:24px 24px 22px;box-shadow:0 12px 30px rgba(168,117,74,.08);}
+.share-image-cup{background:#fff;border:5px solid #6B4226;border-radius:34px;box-shadow:14px 14px 0 #E8C9A0;height:340px;display:flex;align-items:center;justify-content:center;padding:16px;}
+.share-image-cup svg{width:212px;height:270px;}
 .share-image-content{text-align:left;}
-.share-image-role{font-size:72px;line-height:1.02;font-weight:900;margin-bottom:10px;}
-.share-image-tagline{font-size:29px;line-height:1.35;color:#6B4226;font-style:italic;margin-bottom:18px;}
+.share-image-role-badge{display:inline-flex;align-items:center;gap:10px;background:#6B4226;color:#FFF4E3;border-radius:999px;padding:10px 18px;font-size:20px;font-weight:800;letter-spacing:.02em;margin-bottom:14px;}
+.share-image-role{font-size:68px;line-height:1.02;font-weight:900;margin-bottom:12px;}
+.share-image-tagline{font-size:28px;line-height:1.35;color:#6B4226;font-style:italic;margin-bottom:16px;}
+.share-image-divider{height:3px;background:linear-gradient(90deg,rgba(230,57,70,.22),rgba(168,117,74,.3),rgba(42,157,143,.22));border-radius:999px;margin:10px 0 16px;}
+.share-image-recipe-title{font-size:23px;font-weight:900;color:#6B4226;margin-bottom:10px;}
 .share-image-recipe{display:flex;flex-wrap:wrap;gap:10px;}
-.share-image-chip{background:#F5E6CC;border:3px solid #E8C9A0;color:#6B4226;border-radius:999px;padding:9px 16px;font-size:22px;font-weight:700;}
-.share-image-sections{display:grid;gap:16px;}
-.share-image-section{background:#fff;border:4px solid #6B4226;border-radius:28px;padding:20px 24px;box-shadow:8px 8px 0 #E8C9A0;}
-.share-image-section-title{font-size:24px;font-weight:900;color:#6B4226;margin-bottom:8px;}
-.share-image-section-body{font-size:24px;line-height:1.58;color:#1F1410;}
+.share-image-chip{background:#F5E6CC;border:2px solid #E8C9A0;color:#6B4226;border-radius:999px;padding:8px 15px;font-size:21px;font-weight:700;}
+.share-image-sections{display:grid;gap:14px;}
+.share-image-section{background:#fff;border:3px solid #6B4226;border-radius:24px;padding:18px 22px;box-shadow:8px 8px 0 rgba(232,201,160,.95);}
+.share-image-section-title{display:inline-flex;align-items:center;gap:8px;font-size:23px;font-weight:900;color:#6B4226;margin-bottom:8px;}
+.share-image-section-body{font-size:22px;line-height:1.58;color:#1F1410;}
 .share-image-partners{display:flex;flex-direction:column;gap:10px;}
-.share-image-partner-item{font-size:23px;line-height:1.5;}
+.share-image-partner-item{font-size:22px;line-height:1.5;}
 .share-image-partner-name{font-weight:900;color:#6B4226;}
-.share-image-footer{display:grid;grid-template-columns:1fr auto;align-items:end;gap:18px;border-top:3px dashed rgba(107,66,38,.42);padding-top:18px;}
-.share-image-footer-main{font-size:26px;font-weight:900;color:#6B4226;}
-.share-image-footer-sub{font-family:'Caveat','LXGW WenKai TC',cursive;font-size:29px;color:#A8754A;margin-top:4px;}
-.share-image-link{margin-top:10px;font-size:21px;line-height:1.5;color:#6B4226;word-break:break-all;}
-.share-image-cta{background:#6B4226;color:#FFF4E3;border-radius:999px;padding:14px 22px;font-size:24px;font-weight:900;white-space:nowrap;align-self:start;}
+.share-image-footer{display:grid;grid-template-columns:1fr auto;align-items:end;gap:18px;border-top:3px dashed rgba(107,66,38,.34);padding-top:18px;}
+.share-image-footer-main{font-size:25px;font-weight:900;color:#6B4226;}
+.share-image-footer-sub{font-family:'Caveat','LXGW WenKai TC',cursive;font-size:28px;color:#A8754A;margin-top:4px;}
+.share-image-link-wrap{margin-top:12px;background:#fff;border:2px solid rgba(107,66,38,.22);border-radius:18px;padding:12px 14px;}
+.share-image-link-label{font-size:18px;font-weight:900;color:#6B4226;margin-bottom:3px;}
+.share-image-link{font-size:20px;line-height:1.45;color:#6B4226;word-break:break-all;}
+.share-image-cta{background:#6B4226;color:#FFF4E3;border-radius:999px;padding:14px 24px;font-size:24px;font-weight:900;white-space:nowrap;align-self:start;box-shadow:0 8px 16px rgba(44,24,16,.16);}
 
 .share-modal{
   position:fixed;
@@ -1477,13 +1482,14 @@ function buildShareImageCard(){
       <span class="share-image-partner-name">${escapeHtml(p.name)}</span>：${escapeHtml(p.desc)}
     </div>`).join('');
   const title = currentLang === 'zh' ? '我的 YWCA 珍奶人格' : 'My YWCA Boba Personality';
-  const descTitle = currentLang === 'zh' ? '這就是你' : 'That's you';
-  const strengthTitle = currentLang === 'zh' ? '在團隊裡你擅長' : 'What you bring to the team';
-  const partnerTitle = currentLang === 'zh' ? '與你互補的隊友' : 'Who complements you';
-  const recipeTitle = currentLang === 'zh' ? '你的專屬珍奶配方' : 'Your signature boba recipe';
+  const roleBadge = currentLang === 'zh' ? '測驗結果 Result' : 'Quiz Result';
+  const descTitle = currentLang === 'zh' ? '🧠 這就是你' : "🧠 That's you";
+  const strengthTitle = currentLang === 'zh' ? '✨ 在團隊裡你擅長' : '✨ What you bring to the team';
+  const partnerTitle = currentLang === 'zh' ? '🤝 與你互補的隊友' : '🤝 Who complements you';
+  const recipeTitle = currentLang === 'zh' ? '🥤 你的專屬珍奶配方' : '🥤 Your signature boba recipe';
   const footerMain = currentLang === 'zh' ? 'YWCA × 珍奶人格測驗' : 'YWCA × Boba Personality Quiz';
   const footerCta = currentLang === 'zh' ? '立即測測看' : 'Take the quiz';
-  const quizLinkLabel = currentLang === 'zh' ? '測驗連結：' : 'Quiz link: ';
+  const quizLinkLabel = currentLang === 'zh' ? '測驗連結' : 'Quiz link';
   card.innerHTML = `
     <div class="share-image-inner">
       <div class="share-image-header">
@@ -1493,12 +1499,12 @@ function buildShareImageCard(){
       <div class="share-image-main">
         <div class="share-image-cup">${makeCupSvg(role)}</div>
         <div class="share-image-content">
+          <div class="share-image-role-badge">${escapeHtml(roleBadge)}</div>
           <div class="share-image-role" style="color:${role.color}">${role.emoji} ${escapeHtml(r.name)}</div>
           <div class="share-image-tagline">${escapeHtml(r.tagline)}</div>
-          <div class="share-image-section" style="margin-top:6px;">
-            <div class="share-image-section-title">${escapeHtml(recipeTitle)}</div>
-            <div class="share-image-recipe">${recipe}</div>
-          </div>
+          <div class="share-image-divider"></div>
+          <div class="share-image-recipe-title">${escapeHtml(recipeTitle)}</div>
+          <div class="share-image-recipe">${recipe}</div>
         </div>
       </div>
       <div class="share-image-sections">
@@ -1519,7 +1525,10 @@ function buildShareImageCard(){
         <div>
           <div class="share-image-footer-main">${escapeHtml(footerMain)}</div>
           <div class="share-image-footer-sub">${escapeHtml(T[currentLang].shareSignature)}</div>
-          <div class="share-image-link">${escapeHtml(quizLinkLabel)}${escapeHtml(SHARE_URL)}</div>
+          <div class="share-image-link-wrap">
+            <div class="share-image-link-label">${escapeHtml(quizLinkLabel)}</div>
+            <div class="share-image-link">${escapeHtml(SHARE_URL)}</div>
+          </div>
         </div>
         <div class="share-image-cta">${escapeHtml(footerCta)}</div>
       </div>
