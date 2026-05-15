@@ -21,6 +21,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500&family=LXGW+WenKai+TC&family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 :root{
   --cream:#FFF4E3;
@@ -403,6 +404,23 @@ body::before{
   text-align:center;
   padding-top:20px;
 }
+
+.share-capture{
+  background:var(--cream);
+  border-radius:32px;
+  padding:22px 18px 26px;
+  margin-bottom:24px;
+}
+.share-capture .result-card{
+  margin-bottom:0;
+}
+.share-signature{
+  margin-top:16px;
+  font-family:'Caveat','LXGW WenKai TC',cursive;
+  font-size:20px;
+  color:var(--tea-deep);
+  text-align:center;
+}
 .result-kicker{
   font-family:'Caveat',cursive;
   font-size:26px;
@@ -737,11 +755,12 @@ body::before{
 
 <section class="screen" id="screen-result">
   <div class="result-wrap">
-    <div class="result-kicker" id="t-result-kicker"></div>
-    <h2 class="result-name" id="r-name"></h2>
-    <p class="result-tagline" id="r-tagline"></p>
+    <div class="share-capture" id="share-capture">
+      <div class="result-kicker" id="t-result-kicker"></div>
+      <h2 class="result-name" id="r-name"></h2>
+      <p class="result-tagline" id="r-tagline"></p>
 
-    <div class="result-card">
+      <div class="result-card">
       <div class="result-grid">
         <div class="cup-result" id="cup-result"></div>
         <div>
@@ -763,11 +782,14 @@ body::before{
         <h3 id="h-partner"></h3>
         <div class="partners" id="r-partners"></div>
       </div>
+      </div>
+      <div class="share-signature" id="t-share-signature"></div>
     </div>
 
     <div class="share-row">
       <button class="btn-primary" id="t-ywca-btn" onclick="visitYwca()"></button>
       <button class="btn-secondary" id="t-restart-btn" onclick="restartQuiz()"></button>
+      <button class="btn-primary btn-share-trigger" id="t-share-image-btn" onclick="shareResultImage()"></button>
       <button class="btn-primary btn-facebook" id="t-facebook-btn" onclick="shareToFacebook()"></button>
       <button class="btn-primary btn-instagram" id="t-instagram-btn" onclick="shareToInstagram()"></button>
       <button class="btn-primary btn-line" id="t-line-btn" onclick="shareToLine()"></button>
@@ -818,6 +840,11 @@ const T = {
     restartBtn: "再測一次 ↻",
     shareBtn: "分享我的結果",
     facebookBtn: "分享到 Facebook",
+    shareImageBtn: "產生並分享結果圖",
+    shareSignature: "你的珍奶，藏著你在YWCA的角色密碼",
+    preparingImage: "正在產生圖片…",
+    imageFallbackAlert: "已下載結果圖，並複製分享文字。你可以手動上傳圖片到 LINE 或 Facebook。",
+    imageErrorAlert: "目前瀏覽器無法產生圖片，請改用複製連結分享。",
     instagramBtn: "分享到 Instagram",
     lineBtn: "分享到 LINE",
     xBtn: "分享到 X",
@@ -849,6 +876,11 @@ const T = {
     restartBtn: "Try Again ↻",
     shareBtn: "Share My Result",
     facebookBtn: "Share to Facebook",
+    shareImageBtn: "Create & Share Result Image",
+    shareSignature: "Your boba hides your YWCA role code",
+    preparingImage: "Creating image…",
+    imageFallbackAlert: "Result image downloaded and share text copied. You can upload the image to LINE or Facebook manually.",
+    imageErrorAlert: "This browser cannot create the image right now. Please use Copy Link instead.",
     instagramBtn: "Share to Instagram",
     lineBtn: "Share to LINE",
     xBtn: "Share to X",
@@ -1129,6 +1161,8 @@ function applyStaticText(){
   document.getElementById('h-partner').textContent = t.hPartner;
   document.getElementById('t-ywca-btn').textContent = t.ywcaBtn;
   document.getElementById('t-restart-btn').textContent = t.restartBtn;
+  document.getElementById('t-share-image-btn').textContent = t.shareImageBtn;
+  document.getElementById('t-share-signature').textContent = t.shareSignature;
   document.getElementById('t-facebook-btn').textContent = t.facebookBtn;
   document.getElementById('t-instagram-btn').textContent = t.instagramBtn;
   document.getElementById('t-line-btn').textContent = t.lineBtn;
@@ -1324,16 +1358,120 @@ function closeShareModal(){
   document.getElementById('share-modal').classList.remove('active');
 }
 
+function getResultShareUrl(){
+  if(!resultRoleKey){
+    return SHARE_URL;
+  }
+  const url = new URL(SHARE_URL);
+  url.searchParams.set('role', resultRoleKey);
+  url.searchParams.set('lang', currentLang);
+  return url.toString();
+}
+
 function getSharePayload(){
   const role = ROLES[resultRoleKey];
-  const name = role[currentLang].name;
+  const name = role ? role[currentLang].name : T[currentLang].docTitle;
   const text = T[currentLang].shareText(name);
+  const url = getResultShareUrl();
   return {
     title: T[currentLang].docTitle,
     text,
-    url: SHARE_URL,
-    clipboardText: `${text} ${SHARE_URL}`
+    url,
+    clipboardText: `${text} ${url}`
   };
+}
+
+async function createResultImageBlob(){
+  if(!window.html2canvas){
+    throw new Error('html2canvas is not loaded');
+  }
+
+  const target = document.getElementById('share-capture');
+  if(!target){
+    throw new Error('share-capture element not found');
+  }
+
+  await document.fonts?.ready;
+
+  const canvas = await html2canvas(target, {
+    backgroundColor: '#FFF4E3',
+    scale: Math.min(2, window.devicePixelRatio || 2),
+    useCORS: true,
+    allowTaint: false,
+    logging: false,
+    scrollX: 0,
+    scrollY: -window.scrollY
+  });
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if(blob){
+        resolve(blob);
+      }else{
+        reject(new Error('Canvas toBlob failed'));
+      }
+    }, 'image/png', 1);
+  });
+}
+
+function downloadBlob(blob, fileName){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function safeCopyText(text){
+  if(!navigator.clipboard){
+    return false;
+  }
+  try{
+    await navigator.clipboard.writeText(text);
+    return true;
+  }catch(err){
+    return false;
+  }
+}
+
+async function shareResultImage(){
+  if(!resultRoleKey){
+    return;
+  }
+
+  const btn = document.getElementById('t-share-image-btn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = T[currentLang].preparingImage;
+
+  try{
+    const payload = getSharePayload();
+    const roleName = ROLES[resultRoleKey][currentLang].name.replace(/[\\/:*?"<>|\s]+/g, '-');
+    const fileName = `ywca-boba-${resultRoleKey}-${currentLang}.png`;
+    const blob = await createResultImageBlob();
+    const file = new File([blob], fileName, { type: 'image/png' });
+
+    if(navigator.canShare && navigator.canShare({ files: [file] })){
+      await navigator.share({
+        title: payload.title,
+        text: payload.text,
+        files: [file]
+      });
+    }else{
+      downloadBlob(blob, fileName);
+      await safeCopyText(payload.clipboardText);
+      alert(T[currentLang].imageFallbackAlert);
+    }
+  }catch(err){
+    console.error(err);
+    alert(T[currentLang].imageErrorAlert);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
 }
 
 function shareToFacebook(){
@@ -1469,7 +1607,26 @@ function spawnConfetti(color){
   }
 }
 
+function initFromSharedUrl(){
+  const params = new URLSearchParams(window.location.search);
+  const lang = params.get('lang');
+  const role = params.get('role');
+
+  if(lang === 'zh' || lang === 'en'){
+    setLang(lang);
+  }
+
+  if(role && ROLES[role]){
+    resultRoleKey = role;
+    renderResult(role);
+    document.getElementById('screen-start').classList.remove('active');
+    document.getElementById('screen-quiz').classList.remove('active');
+    document.getElementById('screen-result').classList.add('active');
+  }
+}
+
 applyStaticText();
+initFromSharedUrl();
 </script>
 </body>
 </html>
