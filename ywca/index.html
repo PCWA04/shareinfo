@@ -755,16 +755,33 @@ body::before{
     position:relative;
     top:auto;
     left:auto;
-    align-self:flex-start;
-    margin:0 0 10px 0;
-    transform:scale(.88);
-    transform-origin:left top;
-    box-shadow:3px 3px 0 var(--milk);
+    z-index:2;
+    display:flex;
+    justify-content:center;
+    align-self:center;
+    width:auto;
+    margin:-2px auto 16px;
+    padding:3px;
+    background:rgba(255,255,255,.36);
+    border:none;
+    border-radius:999px;
+    box-shadow:none;
   }
 
   .lang-btn{
-    padding:8px 15px;
+    padding:7px 18px;
     font-size:15px;
+    border-radius:999px;
+    color:var(--tea-deep);
+  }
+
+  .lang-btn.active{
+    background:var(--tea-deep);
+    color:var(--cream);
+  }
+
+  .lang-btn:hover:not(.active){
+    background:rgba(245,230,204,.72);
   }
 
   .ywca-logo{
@@ -774,7 +791,7 @@ body::before{
     right:auto;
     width:100%;
     max-width:520px;
-    margin:0 auto 14px;
+    margin:0 auto 8px;
     padding:8px 10px;
     gap:10px;
     justify-content:flex-start;
@@ -804,7 +821,7 @@ body::before{
   }
 
   .hero{
-    padding:10px 0 0;
+    padding:4px 0 0;
   }
 
   .hero .kicker{
@@ -955,11 +972,6 @@ body::before{
 </head>
 <body>
 
-<div class="lang-toggle">
-  <button class="lang-btn active" id="btn-zh" onclick="setLang('zh')">中文</button>
-  <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
-</div>
-
 <div class="ywca-logo" aria-label="YWCA Taiwan">
   <svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
     <path d="M60 88 10 4h100z" fill="#0055A4"/>
@@ -972,6 +984,11 @@ body::before{
     中華民國基督教女青年會協會
     <span>YOUNG WOMEN'S CHRISTIAN<br>ASSOCIATION OF TAIWAN, R.O.C.</span>
   </div>
+</div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-zh" onclick="setLang('zh')">中文</button>
+  <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
 </div>
 
 <div class="app">
