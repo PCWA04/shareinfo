@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>你的珍奶，藏著你在YWCA的角色密碼</title>
+<!-- v5: mobile layout + share image cleanup + no duplicate FB link -->
 <link rel="canonical" href="https://boba-quiz.pages.dev/">
 <meta name="description" content="甜度、冰塊、珍珠的選擇，找出你在YWCA裡天生扮演的位置。">
 <meta property="og:type" content="website">
@@ -739,6 +740,217 @@ body::before{
   font-family:'Caveat',cursive;
   letter-spacing:.05em;
 }
+
+/* ============================================================
+   v5 mobile-first fixes
+   - Avoid fixed logo/language overlap on phones
+   - Make quiz questions visible with less scrolling
+   ============================================================ */
+@media (max-width:640px){
+  .app{
+    padding:14px 14px 36px;
+  }
+
+  .lang-toggle{
+    position:relative;
+    top:auto;
+    left:auto;
+    align-self:flex-start;
+    margin:0 0 10px 0;
+    transform:scale(.88);
+    transform-origin:left top;
+    box-shadow:3px 3px 0 var(--milk);
+  }
+
+  .lang-btn{
+    padding:8px 15px;
+    font-size:15px;
+  }
+
+  .ywca-logo{
+    position:relative;
+    top:auto;
+    left:auto;
+    right:auto;
+    width:100%;
+    max-width:520px;
+    margin:0 auto 14px;
+    padding:8px 10px;
+    gap:10px;
+    justify-content:flex-start;
+    border-radius:14px;
+    box-shadow:3px 3px 0 rgba(232,201,160,.85);
+  }
+
+  .ywca-logo svg{
+    width:54px;
+    flex:0 0 auto;
+  }
+
+  .ywca-logo-text{
+    font-size:12px;
+    line-height:1.18;
+    white-space:normal;
+  }
+
+  .ywca-logo-text span{
+    font-size:9px;
+    line-height:1.12;
+    margin-top:3px;
+  }
+
+  .screen{
+    max-width:100%;
+  }
+
+  .hero{
+    padding:10px 0 0;
+  }
+
+  .hero .kicker{
+    font-size:23px;
+    margin-bottom:10px;
+    padding:5px 14px;
+  }
+
+  .hero-cup{
+    width:132px;
+    height:158px;
+    margin:0 auto 12px;
+  }
+
+  .hero h1{
+    font-size:clamp(33px,11vw,46px);
+    line-height:1.08;
+    margin-bottom:10px;
+  }
+
+  .hero p.lead{
+    font-size:16px;
+    line-height:1.55;
+    margin-bottom:18px;
+  }
+
+  .btn-primary{
+    font-size:18px;
+    padding:15px 28px;
+  }
+
+  .tags{
+    gap:7px;
+    margin-top:16px;
+  }
+
+  .tag{
+    font-size:13px;
+    padding:5px 11px;
+  }
+
+  .q-stage{
+    display:block;
+    margin-top:6px;
+  }
+
+  .cup-aside{
+    position:relative;
+    top:auto;
+    max-width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    margin:0 auto 8px;
+  }
+
+  .cup-aside .cup-svg{
+    display:none;
+  }
+
+  .progress-text{
+    font-size:25px;
+    margin-top:0;
+    line-height:1;
+  }
+
+  .pearls-row{
+    margin-top:6px;
+    gap:7px;
+  }
+
+  .pearl-dot{
+    width:12px;
+    height:12px;
+  }
+
+  .q-card{
+    padding:28px 18px 20px;
+    border-radius:22px;
+    box-shadow:5px 5px 0 var(--milk);
+  }
+
+  .q-card::before{
+    top:-19px;
+    left:22px;
+    font-size:23px;
+    padding:5px 16px;
+  }
+
+  .q-title{
+    font-size:23px;
+    line-height:1.25;
+    margin-bottom:6px;
+  }
+
+  .q-sub{
+    font-size:14px;
+    margin-bottom:16px;
+  }
+
+  .options{
+    gap:10px;
+  }
+
+  .opt{
+    padding:11px 13px;
+    border-radius:15px;
+    font-size:16px;
+    gap:12px;
+    line-height:1.35;
+  }
+
+  .opt .emoji{
+    font-size:25px;
+  }
+
+  .result-wrap{
+    padding-top:4px;
+  }
+
+  .share-row-compact{
+    margin-top:18px;
+  }
+}
+
+/* v5 share image: remove redundant top kicker and bottom quiz footer */
+.share-image-inner{
+  grid-template-rows:auto auto 1fr;
+}
+.share-image-kicker,
+.share-image-footer{
+  display:none !important;
+}
+.share-image-header{
+  margin-bottom:2px;
+}
+.share-image-title{
+  font-size:39px;
+}
+.share-image-main{
+  margin-top:2px;
+}
+.share-image-sections{
+  gap:18px;
+}
+
 </style>
 </head>
 <body>
@@ -1487,13 +1699,9 @@ function buildShareImageCard(){
   const strengthTitle = currentLang === 'zh' ? '✨ 在團隊裡你擅長' : '✨ What you bring to the team';
   const partnerTitle = currentLang === 'zh' ? '🤝 與你互補的隊友' : '🤝 Who complements you';
   const recipeTitle = currentLang === 'zh' ? '🥤 你的專屬珍奶配方' : '🥤 Your signature boba recipe';
-  const footerMain = currentLang === 'zh' ? 'YWCA × 珍奶人格測驗' : 'YWCA × Boba Personality Quiz';
-  const footerCta = currentLang === 'zh' ? '立即測測看' : 'Take the quiz';
-  const quizLinkLabel = currentLang === 'zh' ? '測驗連結' : 'Quiz link';
   card.innerHTML = `
     <div class="share-image-inner">
       <div class="share-image-header">
-        <div class="share-image-kicker">${escapeHtml(T[currentLang].resultKicker)}</div>
         <div class="share-image-title">${escapeHtml(title)}</div>
       </div>
       <div class="share-image-main">
@@ -1520,17 +1728,6 @@ function buildShareImageCard(){
           <div class="share-image-section-title">${escapeHtml(partnerTitle)}</div>
           <div class="share-image-partners">${partners}</div>
         </div>
-      </div>
-      <div class="share-image-footer">
-        <div>
-          <div class="share-image-footer-main">${escapeHtml(footerMain)}</div>
-          <div class="share-image-footer-sub">${escapeHtml(T[currentLang].shareSignature)}</div>
-          <div class="share-image-link-wrap">
-            <div class="share-image-link-label">${escapeHtml(quizLinkLabel)}</div>
-            <div class="share-image-link">${escapeHtml(SHARE_URL)}</div>
-          </div>
-        </div>
-        <div class="share-image-cta">${escapeHtml(footerCta)}</div>
       </div>
     </div>`;
   return card;
@@ -1612,7 +1809,7 @@ async function shareResultImage(){
     if(navigator.canShare && navigator.canShare({ files: [file] })){
       await navigator.share({
         title: payload.title,
-        text: payload.clipboardText,
+        text: payload.text,
         url: payload.url,
         files: [file]
       });
