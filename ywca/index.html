@@ -23,6 +23,27 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500&family=LXGW+WenKai+TC&family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<!-- Google Analytics 4 event tracking
+     Replace G-XXXXXXXXXX with your GA4 Measurement ID before publishing.
+     If you leave it as G-XXXXXXXXXX, tracking is disabled safely. -->
+<script>
+  window.GA_MEASUREMENT_ID = "G-34XDJEPGNS";
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ window.dataLayer.push(arguments); }
+
+  (function(){
+    const id = window.GA_MEASUREMENT_ID;
+    if(!id || id === "G-XXXXXXXXXX") return;
+
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;
+    document.head.appendChild(script);
+
+    gtag('js', new Date());
+    gtag('config', id);
+  })();
+</script>
 <style>
 :root{
   --cream:#FFF4E3;
@@ -1485,7 +1506,34 @@ function applyStaticText(){
   document.getElementById('t-footer').textContent = t.footer;
 }
 
+function isAnalyticsEnabled(){
+  return window.GA_MEASUREMENT_ID && window.GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX' && typeof gtag === 'function';
+}
+
+function trackEvent(eventName, params = {}){
+  if(!isAnalyticsEnabled()) return;
+
+  try{
+    gtag('event', eventName, {
+      language: currentLang,
+      ...params
+    });
+  }catch(err){
+    console.warn('Analytics event failed:', eventName, err);
+  }
+}
+
+function getScoreSummary(){
+  return {
+    leader_score: scores[0],
+    reformer_score: scores[1],
+    funner_score: scores[2],
+    advocate_score: scores[3]
+  };
+}
+
 function startQuiz(){
+  trackEvent('start_quiz');
   document.getElementById('screen-start').classList.remove('active');
   document.getElementById('screen-quiz').classList.add('active');
   currentQ = 0;
@@ -1576,7 +1624,14 @@ function addBobaToProgressCup(idx){
 }
 
 function selectOption(idx){
+  const questionNumber = currentQ + 1;
+  const optionLabel = QUESTIONS[currentQ][currentLang].options[idx].label;
   selectedAnswers[currentQ] = idx;
+  trackEvent('answer_question', {
+    question_number: questionNumber,
+    selected_option_index: idx + 1,
+    selected_option_label: optionLabel
+  });
   const scoreVec = QUESTIONS[currentQ].scores[idx];
   scoreVec.forEach((s, i) => scores[i] += s);
   spawnFloatBubbles(5);
@@ -1596,6 +1651,13 @@ function showResult(){
   let maxIdx = 0;
   scores.forEach((s, i) => { if(s > scores[maxIdx]) maxIdx = i; });
   resultRoleKey = ROLE_KEYS[maxIdx];
+
+  trackEvent('complete_quiz', {
+    result_role: resultRoleKey,
+    result_role_name: ROLES[resultRoleKey][currentLang].name,
+    recipe: getResultRecipe(resultRoleKey).join(' / '),
+    ...getScoreSummary()
+  });
 
   renderResult(resultRoleKey);
 
@@ -1687,6 +1749,9 @@ function renderResult(roleKey){
 }
 
 function restartQuiz(){
+  trackEvent('restart_quiz', {
+    previous_result_role: resultRoleKey || 'none'
+  });
   document.getElementById('screen-result').classList.remove('active');
   document.getElementById('screen-start').classList.add('active');
   resultRoleKey = null;
@@ -1866,6 +1931,11 @@ async function shareResultImage(){
     return;
   }
 
+  trackEvent('generate_share_image', {
+    result_role: resultRoleKey,
+    result_role_name: ROLES[resultRoleKey][currentLang].name
+  });
+
   const btn = document.getElementById('t-share-image-btn');
   const originalText = btn.textContent;
   btn.disabled = true;
@@ -1885,9 +1955,17 @@ async function shareResultImage(){
         url: payload.url,
         files: [file]
       });
+      trackEvent('share_result_image', {
+        result_role: resultRoleKey,
+        share_method: 'native_share'
+      });
     }else{
       downloadBlob(blob, fileName);
       await safeCopyText(payload.clipboardText);
+      trackEvent('download_result_image', {
+        result_role: resultRoleKey,
+        share_method: 'download_fallback'
+      });
       alert(T[currentLang].imageFallbackAlert);
     }
   }catch(err){
@@ -1992,6 +2070,9 @@ function copyShareText(){
 }
 
 function visitYwca(){
+  trackEvent('visit_ywca', {
+    result_role: resultRoleKey || 'none'
+  });
   window.open(YWCA_META_URL, '_blank');
 }
 
@@ -2043,6 +2124,10 @@ function initFromSharedUrl(){
 
   if(role && ROLES[role]){
     resultRoleKey = role;
+    trackEvent('view_shared_result', {
+      result_role: role,
+      result_role_name: ROLES[role][currentLang].name
+    });
     renderResult(role);
     document.getElementById('screen-start').classList.remove('active');
     document.getElementById('screen-quiz').classList.remove('active');
