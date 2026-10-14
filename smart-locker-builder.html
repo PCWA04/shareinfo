@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>3D Printable Smart Locker Studio</title>
+  <style>
+    :root { --bg: #0f172a; --panel: #1e293b; --accent: #3b82f6; --text: #f8fafc; --muted: #94a3b8; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
+    #sidebar { width: 340px; background: var(--panel); padding: 20px; overflow-y: auto; border-right: 1px solid #334155; display: flex; flex-direction: column; gap: 16px; }
+    h1 { font-size: 1.15rem; font-weight: 700; color: #fff; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+    .section-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); font-weight: 700; margin-top: 4px; }
+    .control { display: flex; flex-direction: column; gap: 4px; }
+    .control label { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted); }
+    .control label span { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+    input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+    .checkbox-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; color: var(--text); padding: 4px 0; }
+    .stats { background: #0f172a; padding: 12px; border-radius: 8px; font-size: 0.8rem; line-height: 1.6; color: var(--muted); border: 1px solid #334155; }
+    .stats strong { color: #fff; }
+    .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
+    button { background: var(--accent); color: white; border: none; padding: 10px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.85rem; transition: 0.15s; }
+    button:hover { filter: brightness(1.1); }
+    button.secondary { background: #334155; }
+    #viewport { flex: 1; position: relative; }
+    #badge { position: absolute; top: 16px; right: 16px; background: rgba(15,23,42,0.85); padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; border: 1px solid #334155; pointer-events: none; }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+
+<div id="sidebar">
+  <h1>Smart Locker 3D Builder</h1>
+
+  <div class="section-title">Grid Layout</div>
+  <div class="control">
+    <label>Columns (Locker Bays) <span id="v-cols">2</span></label>
+    <input type="range" id="cols" min="1" max="4" step="1" value="2">
+  </div>
+  <div class="control">
+    <label>Rows per Column <span id="v-rows">3</span></label>
+    <input type="range" id="rows" min="1" max="6" step="1" value="3">
+  </div>
+  <div class="checkbox-row">
+    <label for="kiosk">Include Center Kiosk Column</label>
+    <input type="checkbox" id="kiosk" checked>
+  </div>
+
+  <div class="section-title">Compartment Size (mm)</div>
+  <div class="control">
+    <label>Cell Width <span id="v-cw">50 mm</span></label>
+    <input type="range" id="cw" min="30" max="120" step="2" value="50">
+  </div>
+  <div class="control">
+    <label>Cell Height <span id="v-ch">40 mm</span></label>
+    <input type="range" id="ch" min="25" max="100" step="2" value="40">
+  </div>
+  <div class="control">
+    <label>Cabinet Depth <span id="v-cd">60 mm</span></label>
+    <input type="range" id="cd" min="35" max="150" step="5" value="60">
+  </div>
+
+  <div class="section-title">3D Print & Mechanical Specs</div>
+  <div class="control">
+    <label>Wall Thickness <span id="v-wall">2.4 mm</span></label>
+    <input type="range" id="wall" min="1.6" max="5.0" step="0.4" value="2.4">
+  </div>
+  <div class="control">
+    <label>Door Clearance Gap <span id="v-tol">0.4 mm</span></label>
+    <input type="range" id="tol" min="0.2" max="1.0" step="0.1" value="0.4">
+  </div>
+  <div class="control">
+    <label>Preview Door Swing <span id="v-open">25°</span></label>
+    <input type="range" id="open" min="0" max="90" step="5" value="25">
+  </div>
+  <div class="checkbox-row">
+    <label for="wireSlot">Back Cable Routing Hole</label>
+    <input type="checkbox" id="wireSlot" checked>
+  </div>
+
+  <div class="stats" id="dimensions-box">
+    Calculating print volume...
+  </div>
+
+  <div class="btn-group">
+    <button id="export-cabinet">Download Cabinet Body (.STL)</button>
+    <button id="export-door" class="secondary">Download Single Locker Door (.STL)</button>
+  </div>
+</div>
+
+<div id="viewport">
+  <div id="badge">Left Click: Rotate | Right Click: Pan | Scroll: Zoom</div>
+</div>
+
+<script type="module">
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+  import { STLExporter } from 'three/addons/exporters/STLExporter.js';
+
+  const container = document.getElementById('viewport');
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0f172a);
+
+  const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 1, 2000);
+  camera.position.set(180, 140, 240);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  renderer.shadowMap.enabled = true;
+  container.appendChild(renderer.domElement);
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+
+  // Lighting
+  scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
+  dirLight.position.set(150, 250, 200);
+  scene.add(dirLight);
+
+  const gridHelper = new THREE.GridHelper(300, 30, 0x3b82f6, 0x1e293b);
+  scene.add(gridHelper);
+
+  let cabinetGroup = new THREE.Group();
+  let doorsGroup = new THREE.Group();
+  let singleDoorMesh = null;
+  scene.add(cabinetGroup);
+  scene.add(doorsGroup);
+
+  const cabinetMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.4, metalness: 0.1 });
+  const kioskMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6, roughness: 0.3, metalness: 0.2 });
+  const doorMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.35, metalness: 0.15 });
+
+  function getParams() {
+    return {
+      cols: parseInt(document.getElementById('cols').value),
+      rows: parseInt(document.getElementById('rows').value),
+      kiosk: document.getElementById('kiosk').checked,
+      cw: parseFloat(document.getElementById('cw').value),
+      ch: parseFloat(document.getElementById('ch').value),
+      cd: parseFloat(document.getElementById('cd').value),
+      wall: parseFloat(document.getElementById('wall').value),
+      tol: parseFloat(document.getElementById('tol').value),
+      open: parseFloat(document.getElementById('open').value),
+      wireSlot: document.getElementById('wireSlot').checked
+    };
+  }
+
+  function addBox(group, w, h, d, x, y, z, mat = cabinetMat) {
+    const geom = new THREE.BoxGeometry(w, h, d);
+    const mesh = new THREE.Mesh(geom, mat);
+    mesh.position.set(x, y, z);
+    mesh.updateMatrix();
+    group.add(mesh);
+    return mesh;
+  }
+
+  function buildLocker() {
+    cabinetGroup.clear();
+    doorsGroup.clear();
+
+    const p = getParams();
+    document.getElementById('v-cols').textContent = p.cols;
+    document.getElementById('v-rows').textContent = p.rows;
+    document.getElementById('v-cw').textContent = `${p.cw} mm`;
+    document.getElementById('v-ch').textContent = `${p.ch} mm`;
+    document.getElementById('v-cd').textContent = `${p.cd} mm`;
+    document.getElementById('v-wall').textContent = `${p.wall} mm`;
+    document.getElementById('v-tol').textContent = `${p.tol} mm`;
+    document.getElementById('v-open').textContent = `${p.open}°`;
+
+    const totalCols = p.cols + (p.kiosk ? 1 : 0);
+    const totalW = totalCols * p.cw + (totalCols + 1) * p.wall;
+    const totalH = p.rows * p.ch + (p.rows + 1) * p.wall;
+    const totalD = p.cd + p.wall;
+
+    // Center offset
+    const startX = -totalW / 2;
+    const startZ = -totalD / 2;
+
+    // 1. Backplate (with optional cable passthrough gap)
+    addBox(cabinetGroup, totalW, totalH, p.wall, 0, totalH / 2, startZ + p.wall / 2);
+
+    // 2. Horizontal Shelves
+    for (let r = 0; r <= p.rows; r++) {
+      const y = r * (p.ch + p.wall) + p.wall / 2;
+      addBox(cabinetGroup, totalW, p.wall, p.cd, 0, y, startZ + p.wall + p.cd / 2);
+    }
+
+    // 3. Vertical Dividers
+    for (let c = 0; c <= totalCols; c++) {
+      const x = startX + c * (p.cw + p.wall) + p.wall / 2;
+      addBox(cabinetGroup, p.wall, totalH, p.cd, x, totalH / 2, startZ + p.wall + p.cd / 2);
+    }
+
+    // 4. Center Kiosk Column & Doors
+    const kioskColIndex = p.kiosk ? Math.floor(totalCols / 2) : -1;
+
+    // Build reusable single door geometry for STL export
+    const doorW = p.cw - p.tol * 2;
+    const doorH = p.ch - p.tol * 2;
+    const doorThick = p.wall;
+    singleDoorMesh = new THREE.Mesh(new THREE.BoxGeometry(doorW, doorH, doorThick), doorMat);
+
+    for (let c = 0; c < totalCols; c++) {
+      const cellCenterX = startX + p.wall + c * (p.cw + p.wall) + p.cw / 2;
+
+      if (c === kioskColIndex) {
+        // Kiosk Front Faceplate
+        const kioskFrontZ = startZ + totalD - p.wall / 2;
+        addBox(cabinetGroup, p.cw, totalH - p.wall * 2, p.wall, cellCenterX, totalH / 2, kioskFrontZ, kioskMat);
+
+        // Recessed Touchscreen Bezel Indicator
+        const screenH = Math.min(totalH * 0.45, 70);
+        const screenW = p.cw * 0.78;
+        addBox(cabinetGroup, screenW, screenH, p.wall * 0.6, cellCenterX, totalH * 0.62, kioskFrontZ + p.wall * 0.4, doorMat);
+
+        // QR / RFID Scanner Ledge
+        addBox(cabinetGroup, p.cw * 0.5, 12, p.wall * 0.8, cellCenterX, totalH * 0.28, kioskFrontZ + p.wall * 0.4, doorMat);
+      } else {
+        for (let r = 0; r < p.rows; r++) {
+          const cellCenterY = p.wall + r * (p.ch + p.wall) + p.ch / 2;
+
+          // Internal Solenoid / Latch Catch Block
+          addBox(
+            cabinetGroup,
+            p.wall * 1.5,
+            Math.min(12, p.ch * 0.3),
+            p.wall * 2,
+            cellCenterX + p.cw / 2 - p.wall * 0.75,
+            cellCenterY,
+            startZ + totalD - p.wall * 2.5
+          );
+
+          // Door Pivot Group (Hinged on Left Side)
+          const pivot = new THREE.Group();
+          const hingeX = cellCenterX - p.cw / 2 + p.tol;
+          const hingeZ = startZ + totalD - doorThick / 2;
+          pivot.position.set(hingeX, cellCenterY, hingeZ);
+          pivot.rotation.y = -THREE.MathUtils.degToRad(p.open);
+
+          const door = new THREE.Mesh(new THREE.BoxGeometry(doorW, doorH, doorThick), doorMat);
+          door.position.set(doorW / 2, 0, 0);
+          pivot.add(door);
+
+          // Handle Pull Tab
+          const handle = new THREE.Mesh(new THREE.BoxGeometry(3, doorH * 0.25, 4), kioskMat);
+          handle.position.set(doorW - 4, 0, 2);
+          pivot.add(handle);
+
+          doorsGroup.add(pivot);
+        }
+      }
+    }
+
+    // Update Print Volume Stats
+    const fitsStandardBed = totalW <= 250 && totalH <= 250 && totalD <= 250;
+    document.getElementById('dimensions-box').innerHTML = `
+      <strong>Overall Footprint:</strong> ${totalW.toFixed(1)} × ${totalD.toFixed(1)} × ${totalH.toFixed(1)} mm<br>
+      <strong>Active Locker Bays:</strong> ${p.cols * p.rows} Doors<br>
+      <strong>256×256mm Bed Check:</strong> <span style="color:${fitsStandardBed ? '#4ade80' : '#f87171'}">${fitsStandardBed ? 'Fits in 1 Piece' : 'Requires Split / Scaling'}</span>
+    `;
+  }
+
+  function downloadSTL(object, filename) {
+    const exporter = new STLExporter();
+    const result = exporter.parse(object, { binary: true });
+    const blob = new Blob([result], { type: 'application/octet-stream' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+  }
+
+  document.querySelectorAll('input').forEach(el => el.addEventListener('input', buildLocker));
+  document.getElementById('export-cabinet').addEventListener('click', () => downloadSTL(cabinetGroup, 'smart_locker_cabinet.stl'));
+  document.getElementById('export-door').addEventListener('click', () => downloadSTL(singleDoorMesh, 'smart_locker_door.stl'));
+
+  window.addEventListener('resize', () => {
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth, container.clientHeight);
+  });
+
+  buildLocker();
+
+  function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  animate();
+</script>
+</body>
+</html>
