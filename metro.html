@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>臺北捷運置物櫃 年營收敏感度分析系統</title>
+  <!-- Tailwind CSS via Google gstatic CDN as recommended -->
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    /* Theme variable fallbacks for standalone browser opening */
+    :root {
+      --background: #0f172a;
+      --card: #1e293b;
+      --card-muted: #334155;
+      --border: #334155;
+      --border-light: #475569;
+      --foreground: #f8fafc;
+      --muted-foreground: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent: #06b6d4;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --metro-blue: #0070bc;
+      --metro-red: #e3002c;
+      --metro-green: #008659;
+      --metro-orange: #f8b61c;
+      --metro-brown: #c48c31;
+    }
+    .light {
+      --background: #f8fafc;
+      --card: #ffffff;
+      --card-muted: #f1f5f9;
+      --border: #e2e8f0;
+      --border-light: #cbd5e1;
+      --foreground: #0f172a;
+      --muted-foreground: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --accent: #0891b2;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif;
+    }
+    /* Custom Range Slider */
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: #334155;
+      height: 6px;
+      border-radius: 9999px;
+      outline: none;
+    }
+    .light input[type=range] {
+      background: #cbd5e1;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #3b82f6;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+      border: 2px solid #ffffff;
+      transition: all 0.15s ease-in-out;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      background: #60a5fa;
+    }
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+    .matrix-cell {
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .matrix-cell:hover {
+      transform: scale(1.04);
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; color: black !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen text-[var(--foreground)] antialiased transition-colors duration-200">
+
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Top Navigation / Header -->
+    <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-[var(--border)] pb-5">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+            捷運公司委外置物櫃營運數據
+          </span>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            全線 110 站點 • 2,330 格置物櫃
+          </span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--foreground)] flex items-center gap-3">
+          <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+          臺北捷運置物櫃 年營收敏感度分析系統
+        </h1>
+        <p class="text-sm text-[var(--muted-foreground)] mt-1">
+          收費標準基準：小格 NT$ 10/小時 (1,536 格) • 大格 NT$ 20/小時 (794 格)。動態評估不同使用率、費率、平假日加權及站點效應之財務收益。
+        </p>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="flex items-center gap-2 flex-wrap no-print">
+        <button id="themeToggleBtn" class="px-3 py-2 rounded-lg bg-[var(--card)] hover:bg-[var(--card-muted)] border border-[var(--border)] text-xs font-medium flex items-center gap-1.5 transition">
+          <svg id="themeIcon" class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9h-1m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+          <span id="themeText">切換淺色</span>
+        </button>
+        <button onclick="exportCSV()" class="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          匯出試算報表 CSV
+        </button>
+        <button onclick="window.print()" class="px-3.5 py-2 rounded-lg bg-[var(--card)] hover:bg-[var(--card-muted)] border border-[var(--border)] text-xs font-medium flex items-center gap-1.5 transition">
+          <svg class="w-4 h-4 text-[var(--muted-foreground)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+          </svg>
+          列印 / PDF
+        </button>
+      </div>
+    </header>
+
+    <!-- Quick Scenario Presets Bar -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          <span class="text-sm font-bold text-[var(--foreground)]">快速情境模擬預設：</span>
+          <span class="text-xs text-[var(--muted-foreground)]">一鍵套用業界典型營運預估</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="applyScenario('pessimistic')" class="scenario-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--card-muted)] hover:bg-slate-700 border border-[var(--border)] text-[var(--foreground)] transition flex items-center gap-1">
+            🌧️ 悲觀淡季 (小格2.5h / 大格2.5h)
+          </button>
+          <button onclick="applyScenario('conservative')" class="scenario-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--card-muted)] hover:bg-slate-700 border border-[var(--border)] text-[var(--foreground)] transition flex items-center gap-1">
+            ⚖️ 保守穩健 (小格3.5h / 大格4.0h)
+          </button>
+          <button onclick="applyScenario('base')" class="scenario-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600/30 hover:bg-blue-600/40 border border-blue-500/50 text-blue-300 transition flex items-center gap-1">
+            🎯 基準情境 (小格5.0h / 大格6.0h)
+          </button>
+          <button onclick="applyScenario('optimistic')" class="scenario-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--card-muted)] hover:bg-slate-700 border border-[var(--border)] text-[var(--foreground)] transition flex items-center gap-1">
+            🚀 觀光熱絡 (小格7.5h / 大格9.0h)
+          </button>
+          <button onclick="applyScenario('peak')" class="scenario-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--card-muted)] hover:bg-slate-700 border border-[var(--border)] text-[var(--foreground)] transition flex items-center gap-1">
+            🔥 連假高峰 (小格10h / 大格12h)
+          </button>
+          <button onclick="applyScenario('max18')" class="scenario-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 transition flex items-center gap-1">
+            ⚡ 18h滿載極限
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core KPI Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- Card 1: Annual Revenue -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm relative overflow-hidden group hover:border-blue-500/50 transition">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">預估全年總營業額</span>
+          <span id="capacityBadge" class="text-xs px-2 py-0.5 rounded-full font-bold bg-blue-500/20 text-blue-400">
+            滿載率 33.4%
+          </span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-xs text-[var(--muted-foreground)] font-semibold">NT$</span>
+          <span id="kpiAnnualRevenue" class="text-3xl font-black text-blue-400 tracking-tight">68,542,800</span>
+        </div>
+        <div class="mt-3 pt-3 border-t border-[var(--border)] flex items-center justify-between text-xs text-[var(--muted-foreground)]">
+          <span>約合新臺幣 <strong id="kpiAnnualRevenueWan" class="text-[var(--foreground)] font-bold">6,854.3 萬</strong></span>
+          <span class="text-emerald-400" id="kpiAnnualChange">+基準預估</span>
+        </div>
+        <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-blue-500/5 rounded-full blur-xl pointer-events-none"></div>
+      </div>
+
+      <!-- Card 2: Daily Revenue Breakdown -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm relative overflow-hidden group hover:border-cyan-500/50 transition">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">預估平均日營收</span>
+          <span id="wkendFactorBadge" class="text-xs px-2 py-0.5 rounded-full font-bold bg-cyan-500/20 text-cyan-400">
+            假日加成 1.30x
+          </span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-xs text-[var(--muted-foreground)] font-semibold">NT$</span>
+          <span id="kpiDailyAvg" class="text-3xl font-black text-cyan-400 tracking-tight">187,788</span>
+        </div>
+        <div class="mt-3 pt-3 border-t border-[var(--border)] flex items-center justify-between text-xs text-[var(--muted-foreground)]">
+          <span>平日：<strong id="kpiDailyWeekday" class="text-[var(--foreground)]">NT$ 172,080</strong></span>
+          <span>假日：<strong id="kpiDailyWeekend" class="text-amber-400 font-semibold">NT$ 223,704</strong></span>
+        </div>
+      </div>
+
+      <!-- Card 3: MRT Concession Royalty -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm relative overflow-hidden group hover:border-emerald-500/50 transition">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">捷運局預估權利金收入</span>
+          <span id="kpiRoyaltyRateBadge" class="text-xs px-2 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-400">
+            分潤 30%
+          </span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-xs text-[var(--muted-foreground)] font-semibold">NT$</span>
+          <span id="kpiAnnualRoyalty" class="text-3xl font-black text-emerald-400 tracking-tight">20,562,840</span>
+        </div>
+        <div class="mt-3 pt-3 border-t border-[var(--border)] flex items-center justify-between text-xs text-[var(--muted-foreground)]">
+          <span>北捷年進帳約 <strong id="kpiRoyaltyWan" class="text-[var(--foreground)] font-bold">2,056.3 萬</strong></span>
+          <span>廠商份額: 70%</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Inventory & Hourly Capacity -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm relative overflow-hidden group hover:border-purple-500/50 transition">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">置物櫃資產規模</span>
+          <span class="text-xs px-2 py-0.5 rounded-full font-bold bg-purple-500/20 text-purple-400">
+            共 110 站點
+          </span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span id="kpiTotalLockers" class="text-3xl font-black text-purple-400 tracking-tight">2,330</span>
+          <span class="text-xs text-[var(--muted-foreground)] font-medium">總格數</span>
+        </div>
+        <div class="mt-3 pt-3 border-t border-[var(--border)] flex items-center justify-between text-xs text-[var(--muted-foreground)]">
+          <span>小格: <strong id="kpiSmallLockersCount" class="text-[var(--foreground)]">1,536</strong> (65.9%)</span>
+          <span>大格: <strong id="kpiLargeLockersCount" class="text-[var(--foreground)]">794</strong> (34.1%)</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Main Workspace Grid: Controls (Left) & Sensitivity Matrices (Right) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Left Column: Controls & Parameters (5 cols) -->
+      <div class="lg:col-span-4 space-y-6">
+
+        <!-- Controls Box -->
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm space-y-5">
+          <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+              </svg>
+              <h2 class="text-base font-bold text-[var(--foreground)]">敏感度參數調整</h2>
+            </div>
+            <button onclick="resetDefaults()" class="text-xs text-blue-400 hover:text-blue-300 font-medium">
+              重設基準值
+            </button>
+          </div>
+
+          <!-- Parameter 1: Small Locker Hourly Usage -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between items-center text-xs">
+              <label class="font-medium text-[var(--foreground)] flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span>
+                小格 每日平均計費時數
+              </label>
+              <span class="font-bold text-blue-400 text-sm"><span id="valSmallHours">5.0</span> 小時/日 <span id="valSmallUtil" class="text-xs text-[var(--muted-foreground)] font-normal">(27.8%)</span></span>
+            </div>
+            <input type="range" id="inputSmallHours" min="0.5" max="18" step="0.5" value="5.0" oninput="updateCalculations()">
+            <div class="flex justify-between text-[11px] text-[var(--muted-foreground)]">
+              <span>0.5h (2.8%)</span>
+              <span>9h (50%)</span>
+              <span>18h (100%)</span>
+            </div>
+          </div>
+
+          <!-- Parameter 2: Large Locker Hourly Usage -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between items-center text-xs">
+              <label class="font-medium text-[var(--foreground)] flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block"></span>
+                大格 每日平均計費時數
+              </label>
+              <span class="font-bold text-purple-400 text-sm"><span id="valLargeHours">6.0</span> 小時/日 <span id="valLargeUtil" class="text-xs text-[var(--muted-foreground)] font-normal">(33.3%)</span></span>
+            </div>
+            <input type="range" id="inputLargeHours" min="0.5" max="18" step="0.5" value="6.0" oninput="updateCalculations()">
+            <div class="flex justify-between text-[11px] text-[var(--muted-foreground)]">
+              <span>0.5h (2.8%)</span>
+              <span>9h (50%)</span>
+              <span>18h (100%)</span>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="border-t border-[var(--border)] pt-3 space-y-4">
+            <h3 class="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">費率結構與彈性模擬</h3>
+
+            <!-- Parameter 3: Small Locker Rate -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <label class="font-medium text-[var(--foreground)]">小格收費標準 (元/小時)</label>
+                <span class="font-bold text-blue-400 text-sm">NT$ <span id="valSmallRate">10</span></span>
+              </div>
+              <input type="range" id="inputSmallRate" min="5" max="30" step="1" value="10" oninput="updateCalculations()">
+              <div class="flex justify-between text-[11px] text-[var(--muted-foreground)]">
+                <span>$5</span>
+                <span>基準 $10</span>
+                <span>$20</span>
+                <span>$30</span>
+              </div>
+            </div>
+
+            <!-- Parameter 4: Large Locker Rate -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <label class="font-medium text-[var(--foreground)]">大格收費標準 (元/小時)</label>
+                <span class="font-bold text-purple-400 text-sm">NT$ <span id="valLargeRate">20</span></span>
+              </div>
+              <input type="range" id="inputLargeRate" min="10" max="60" step="2" value="20" oninput="updateCalculations()">
+              <div class="flex justify-between text-[11px] text-[var(--muted-foreground)]">
+                <span>$10</span>
+                <span>基準 $20</span>
+                <span>$40</span>
+                <span>$60</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="border-t border-[var(--border)] pt-3 space-y-4">
+            <h3 class="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">營運環境與加權因子</h3>
+
+            <!-- Parameter 5: Operating Hours Base -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <label class="font-medium text-[var(--foreground)]">每日營運營業時數基準</label>
+                <span class="font-bold text-[var(--foreground)] text-sm"><span id="valOperatingHours">18</span> 小時</span>
+              </div>
+              <input type="range" id="inputOperatingHours" min="12" max="24" step="1" value="18" oninput="updateCalculations()">
+              <div class="flex justify-between text-[11px] text-[var(--muted-foreground)]">
+                <span>12h (半天)</span>
+                <span>18h (捷運正常)</span>
+                <span>24h (全日無休)</span>
+              </div>
+            </div>
+
+            <!-- Parameter 6: Weekend Multiplier -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <label class="font-medium text-[var(--foreground)]">假日/週末人流加成倍數</label>
+                <span class="font-bold text-amber-400 text-sm"><span id="valWeekendMultiplier">1.30</span>x</span>
+              </div>
+              <input type="range" id="inputWeekendMultiplier" min="1.0" max="2.0" step="0.05" value="1.30" oninput="updateCalculations()">
+              <div class="flex justify-between text-[11px] text-[var(--muted-foreground)]">
+                <span>1.0x (無加成)</span>
+                <span>1.3x (+30%)</span>
+                <span>1.5x (+50%)</span>
+                <span>2.0x (翻倍)</span>
+              </div>
+              <p class="text-[11px] text-[var(--muted-foreground)]">年化模型以 250 天平日 + 115 天週末及國定連假加權計算。</p>
+            </div>
+
+            <!-- Parameter 7: MRT Royalty Percentage -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <label class="font-medium text-[var(--foreground)]">捷運局權利金分潤比例</label>
+                <span class="font-bold text-emerald-400 text-sm"><span id="valRoyaltyRate">30</span>%</span>
+              </div>
+              <input type="range" id="inputRoyaltyRate" min="5" max="60" step="1" value="30" oninput="updateCalculations()">
+              <div class="flex justify-between text-[11px] text-[var(--muted-foreground)]">
+                <span>5%</span>
+                <span>20%</span>
+                <span>30% (基準)</span>
+                <span>50%</span>
+              </div>
+            </div>
+
+            <!-- Parameter 8: Top Stations Tourism Boost Toggle -->
+            <div class="flex items-center justify-between pt-2">
+              <div>
+                <div class="text-xs font-medium text-[var(--foreground)]">觀光樞紐大站額外加成</div>
+                <div class="text-[11px] text-[var(--muted-foreground)]">北車、西門、淡水、101等前10大站使用率高出 25%</div>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="checkTourismBoost" class="sr-only peer" checked onchange="updateCalculations()">
+                <div class="w-10 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Revenue Breakdown Mini Card -->
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm space-y-4">
+          <h3 class="text-sm font-bold text-[var(--foreground)] flex items-center justify-between">
+            <span>置物櫃貢獻結構拆解</span>
+            <span class="text-xs font-normal text-[var(--muted-foreground)]">目前情境</span>
+          </h3>
+
+          <!-- Small vs Large Locker Revenue Bar -->
+          <div class="space-y-2">
+            <div class="flex justify-between text-xs">
+              <span class="text-blue-400 font-semibold">小格: <span id="structSmallAmt">NT$ 3,120萬</span> (<span id="structSmallPct">45.5%</span>)</span>
+              <span class="text-purple-400 font-semibold">大格: <span id="structLargeAmt">NT$ 3,734萬</span> (<span id="structLargePct">54.5%</span>)</span>
+            </div>
+            <div class="w-full h-3 rounded-full bg-slate-700 flex overflow-hidden">
+              <div id="structBarSmall" class="h-full bg-blue-500 transition-all duration-300" style="width: 45.5%;"></div>
+              <div id="structBarLarge" class="h-full bg-purple-500 transition-all duration-300" style="width: 54.5%;"></div>
+            </div>
+          </div>
+
+          <div class="p-3 bg-[var(--card-muted)] rounded-lg text-xs space-y-1 text-[var(--muted-foreground)]">
+            <div class="flex justify-between">
+              <span>置物櫃數量比 (小 : 大)</span>
+              <strong class="text-[var(--foreground)]">65.9% : 34.1%</strong>
+            </div>
+            <div class="flex justify-between">
+              <span>營收貢獻比 (小 : 大)</span>
+              <strong id="structRevRatio" class="text-[var(--foreground)]">45.5% : 54.5%</strong>
+            </div>
+            <div class="text-[11px] text-amber-300/90 pt-1 border-t border-[var(--border)]">
+              💡 <strong>洞察：</strong>大格每小時 20 元為小格 2 倍，僅佔 34% 的數量卻貢獻過半營收，為最關鍵的產能槓桿。
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Sensitivity Matrix & Heatmap (8 cols) -->
+      <div class="lg:col-span-8 space-y-6">
+
+        <!-- Sensitivity Matrix Card -->
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border)] pb-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                <h2 class="text-base font-bold text-[var(--foreground)]">雙變數敏感度分析矩陣 (Sensitivity Matrix)</h2>
+              </div>
+              <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+                單擊任一單元格可直接將其參數套用至目前模型。數值單位：<strong>新臺幣 萬元</strong>
+              </p>
+            </div>
+
+            <!-- Tab switcher for Matrices -->
+            <div class="flex rounded-lg bg-[var(--card-muted)] p-1 text-xs">
+              <button id="tabBtn1" onclick="switchMatrixTab(1)" class="px-3 py-1 rounded font-semibold bg-blue-600 text-white transition">
+                小格 × 大格時數
+              </button>
+              <button id="tabBtn2" onclick="switchMatrixTab(2)" class="px-3 py-1 rounded font-medium text-[var(--muted-foreground)] hover:text-white transition">
+                使用率 × 費率彈性
+              </button>
+              <button id="tabBtn3" onclick="switchMatrixTab(3)" class="px-3 py-1 rounded font-medium text-[var(--muted-foreground)] hover:text-white transition">
+                平假日加成矩陣
+              </button>
+            </div>
+          </div>
+
+          <!-- Legend -->
+          <div class="flex items-center justify-between text-xs text-[var(--muted-foreground)] flex-wrap gap-2">
+            <span class="flex items-center gap-1.5">
+              <span class="inline-block w-3 h-3 rounded-full border-2 border-yellow-400 bg-yellow-400/30"></span>
+              代表目前選中參數情境
+            </span>
+            <div class="flex items-center gap-1">
+              <span>低營收 (&lt;3,000萬)</span>
+              <div class="flex h-2.5 w-32 rounded overflow-hidden">
+                <div class="h-full w-1/4 bg-blue-900/60"></div>
+                <div class="h-full w-1/4 bg-emerald-800/70"></div>
+                <div class="h-full w-1/4 bg-amber-600/70"></div>
+                <div class="h-full w-1/4 bg-rose-600/80"></div>
+              </div>
+              <span>高營收 (&gt;1.2億)</span>
+            </div>
+          </div>
+
+          <!-- Matrix 1: Small Hours vs Large Hours -->
+          <div id="matrixContainer1" class="overflow-x-auto">
+            <table class="w-full text-center border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-[var(--border)] text-[var(--muted-foreground)]">
+                  <th class="p-2 font-semibold text-left bg-[var(--card-muted)]/50 rounded-tl-lg">
+                    大格 \ 小格
+                  </th>
+                  <th class="p-2 font-semibold">1.0h</th>
+                  <th class="p-2 font-semibold">2.0h</th>
+                  <th class="p-2 font-semibold">3.0h</th>
+                  <th class="p-2 font-semibold">4.0h</th>
+                  <th class="p-2 font-semibold">5.0h</th>
+                  <th class="p-2 font-semibold">6.0h</th>
+                  <th class="p-2 font-semibold">7.0h</th>
+                  <th class="p-2 font-semibold">8.0h</th>
+                  <th class="p-2 font-semibold">10.0h</th>
+                  <th class="p-2 font-semibold rounded-tr-lg">12.0h</th>
+                </tr>
+              </thead>
+              <tbody id="matrixTbody1">
+                <!-- Dynamically populated via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Matrix 2: Utilization % vs Rate Adjustment -->
+          <div id="matrixContainer2" class="overflow-x-auto hidden">
+            <table class="w-full text-center border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-[var(--border)] text-[var(--muted-foreground)]">
+                  <th class="p-2 font-semibold text-left bg-[var(--card-muted)]/50 rounded-tl-lg">
+                    費率變動 \ 平均時數
+                  </th>
+                  <th class="p-2 font-semibold">2.0h (11%)</th>
+                  <th class="p-2 font-semibold">3.5h (19%)</th>
+                  <th class="p-2 font-semibold">5.0h (28%)</th>
+                  <th class="p-2 font-semibold">6.5h (36%)</th>
+                  <th class="p-2 font-semibold">8.0h (44%)</th>
+                  <th class="p-2 font-semibold">10.0h (56%)</th>
+                  <th class="p-2 font-semibold">12.0h (67%)</th>
+                  <th class="p-2 font-semibold rounded-tr-lg">15.0h (83%)</th>
+                </tr>
+              </thead>
+              <tbody id="matrixTbody2">
+                <!-- Dynamically populated via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Matrix 3: Weekday Hours vs Weekend Multiplier -->
+          <div id="matrixContainer3" class="overflow-x-auto hidden">
+            <table class="w-full text-center border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-[var(--border)] text-[var(--muted-foreground)]">
+                  <th class="p-2 font-semibold text-left bg-[var(--card-muted)]/50 rounded-tl-lg">
+                    假日乘數 \ 平日時數
+                  </th>
+                  <th class="p-2 font-semibold">2.0h</th>
+                  <th class="p-2 font-semibold">3.0h</th>
+                  <th class="p-2 font-semibold">4.0h</th>
+                  <th class="p-2 font-semibold">5.0h</th>
+                  <th class="p-2 font-semibold">6.0h</th>
+                  <th class="p-2 font-semibold">7.0h</th>
+                  <th class="p-2 font-semibold">8.0h</th>
+                  <th class="p-2 font-semibold rounded-tr-lg">10.0h</th>
+                </tr>
+              </thead>
+              <tbody id="matrixTbody3">
+                <!-- Dynamically populated via JS -->
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <!-- Visual Charts Card -->
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--border)] pb-3">
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+              </svg>
+              <h2 class="text-base font-bold text-[var(--foreground)]">營收敏感度趨勢曲線與各站貢獻</h2>
+            </div>
+            <span class="text-xs text-[var(--muted-foreground)]">動態響應目前費率與加成參數</span>
+          </div>
+
+          <!-- Canvas Charts Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Chart 1: Sensitivity Curve -->
+            <div class="bg-[var(--card-muted)]/40 p-4 rounded-xl border border-[var(--border)] flex flex-col">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-semibold text-[var(--foreground)]">使用時數 vs. 年營收敏感度曲線</span>
+                <span class="text-[11px] text-[var(--muted-foreground)]">單位: 百萬元</span>
+              </div>
+              <div class="relative flex-1 min-h-[220px]">
+                <canvas id="sensitivityChart" class="w-full h-full"></canvas>
+              </div>
+              <div class="flex items-center justify-center gap-4 text-[11px] text-[var(--muted-foreground)] mt-2">
+                <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-blue-500 inline-block"></span> 總營收</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-purple-500 inline-block"></span> 大格營收</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-cyan-400 inline-block"></span> 小格營收</span>
+              </div>
+            </div>
+
+            <!-- Chart 2: Top 10 Stations Revenue Bar Chart -->
+            <div class="bg-[var(--card-muted)]/40 p-4 rounded-xl border border-[var(--border)] flex flex-col">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-semibold text-[var(--foreground)]">Top 8 核心站點預估年營收</span>
+                <span class="text-[11px] text-[var(--muted-foreground)]">單位: 萬元</span>
+              </div>
+              <div class="relative flex-1 min-h-[220px]">
+                <canvas id="topStationsChart" class="w-full h-full"></canvas>
+              </div>
+              <div class="text-[11px] text-[var(--muted-foreground)] text-center mt-2">
+                包含中山地下街、西門站、淡水站、台北車站等高周轉核心站
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Station Detailed Drill-Down Table -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border)] pb-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+            <h2 class="text-base font-bold text-[var(--foreground)]">全系統 110 站點明細營運評估</h2>
+          </div>
+          <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+            即時計算每站置物櫃配置在目前參數下的日營收、年營收及產能滿載極限
+          </p>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="relative">
+            <input type="text" id="stationSearchInput" placeholder="搜尋站名、行政區 (如: 台北車站, 西門, 中正區)..." 
+              class="w-64 px-3 py-1.5 pl-8 rounded-lg bg-[var(--card-muted)] border border-[var(--border)] text-xs text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:border-blue-500 transition"
+              oninput="renderStationsTable()">
+            <svg class="w-4 h-4 text-[var(--muted-foreground)] absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </div>
+
+          <select id="districtFilterSelect" onchange="renderStationsTable()" class="px-3 py-1.5 rounded-lg bg-[var(--card-muted)] border border-[var(--border)] text-xs text-[var(--foreground)] focus:outline-none focus:border-blue-500 transition">
+            <option value="all">所有行政區 (全部)</option>
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+      </div>
+
+      <!-- Station Table -->
+      <div class="overflow-x-auto max-h-[460px] overflow-y-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead class="sticky top-0 bg-[var(--card)] z-10 border-b border-[var(--border)]">
+            <tr class="text-[var(--muted-foreground)]">
+              <th class="p-3 font-semibold cursor-pointer hover:text-[var(--foreground)]" onclick="sortStations('rank')">#</th>
+              <th class="p-3 font-semibold cursor-pointer hover:text-[var(--foreground)]" onclick="sortStations('name')">捷運站點</th>
+              <th class="p-3 font-semibold cursor-pointer hover:text-[var(--foreground)]" onclick="sortStations('district')">縣市/行政區</th>
+              <th class="p-3 font-semibold text-right cursor-pointer hover:text-[var(--foreground)]" onclick="sortStations('small')">小格數 ($10)</th>
+              <th class="p-3 font-semibold text-right cursor-pointer hover:text-[var(--foreground)]" onclick="sortStations('large')">大格數 ($20)</th>
+              <th class="p-3 font-semibold text-right cursor-pointer hover:text-[var(--foreground)]" onclick="sortStations('total')">總格數</th>
+              <th class="p-3 font-semibold text-right cursor-pointer hover:text-[var(--foreground)]" onclick="sortStations('estDaily')">預估日營收</th>
+              <th class="p-3 font-semibold text-right cursor-pointer hover:text-[var(--foreground)]" onclick="sortStations('estAnnual')">預估年營收</th>
+              <th class="p-3 font-semibold text-right cursor-pointer hover:text-[var(--foreground)]" onclick="sortStations('maxAnnual')">18h滿載極限</th>
+              <th class="p-3 font-semibold text-right cursor-pointer hover:text-[var(--foreground)]" onclick="sortStations('share')">全線營收佔比</th>
+            </tr>
+          </thead>
+          <tbody id="stationTableBody" class="divide-y divide-[var(--border)] text-[var(--foreground)]">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex items-center justify-between text-xs text-[var(--muted-foreground)] pt-2 border-t border-[var(--border)]">
+        <span id="stationTableSummary">顯示 110 站點中符合條件的站點</span>
+        <button onclick="exportCSV()" class="text-blue-400 hover:text-blue-300 font-medium flex items-center gap-1">
+          下載當前站點試算清單 (CSV) →
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Management Insights & Strategy Notes -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm space-y-4">
+      <div class="flex items-center gap-2 border-b border-[var(--border)] pb-3">
+        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+        </svg>
+        <h2 class="text-base font-bold text-[var(--foreground)]">捷運置物櫃營運策略與財務敏感性評估報告</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs leading-relaxed text-[var(--muted-foreground)]">
+        
+        <div class="p-3 bg-[var(--card-muted)]/50 rounded-lg space-y-1.5 border border-[var(--border)]">
+          <h4 class="font-bold text-[var(--foreground)] text-sm flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+            1. 槓桿效應：大格為核心營收引擎
+          </h4>
+          <p>
+            全捷運系統中，小格數量佔 <strong>65.9% (1,536格)</strong>，大格僅佔 <strong>34.1% (794格)</strong>。但因大格費率為 20元/時（小格 2 倍），在基準情境下，大格貢獻了 <strong>54.5%</strong> 的總營收。
+          </p>
+          <p class="text-[var(--foreground)]">
+            💡 <strong>建議：</strong>針對旅客行李寄放需求高之站點（台北車站、西門、淡水、松山機場、台北101），若空間許可，增加大格比例將顯著拉升總營收上限。
+          </p>
+        </div>
+
+        <div class="p-3 bg-[var(--card-muted)]/50 rounded-lg space-y-1.5 border border-[var(--border)]">
+          <h4 class="font-bold text-[var(--foreground)] text-sm flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            2. 高度集中：Top 5 站佔全線三成營收
+          </h4>
+          <p>
+            營收高度集中於交通樞紐與國際觀光商圈。<strong>中山地下街 (214格)、西門站 (166格)、淡水站 (111格)、台北車站 (108格)、劍潭站 (78格)</strong> 這前 5 名站點即佔據了全系統 <strong>29%</strong> 的置物櫃容量。
+          </p>
+          <p class="text-[var(--foreground)]">
+            💡 <strong>建議：</strong>可針對前 10 大觀光站實施差別費率（如尖峰時段或假日調高 20%~30%），對觀光旅客價格敏感度低但能有效提升坪效與週轉率。
+          </p>
+        </div>
+
+        <div class="p-3 bg-[var(--card-muted)]/50 rounded-lg space-y-1.5 border border-[var(--border)]">
+          <h4 class="font-bold text-[var(--foreground)] text-sm flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+            3. 捷運局權利金與委外經營模式
+          </h4>
+          <p>
+            目前設備由<strong>萬洲通國際企業</strong>建置與營運，採計時收費並全面支援悠遊卡、LINE Pay、悠遊付、台灣Pay等電子票證與行動支付。
+          </p>
+          <p class="text-[var(--foreground)]">
+            💡 <strong>財務洞察：</strong>在基準 30% 權利金比例下，捷運局每年可獲約 <strong>NT$ 2,050 萬至 2,500 萬</strong>之純特許權利金收入，且無須承擔硬體維護折舊與營運人力成本。
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-xs text-[var(--muted-foreground)] py-4 border-t border-[var(--border)]">
+      臺北大眾捷運股份有限公司 置物櫃營業數據敏感度分析系統 • 資料來源：捷運局開放資料集 (metroinfo.csv)
+    </footer>
+
+  </div>
+
+  <!-- Raw Embedded Data -->
+  <script>
+    const RAW_METRO_DATA = {"summary": {"total_stations": 110, "total_lockers": 2330, "small_lockers": 1536, "large_lockers": 794, "small_pct": 65.9, "large_pct": 34.1, "default_small_rate": 10, "default_large_rate": 20, "max_hourly_revenue": 31240, "max_annual_revenue_18h": 205246800, "max_annual_revenue_24h": 273662400}, "stations": [{"name": "中山地下街", "county": "臺北市", "district": "大同區", "small": 112, "large": 102, "total": 214, "locations": ["中山地下街水景區前(近R1出口)"]}, {"name": "西門站", "county": "臺北市", "district": "中正區", "small": 68, "large": 98, "total": 166, "locations": ["出口2", "出口5"]}, {"name": "淡水站", "county": "新北市", "district": "淡水區", "small": 69, "large": 42, "total": 111, "locations": ["北川堂(近出口1)", "南川堂(近出口2)"]}, {"name": "台北車站", "county": "臺北市", "district": "中正區", "small": 30, "large": 78, "total": 108, "locations": ["M3出口往臺鐵無障礙坡道旁", "捷運高鐵連通處"]}, {"name": "劍潭", "county": "臺北市", "district": "士林區", "small": 46, "large": 32, "total": 78, "locations": ["近出口1"]}, {"name": "圓山", "county": "臺北市", "district": "士林區", "small": 32, "large": 24, "total": 56, "locations": ["近出口2"]}, {"name": "台北101/世貿站", "county": "臺北市", "district": "信義區", "small": 26, "large": 24, "total": 50, "locations": ["出口4之轉接層通道", "出口2"]}, {"name": "南港展覽館站", "county": "臺北市", "district": "南港區", "small": 30, "large": 20, "total": 50, "locations": ["出口2A"]}, {"name": "府中站", "county": "新北市", "district": "板橋區", "small": 30, "large": 20, "total": 50, "locations": ["出口2"]}, {"name": "中山站", "county": "臺北市", "district": "大同區", "small": 30, "large": 20, "total": 50, "locations": ["出口1"]}, {"name": "東門站", "county": "臺北市", "district": "大安區", "small": 32, "large": 16, "total": 48, "locations": ["出口5旁走道"]}, {"name": "新北投站", "county": "臺北市", "district": "北投區", "small": 32, "large": 12, "total": 44, "locations": ["車站大廳層"]}, {"name": "士林站", "county": "臺北市", "district": "士林區", "small": 23, "large": 20, "total": 43, "locations": ["近出口1"]}, {"name": "東區地下街", "county": "臺北市", "district": "大安區", "small": 24, "large": 12, "total": 36, "locations": ["近出口14"]}, {"name": "市政府", "county": "臺北市", "district": "信義區", "small": 26, "large": 8, "total": 34, "locations": ["近出口4"]}, {"name": "國父紀念館站", "county": "臺北市", "district": "信義區", "small": 24, "large": 8, "total": 32, "locations": ["近出口2"]}, {"name": "板橋站", "county": "新北市", "district": "板橋區", "small": 20, "large": 12, "total": 32, "locations": ["通道層近3A出口"]}, {"name": "忠孝復興站", "county": "臺北市", "district": "大安區", "small": 10, "large": 18, "total": 28, "locations": ["3F文湖線大廳層"]}, {"name": "新埔站", "county": "新北市", "district": "板橋區", "small": 20, "large": 8, "total": 28, "locations": ["出口4(近三猿廣場)"]}, {"name": "忠孝敦化站", "county": "臺北市", "district": "大安區", "small": 20, "large": 8, "total": 28, "locations": ["近出口5"]}, {"name": "北門站", "county": "臺北市", "district": "大同區", "small": 0, "large": 24, "total": 24, "locations": ["機場捷運通道轉角牆面(近台北地下街連通道)"]}, {"name": "公館站", "county": "臺北市", "district": "中正區", "small": 16, "large": 8, "total": 24, "locations": ["近出口2"]}, {"name": "松山站", "county": "臺北市", "district": "松山區", "small": 16, "large": 8, "total": 24, "locations": ["近出口5"]}, {"name": "動物園站", "county": "臺北市", "district": "文山區", "small": 20, "large": 4, "total": 24, "locations": ["出口2"]}, {"name": "象山站", "county": "臺北市", "district": "信義區", "small": 20, "large": 4, "total": 24, "locations": ["近出口2"]}, {"name": "忠孝新生", "county": "臺北市", "district": "大安區", "small": 14, "large": 8, "total": 22, "locations": ["近出口4"]}, {"name": "三重站", "county": "新北市", "district": "三重區", "small": 20, "large": 0, "total": 20, "locations": ["出口1"]}, {"name": "中正紀念堂站", "county": "臺北市", "district": "中正區", "small": 16, "large": 4, "total": 20, "locations": ["近出口6"]}, {"name": "大安森林公園站", "county": "臺北市", "district": "大安區", "small": 16, "large": 4, "total": 20, "locations": ["近出口5"]}, {"name": "中山國中", "county": "臺北市", "district": "中山區", "small": 14, "large": 4, "total": 18, "locations": ["近出口"]}, {"name": "北投站", "county": "臺北市", "district": "北投區", "small": 8, "large": 4, "total": 12, "locations": ["車站大廳層"]}, {"name": "新店站", "county": "新北市", "district": "新店區", "small": 8, "large": 4, "total": 12, "locations": ["車站大廳層"]}, {"name": "麟光", "county": "臺北市", "district": "大安區", "small": 12, "large": 0, "total": 12, "locations": ["近出口"]}, {"name": "辛亥", "county": "臺北市", "district": "文山區", "small": 12, "large": 0, "total": 12, "locations": ["近出口"]}, {"name": "萬芳社區", "county": "臺北市", "district": "文山區", "small": 12, "large": 0, "total": 12, "locations": ["近出口"]}, {"name": "木柵", "county": "臺北市", "district": "文山區", "small": 12, "large": 0, "total": 12, "locations": ["近出口"]}, {"name": "葫洲", "county": "臺北市", "district": "內湖區", "small": 12, "large": 0, "total": 12, "locations": ["近出口1"]}, {"name": "小碧潭", "county": "新北市", "district": "新店區", "small": 12, "large": 0, "total": 12, "locations": ["近出口1"]}, {"name": "復興崗", "county": "臺北市", "district": "北投區", "small": 12, "large": 0, "total": 12, "locations": ["近出口1"]}, {"name": "忠義", "county": "臺北市", "district": "北投區", "small": 12, "large": 0, "total": 12, "locations": ["近出口1"]}, {"name": "文德", "county": "臺北市", "district": "內湖區", "small": 12, "large": 0, "total": 12, "locations": ["近出口2"]}, {"name": "先嗇宮", "county": "新北市", "district": "三重區", "small": 12, "large": 0, "total": 12, "locations": ["近出口3"]}, {"name": "科技大樓", "county": "臺北市", "district": "大安區", "small": 8, "large": 2, "total": 10, "locations": ["近出口"]}, {"name": "六張犁", "county": "臺北市", "district": "大安區", "small": 8, "large": 2, "total": 10, "locations": ["近出口"]}, {"name": "萬芳醫院", "county": "臺北市", "district": "文山區", "small": 8, "large": 2, "total": 10, "locations": ["近出口"]}, {"name": "永安市場", "county": "新北市", "district": "中和區", "small": 8, "large": 2, "total": 10, "locations": ["近出口"]}, {"name": "景安", "county": "新北市", "district": "中和區", "small": 8, "large": 2, "total": 10, "locations": ["近出口"]}, {"name": "明德", "county": "臺北市", "district": "北投區", "small": 8, "large": 2, "total": 10, "locations": ["近出口"]}, {"name": "奇岩", "county": "臺北市", "district": "北投區", "small": 8, "large": 2, "total": 10, "locations": ["近出口"]}, {"name": "台北橋", "county": "新北市", "district": "三重區", "small": 8, "large": 2, "total": 10, "locations": ["近出口"]}, {"name": "三重國小", "county": "新北市", "district": "三重區", "small": 8, "large": 2, "total": 10, "locations": ["近出口"]}, {"name": "西湖", "county": "臺北市", "district": "內湖區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "港墘", "county": "臺北市", "district": "內湖區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "內湖", "county": "臺北市", "district": "內湖區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "南港軟體園區", "county": "臺北市", "district": "內湖區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "新店區公所", "county": "新北市", "district": "新店區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "七張", "county": "新北市", "district": "新店區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "大坪林", "county": "新北市", "district": "新店區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "民權西路", "county": "臺北市", "district": "大同區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "芝山", "county": "臺北市", "district": "士林區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "石牌", "county": "臺北市", "district": "北投區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "唭哩岸", "county": "臺北市", "district": "北投區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "關渡", "county": "臺北市", "district": "北投區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "竹圍", "county": "新北市", "district": "淡水區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "紅樹林", "county": "新北市", "district": "淡水區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "永寧", "county": "新北市", "district": "土城區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "後山埤", "county": "臺北市", "district": "南港區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "南京三民", "county": "臺北市", "district": "松山區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "菜寮", "county": "新北市", "district": "三重區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "大橋頭", "county": "新北市", "district": "大同區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "蘆洲", "county": "新北市", "district": "蘆洲區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "丹鳳", "county": "新北市", "district": "新莊區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1"]}, {"name": "大安", "county": "臺北市", "district": "大安區", "small": 8, "large": 2, "total": 10, "locations": ["近出口1、2轉折平台"]}, {"name": "大直", "county": "臺北市", "district": "中山區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "劍南路", "county": "臺北市", "district": "中山區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "大湖公園", "county": "臺北市", "district": "內湖區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "景美", "county": "臺北市", "district": "文山區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "頂溪", "county": "新北市", "district": "永和區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "南勢角", "county": "新北市", "district": "中和區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "雙連", "county": "臺北市", "district": "大同區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "土城", "county": "新北市", "district": "土城區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "海山", "county": "新北市", "district": "土城區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "龍山寺", "county": "臺北市", "district": "萬華區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "善導寺", "county": "臺北市", "district": "中正區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "昆陽", "county": "臺北市", "district": "南港區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "南港", "county": "臺北市", "district": "南港區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "台北小巨蛋", "county": "臺北市", "district": "松山區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "輔大", "county": "新北市", "district": "新莊區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "新莊", "county": "新北市", "district": "新莊區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "頭前庄", "county": "新北市", "district": "新莊區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "三民高中", "county": "新北市", "district": "蘆洲區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "徐匯中學", "county": "新北市", "district": "蘆洲區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "三和國中", "county": "新北市", "district": "三重區", "small": 8, "large": 2, "total": 10, "locations": ["近出口2"]}, {"name": "東湖", "county": "臺北市", "district": "內湖區", "small": 8, "large": 2, "total": 10, "locations": ["近出口3"]}, {"name": "亞東醫院", "county": "新北市", "district": "板橋區", "small": 8, "large": 2, "total": 10, "locations": ["近出口3"]}, {"name": "江子翠", "county": "新北市", "district": "板橋區", "small": 8, "large": 2, "total": 10, "locations": ["近出口3"]}, {"name": "迴龍", "county": "新北市", "district": "新莊區", "small": 8, "large": 2, "total": 10, "locations": ["近出口3"]}, {"name": "小南門", "county": "臺北市", "district": "中正區", "small": 8, "large": 2, "total": 10, "locations": ["近出口3/4"]}, {"name": "萬隆", "county": "臺北市", "district": "文山區", "small": 8, "large": 2, "total": 10, "locations": ["近出口4"]}, {"name": "古亭", "county": "臺北市", "district": "中正區", "small": 8, "large": 2, "total": 10, "locations": ["近出口4"]}, {"name": "台大醫院", "county": "臺北市", "district": "中正區", "small": 8, "large": 2, "total": 10, "locations": ["近出口4"]}, {"name": "頂埔", "county": "新北市", "district": "土城區", "small": 8, "large": 2, "total": 10, "locations": ["近出口4"]}, {"name": "中山國小", "county": "臺北市", "district": "中山區", "small": 8, "large": 2, "total": 10, "locations": ["近出口4"]}, {"name": "行天宮", "county": "臺北市", "district": "中山區", "small": 8, "large": 2, "total": 10, "locations": ["近出口4"]}, {"name": "南京復興", "county": "臺北市", "district": "松山區", "small": 8, "large": 2, "total": 10, "locations": ["近出口5"]}, {"name": "台電大樓", "county": "臺北市", "district": "中正區", "small": 8, "large": 2, "total": 10, "locations": ["近出口5"]}, {"name": "永春", "county": "臺北市", "district": "信義區", "small": 8, "large": 2, "total": 10, "locations": ["近出口5"]}, {"name": "信義安和", "county": "臺北市", "district": "大安區", "small": 8, "large": 2, "total": 10, "locations": ["近出口5轉折平台"]}, {"name": "松江南京", "county": "臺北市", "district": "中山區", "small": 8, "large": 2, "total": 10, "locations": ["近出口8"]}, {"name": "松山機場", "county": "臺北市", "district": "松山區", "small": 8, "large": 2, "total": 10, "locations": ["近詢問處"]}], "districts": [{"district": "臺北市 中正區", "county": "臺北市", "district_name": "中正區", "stations": 9, "small": 170, "large": 198, "total": 368}, {"district": "臺北市 大同區", "county": "臺北市", "district_name": "大同區", "stations": 5, "small": 158, "large": 150, "total": 308}, {"district": "臺北市 大安區", "county": "臺北市", "district_name": "大安區", "stations": 11, "small": 160, "large": 74, "total": 234}, {"district": "臺北市 士林區", "county": "臺北市", "district_name": "士林區", "stations": 4, "small": 109, "large": 78, "total": 187}, {"district": "臺北市 信義區", "county": "臺北市", "district_name": "信義區", "stations": 5, "small": 104, "large": 46, "total": 150}, {"district": "新北市 淡水區", "county": "新北市", "district_name": "淡水區", "stations": 3, "small": 85, "large": 46, "total": 131}, {"district": "新北市 板橋區", "county": "新北市", "district_name": "板橋區", "stations": 5, "small": 86, "large": 44, "total": 130}, {"district": "臺北市 北投區", "county": "臺北市", "district_name": "北投區", "stations": 9, "small": 104, "large": 26, "total": 130}, {"district": "臺北市 文山區", "county": "臺北市", "district_name": "文山區", "stations": 7, "small": 80, "large": 10, "total": 90}, {"district": "臺北市 內湖區", "county": "臺北市", "district_name": "內湖區", "stations": 8, "small": 72, "large": 12, "total": 84}, {"district": "臺北市 南港區", "county": "臺北市", "district_name": "南港區", "stations": 4, "small": 54, "large": 26, "total": 80}, {"district": "新北市 三重區", "county": "新北市", "district_name": "三重區", "stations": 6, "small": 64, "large": 8, "total": 72}, {"district": "臺北市 中山區", "county": "臺北市", "district_name": "中山區", "stations": 6, "small": 54, "large": 14, "total": 68}, {"district": "臺北市 松山區", "county": "臺北市", "district_name": "松山區", "stations": 5, "small": 48, "large": 16, "total": 64}, {"district": "新北市 新店區", "county": "新北市", "district_name": "新店區", "stations": 5, "small": 44, "large": 10, "total": 54}, {"district": "新北市 新莊區", "county": "新北市", "district_name": "新莊區", "stations": 5, "small": 40, "large": 10, "total": 50}, {"district": "新北市 土城區", "county": "新北市", "district_name": "土城區", "stations": 4, "small": 32, "large": 8, "total": 40}, {"district": "新北市 中和區", "county": "新北市", "district_name": "中和區", "stations": 3, "small": 24, "large": 6, "total": 30}, {"district": "新北市 蘆洲區", "county": "新北市", "district_name": "蘆洲區", "stations": 3, "small": 24, "large": 6, "total": 30}, {"district": "新北市 大同區", "county": "新北市", "district_name": "大同區", "stations": 1, "small": 8, "large": 2, "total": 10}, {"district": "新北市 永和區", "county": "新北市", "district_name": "永和區", "stations": 1, "small": 8, "large": 2, "total": 10}, {"district": "臺北市 萬華區", "county": "臺北市", "district_name": "萬華區", "stations": 1, "small": 8, "large": 2, "total": 10}]};
+  </script>
+
+  <!-- Interactive Logic & Chart Rendering -->
+  <script>
+    // State management
+    const state = {
+      smallHours: 5.0,
+      largeHours: 6.0,
+      smallRate: 10,
+      largeRate: 20,
+      operatingHours: 18,
+      weekendMultiplier: 1.30,
+      royaltyRate: 0.30,
+      tourismBoost: true,
+      tourismStations: ['台北車站', '西門站', '中山地下街', '淡水站', '劍潭', '台北101/世貿站', '圓山', '忠孝復興', '東門站', '北門站'],
+      tourismBoostFactor: 1.25,
+      sortField: 'estAnnual',
+      sortAsc: false,
+      searchQuery: '',
+      districtFilter: 'all',
+      activeTab: 1
+    };
+
+    // DOM Elements
+    const elements = {
+      inputSmallHours: document.getElementById('inputSmallHours'),
+      valSmallHours: document.getElementById('valSmallHours'),
+      valSmallUtil: document.getElementById('valSmallUtil'),
+      inputLargeHours: document.getElementById('inputLargeHours'),
+      valLargeHours: document.getElementById('valLargeHours'),
+      valLargeUtil: document.getElementById('valLargeUtil'),
+      inputSmallRate: document.getElementById('inputSmallRate'),
+      valSmallRate: document.getElementById('valSmallRate'),
+      inputLargeRate: document.getElementById('inputLargeRate'),
+      valLargeRate: document.getElementById('valLargeRate'),
+      inputOperatingHours: document.getElementById('inputOperatingHours'),
+      valOperatingHours: document.getElementById('valOperatingHours'),
+      inputWeekendMultiplier: document.getElementById('inputWeekendMultiplier'),
+      valWeekendMultiplier: document.getElementById('valWeekendMultiplier'),
+      inputRoyaltyRate: document.getElementById('inputRoyaltyRate'),
+      valRoyaltyRate: document.getElementById('valRoyaltyRate'),
+      checkTourismBoost: document.getElementById('checkTourismBoost'),
+      
+      kpiAnnualRevenue: document.getElementById('kpiAnnualRevenue'),
+      kpiAnnualRevenueWan: document.getElementById('kpiAnnualRevenueWan'),
+      capacityBadge: document.getElementById('capacityBadge'),
+      kpiDailyAvg: document.getElementById('kpiDailyAvg'),
+      kpiDailyWeekday: document.getElementById('kpiDailyWeekday'),
+      kpiDailyWeekend: document.getElementById('kpiDailyWeekend'),
+      wkendFactorBadge: document.getElementById('wkendFactorBadge'),
+      kpiAnnualRoyalty: document.getElementById('kpiAnnualRoyalty'),
+      kpiRoyaltyWan: document.getElementById('kpiRoyaltyWan'),
+      kpiRoyaltyRateBadge: document.getElementById('kpiRoyaltyRateBadge'),
+      
+      structSmallAmt: document.getElementById('structSmallAmt'),
+      structSmallPct: document.getElementById('structSmallPct'),
+      structLargeAmt: document.getElementById('structLargeAmt'),
+      structLargePct: document.getElementById('structLargePct'),
+      structBarSmall: document.getElementById('structBarSmall'),
+      structBarLarge: document.getElementById('structBarLarge'),
+      structRevRatio: document.getElementById('structRevRatio'),
+      
+      stationTableBody: document.getElementById('stationTableBody'),
+      stationTableSummary: document.getElementById('stationTableSummary'),
+      stationSearchInput: document.getElementById('stationSearchInput'),
+      districtFilterSelect: document.getElementById('districtFilterSelect'),
+      
+      themeToggleBtn: document.getElementById('themeToggleBtn'),
+      themeIcon: document.getElementById('themeIcon'),
+      themeText: document.getElementById('themeText')
+    };
+
+    // Format numbers
+    function fmt(n) {
+      return Math.round(n).toLocaleString('en-US');
+    }
+    function fmtWan(n) {
+      return (n / 10000).toFixed(1) + ' 萬';
+    }
+    function fmtYi(n) {
+      return (n / 100000000).toFixed(2) + ' 億';
+    }
+
+    // Calculate station revenue under current state
+    function calcStation(st) {
+      let smallH = state.smallHours;
+      let largeH = state.largeHours;
+
+      // Apply tourism boost if enabled
+      if (state.tourismBoost && state.tourismStations.includes(st.name)) {
+        smallH = Math.min(state.operatingHours, smallH * state.tourismBoostFactor);
+        largeH = Math.min(state.operatingHours, largeH * state.tourismBoostFactor);
+      }
+
+      // Weekday daily revenue
+      const weekdayDaily = (st.small * state.smallRate * smallH) + (st.large * state.largeRate * largeH);
+      
+      // Weekend daily revenue (bounded by operating hours)
+      const wkendSmallH = Math.min(state.operatingHours, smallH * state.weekendMultiplier);
+      const wkendLargeH = Math.min(state.operatingHours, largeH * state.weekendMultiplier);
+      const weekendDaily = (st.small * state.smallRate * wkendSmallH) + (st.large * state.largeRate * wkendLargeH);
+
+      // Annual total (250 weekdays + 115 weekend/holidays)
+      const annual = (weekdayDaily * 250) + (weekendDaily * 115);
+      const dailyAvg = annual / 365;
+
+      // Max capacity annual revenue (operating hours * 365)
+      const maxHourly = (st.small * state.smallRate) + (st.large * state.largeRate);
+      const maxAnnual = maxHourly * state.operatingHours * 365;
+
+      // Small vs Large annual breakdown
+      const smallAnnual = (st.small * state.smallRate * smallH * 250) + (st.small * state.smallRate * wkendSmallH * 115);
+      const largeAnnual = (st.large * state.largeRate * largeH * 250) + (st.large * state.largeRate * wkendLargeH * 115);
+
+      return {
+        weekdayDaily,
+        weekendDaily,
+        dailyAvg,
+        annual,
+        maxAnnual,
+        smallAnnual,
+        largeAnnual
+      };
+    }
+
+    // Calculate overall system financials
+    function calculateTotals() {
+      let totalAnnual = 0;
+      let totalWeekdayDaily = 0;
+      let totalWeekendDaily = 0;
+      let totalSmallAnnual = 0;
+      let totalLargeAnnual = 0;
+      let totalMaxAnnual = 0;
+
+      RAW_METRO_DATA.stations.forEach(st => {
+        const res = calcStation(st);
+        totalAnnual += res.annual;
+        totalWeekdayDaily += res.weekdayDaily;
+        totalWeekendDaily += res.weekendDaily;
+        totalSmallAnnual += res.smallAnnual;
+        totalLargeAnnual += res.largeAnnual;
+        totalMaxAnnual += res.maxAnnual;
+      });
+
+      const totalDailyAvg = totalAnnual / 365;
+      const capacityRatio = (totalAnnual / totalMaxAnnual) * 100;
+      const royaltyAnnual = totalAnnual * state.royaltyRate;
+
+      return {
+        totalAnnual,
+        totalWeekdayDaily,
+        totalWeekendDaily,
+        totalDailyAvg,
+        totalSmallAnnual,
+        totalLargeAnnual,
+        totalMaxAnnual,
+        capacityRatio,
+        royaltyAnnual
+      };
+    }
+
+    // Update calculations across the entire application
+    function updateCalculations() {
+      // Read current input values
+      state.smallHours = parseFloat(elements.inputSmallHours.value);
+      state.largeHours = parseFloat(elements.inputLargeHours.value);
+      state.smallRate = parseInt(elements.inputSmallRate.value, 10);
+      state.largeRate = parseInt(elements.inputLargeRate.value, 10);
+      state.operatingHours = parseInt(elements.inputOperatingHours.value, 10);
+      state.weekendMultiplier = parseFloat(elements.inputWeekendMultiplier.value);
+      state.royaltyRate = parseInt(elements.inputRoyaltyRate.value, 10) / 100;
+      state.tourismBoost = elements.checkTourismBoost.checked;
+
+      // Ensure max bounds
+      if (state.smallHours > state.operatingHours) state.smallHours = state.operatingHours;
+      if (state.largeHours > state.operatingHours) state.largeHours = state.operatingHours;
+
+      // Update control label values
+      elements.valSmallHours.textContent = state.smallHours.toFixed(1);
+      elements.valSmallUtil.textContent = `(${((state.smallHours / state.operatingHours) * 100).toFixed(1)}%)`;
+      elements.valLargeHours.textContent = state.largeHours.toFixed(1);
+      elements.valLargeUtil.textContent = `(${((state.largeHours / state.operatingHours) * 100).toFixed(1)}%)`;
+      elements.valSmallRate.textContent = state.smallRate;
+      elements.valLargeRate.textContent = state.largeRate;
+      elements.valOperatingHours.textContent = state.operatingHours;
+      elements.valWeekendMultiplier.textContent = state.weekendMultiplier.toFixed(2);
+      elements.valRoyaltyRate.textContent = Math.round(state.royaltyRate * 100);
+
+      // Calculate totals
+      const totals = calculateTotals();
+
+      // Update KPI cards
+      elements.kpiAnnualRevenue.textContent = fmt(totals.totalAnnual);
+      elements.kpiAnnualRevenueWan.textContent = fmtWan(totals.totalAnnual);
+      elements.capacityBadge.textContent = `滿載率 ${totals.capacityRatio.toFixed(1)}%`;
+
+      elements.kpiDailyAvg.textContent = fmt(totals.totalDailyAvg);
+      elements.kpiDailyWeekday.textContent = `NT$ ${fmt(totals.totalWeekdayDaily)}`;
+      elements.kpiDailyWeekend.textContent = `NT$ ${fmt(totals.totalWeekendDaily)}`;
+      elements.wkendFactorBadge.textContent = `假日加成 ${state.weekendMultiplier.toFixed(2)}x`;
+
+      elements.kpiAnnualRoyalty.textContent = fmt(totals.royaltyAnnual);
+      elements.kpiRoyaltyWan.textContent = fmtWan(totals.royaltyAnnual);
+      elements.kpiRoyaltyRateBadge.textContent = `分潤 ${Math.round(state.royaltyRate * 100)}%`;
+
+      // Update Revenue Breakdown
+      const smallPct = (totals.totalSmallAnnual / totals.totalAnnual) * 100;
+      const largePct = (totals.totalLargeAnnual / totals.totalAnnual) * 100;
+
+      elements.structSmallAmt.textContent = fmtWan(totals.totalSmallAnnual);
+      elements.structSmallPct.textContent = `${smallPct.toFixed(1)}%`;
+      elements.structLargeAmt.textContent = fmtWan(totals.totalLargeAnnual);
+      elements.structLargePct.textContent = `${largePct.toFixed(1)}%`;
+      elements.structBarSmall.style.width = `${smallPct}%`;
+      elements.structBarLarge.style.width = `${largePct}%`;
+      elements.structRevRatio.textContent = `${smallPct.toFixed(1)}% : ${largePct.toFixed(1)}%`;
+
+      // Render matrices, charts and station table
+      renderMatrices();
+      renderCharts();
+      renderStationsTable();
+    }
+
+    // Quick Scenarios
+    function applyScenario(type) {
+      if (type === 'pessimistic') {
+        elements.inputSmallHours.value = 2.5;
+        elements.inputLargeHours.value = 2.5;
+        elements.inputWeekendMultiplier.value = 1.05;
+        elements.checkTourismBoost.checked = false;
+      } else if (type === 'conservative') {
+        elements.inputSmallHours.value = 3.5;
+        elements.inputLargeHours.value = 4.0;
+        elements.inputWeekendMultiplier.value = 1.15;
+        elements.checkTourismBoost.checked = true;
+      } else if (type === 'base') {
+        elements.inputSmallHours.value = 5.0;
+        elements.inputLargeHours.value = 6.0;
+        elements.inputWeekendMultiplier.value = 1.30;
+        elements.inputSmallRate.value = 10;
+        elements.inputLargeRate.value = 20;
+        elements.inputOperatingHours.value = 18;
+        elements.inputRoyaltyRate.value = 30;
+        elements.checkTourismBoost.checked = true;
+      } else if (type === 'optimistic') {
+        elements.inputSmallHours.value = 7.5;
+        elements.inputLargeHours.value = 9.0;
+        elements.inputWeekendMultiplier.value = 1.45;
+        elements.checkTourismBoost.checked = true;
+      } else if (type === 'peak') {
+        elements.inputSmallHours.value = 10.0;
+        elements.inputLargeHours.value = 12.0;
+        elements.inputWeekendMultiplier.value = 1.60;
+        elements.checkTourismBoost.checked = true;
+      } else if (type === 'max18') {
+        elements.inputSmallHours.value = 18.0;
+        elements.inputLargeHours.value = 18.0;
+        elements.inputOperatingHours.value = 18;
+        elements.inputWeekendMultiplier.value = 1.0;
+        elements.checkTourismBoost.checked = false;
+      }
+      updateCalculations();
+    }
+
+    function resetDefaults() {
+      applyScenario('base');
+    }
+
+    // Sensitivity Matrices Rendering
+    const smallHourCols = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0];
+    const largeHourRows = [2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 12.0];
+
+    function getHeatmapColor(valWan) {
+      // Min around 1,500万 to Max around 18,000万
+      if (valWan < 3000) return 'background: rgba(30, 58, 138, 0.45); color: #93c5fd;';
+      if (valWan < 4500) return 'background: rgba(13, 148, 136, 0.45); color: #5eead4;';
+      if (valWan < 6500) return 'background: rgba(16, 185, 129, 0.45); color: #a7f3d0;';
+      if (valWan < 9000) return 'background: rgba(217, 119, 6, 0.5); color: #fde68a;';
+      if (valWan < 12000) return 'background: rgba(220, 38, 38, 0.55); color: #fecaca;';
+      return 'background: rgba(147, 51, 234, 0.6); color: #e9d5ff;';
+    }
+
+    function renderMatrices() {
+      // Matrix 1: Small Hours vs Large Hours
+      const tbody1 = document.getElementById('matrixTbody1');
+      let html1 = '';
+      
+      const curSmallClosest = smallHourCols.reduce((prev, curr) => Math.abs(curr - state.smallHours) < Math.abs(prev - state.smallHours) ? curr : prev);
+      const curLargeClosest = largeHourRows.reduce((prev, curr) => Math.abs(curr - state.largeHours) < Math.abs(prev - state.largeHours) ? curr : prev);
+
+      largeHourRows.forEach(lh => {
+        html1 += `<tr class="border-b border-[var(--border)] hover:bg-[var(--card-muted)]/30">`;
+        html1 += `<td class="p-2 font-bold text-left bg-[var(--card-muted)]/50 text-purple-400">${lh.toFixed(1)}h</td>`;
+        
+        smallHourCols.forEach(sh => {
+          // Calculate annual revenue for this pair
+          let total = 0;
+          RAW_METRO_DATA.stations.forEach(st => {
+            let sH = sh;
+            let lH = lh;
+            if (state.tourismBoost && state.tourismStations.includes(st.name)) {
+              sH = Math.min(state.operatingHours, sH * state.tourismBoostFactor);
+              lH = Math.min(state.operatingHours, lH * state.tourismBoostFactor);
+            }
+            const wkDay = (st.small * state.smallRate * sH) + (st.large * state.largeRate * lH);
+            const wkEnd = (st.small * state.smallRate * Math.min(state.operatingHours, sH * state.weekendMultiplier)) + 
+                          (st.large * state.largeRate * Math.min(state.operatingHours, lH * state.weekendMultiplier));
+            total += (wkDay * 250) + (wkEnd * 115);
+          });
+
+          const valWan = Math.round(total / 10000);
+          const isCurrent = (sh === curSmallClosest && lh === curLargeClosest);
+          const activeStyle = isCurrent ? 'outline: 2px solid #eab308; outline-offset: -2px; font-weight: 800; transform: scale(1.03);' : '';
+          const colorStyle = getHeatmapColor(valWan);
+
+          html1 += `<td class="p-2 cursor-pointer matrix-cell rounded text-[11px]" 
+                        style="${colorStyle} ${activeStyle}"
+                        onclick="setMatrixParams(${sh}, ${lh})" 
+                        title="小格 ${sh}h / 大格 ${lh}h → 年營收 NT$ ${fmt(total)} 元 (點擊套用)">
+                      ${valWan.toLocaleString()}
+                    </td>`;
+        });
+        html1 += `</tr>`;
+      });
+      tbody1.innerHTML = html1;
+
+      // Matrix 2: Rate adjustment vs Avg Hours
+      const tbody2 = document.getElementById('matrixTbody2');
+      const rateDeltas = [
+        { label: '-20% 促銷 (小8/大16)', small: 8, large: 16 },
+        { label: '-10% 促銷 (小9/大18)', small: 9, large: 18 },
+        { label: '現行基準 (小10/大20)', small: 10, large: 20 },
+        { label: '+10% 調漲 (小11/大22)', small: 11, large: 22 },
+        { label: '+20% 調漲 (小12/大24)', small: 12, large: 24 },
+        { label: '+30% 調漲 (小13/大26)', small: 13, large: 26 },
+        { label: '+50% 旺季 (小15/大30)', small: 15, large: 30 },
+      ];
+      const avgHoursCols = [2.0, 3.5, 5.0, 6.5, 8.0, 10.0, 12.0, 15.0];
+
+      let html2 = '';
+      rateDeltas.forEach(rd => {
+        html2 += `<tr class="border-b border-[var(--border)] hover:bg-[var(--card-muted)]/30">`;
+        html2 += `<td class="p-2 font-bold text-left bg-[var(--card-muted)]/50 text-[var(--foreground)]">${rd.label}</td>`;
+        avgHoursCols.forEach(ah => {
+          let total = 0;
+          RAW_METRO_DATA.stations.forEach(st => {
+            let sH = ah;
+            let lH = ah * 1.15; // large locker slightly higher
+            if (state.tourismBoost && state.tourismStations.includes(st.name)) {
+              sH = Math.min(state.operatingHours, sH * state.tourismBoostFactor);
+              lH = Math.min(state.operatingHours, lH * state.tourismBoostFactor);
+            }
+            const wkDay = (st.small * rd.small * sH) + (st.large * rd.large * lH);
+            const wkEnd = (st.small * rd.small * Math.min(state.operatingHours, sH * state.weekendMultiplier)) + 
+                          (st.large * rd.large * Math.min(state.operatingHours, lH * state.weekendMultiplier));
+            total += (wkDay * 250) + (wkEnd * 115);
+          });
+          const valWan = Math.round(total / 10000);
+          const colorStyle = getHeatmapColor(valWan);
+          html2 += `<td class="p-2 cursor-pointer matrix-cell rounded text-[11px]" style="${colorStyle}" title="${rd.label} @ ${ah}h → NT$ ${fmt(total)}">
+                      ${valWan.toLocaleString()}
+                    </td>`;
+        });
+        html2 += `</tr>`;
+      });
+      tbody2.innerHTML = html2;
+
+      // Matrix 3: Weekday hours vs Weekend Multiplier
+      const tbody3 = document.getElementById('matrixTbody3');
+      const multipliers = [1.0, 1.15, 1.30, 1.45, 1.60, 1.80, 2.00];
+      const weekdayCols = [2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0];
+
+      let html3 = '';
+      multipliers.forEach(mult => {
+        html3 += `<tr class="border-b border-[var(--border)] hover:bg-[var(--card-muted)]/30">`;
+        html3 += `<td class="p-2 font-bold text-left bg-[var(--card-muted)]/50 text-amber-400">${mult.toFixed(2)}x 加成</td>`;
+        weekdayCols.forEach(wdh => {
+          let total = 0;
+          RAW_METRO_DATA.stations.forEach(st => {
+            let sH = wdh;
+            let lH = wdh * (state.largeHours / state.smallHours);
+            const wkDay = (st.small * state.smallRate * sH) + (st.large * state.largeRate * lH);
+            const wkEnd = (st.small * state.smallRate * Math.min(state.operatingHours, sH * mult)) + 
+                          (st.large * state.largeRate * Math.min(state.operatingHours, lH * mult));
+            total += (wkDay * 250) + (wkEnd * 115);
+          });
+          const valWan = Math.round(total / 10000);
+          const colorStyle = getHeatmapColor(valWan);
+          html3 += `<td class="p-2 cursor-pointer matrix-cell rounded text-[11px]" style="${colorStyle}" title="假日 ${mult}x, 平日 ${wdh}h → NT$ ${fmt(total)}">
+                      ${valWan.toLocaleString()}
+                    </td>`;
+        });
+        html3 += `</tr>`;
+      });
+      tbody3.innerHTML = html3;
+    }
+
+    function setMatrixParams(sh, lh) {
+      elements.inputSmallHours.value = sh;
+      elements.inputLargeHours.value = lh;
+      updateCalculations();
+    }
+
+    function switchMatrixTab(tab) {
+      state.activeTab = tab;
+      document.getElementById('matrixContainer1').classList.toggle('hidden', tab !== 1);
+      document.getElementById('matrixContainer2').classList.toggle('hidden', tab !== 2);
+      document.getElementById('matrixContainer3').classList.toggle('hidden', tab !== 3);
+
+      ['tabBtn1', 'tabBtn2', 'tabBtn3'].forEach((id, idx) => {
+        const btn = document.getElementById(id);
+        if (idx + 1 === tab) {
+          btn.className = 'px-3 py-1 rounded font-semibold bg-blue-600 text-white transition';
+        } else {
+          btn.className = 'px-3 py-1 rounded font-medium text-[var(--muted-foreground)] hover:text-white transition';
+        }
+      });
+    }
+
+    // HTML5 Canvas Chart Rendering (Lightweight, pure native, no blocked CDN scripts)
+    function renderCharts() {
+      renderSensitivityChart();
+      renderTopStationsChart();
+    }
+
+    function renderSensitivityChart() {
+      const canvas = document.getElementById('sensitivityChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+
+      const w = rect.width;
+      const h = rect.height;
+      const padL = 40, padR = 20, padT = 20, padB = 30;
+      const plotW = w - padL - padR;
+      const plotH = h - padT - padB;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Compute data points from 1 to 18 hours
+      const points = [];
+      let maxRev = 0;
+
+      for (let hr = 1; hr <= 18; hr += 1) {
+        let total = 0, smallTotal = 0, largeTotal = 0;
+        RAW_METRO_DATA.stations.forEach(st => {
+          let sH = hr;
+          let lH = Math.min(state.operatingHours, hr * (state.largeHours / state.smallHours));
+          const wkDaySmall = st.small * state.smallRate * sH;
+          const wkDayLarge = st.large * state.largeRate * lH;
+          const wkEndSmall = st.small * state.smallRate * Math.min(state.operatingHours, sH * state.weekendMultiplier);
+          const wkEndLarge = st.large * state.largeRate * Math.min(state.operatingHours, lH * state.weekendMultiplier);
+          
+          const sAnn = (wkDaySmall * 250) + (wkEndSmall * 115);
+          const lAnn = (wkDayLarge * 250) + (wkEndLarge * 115);
+
+          smallTotal += sAnn;
+          largeTotal += lAnn;
+          total += (sAnn + lAnn);
+        });
+
+        points.push({
+          hr,
+          totalWan: total / 10000,
+          smallWan: smallTotal / 10000,
+          largeWan: largeTotal / 10000
+        });
+
+        if (total / 10000 > maxRev) maxRev = total / 10000;
+      }
+
+      // Background grid lines
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.15)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const y = padT + (plotH / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(w - padR, y);
+        ctx.stroke();
+
+        const labelVal = Math.round(maxRev * (1 - i / 4));
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(labelVal, padL - 6, y + 3);
+      }
+
+      // X-axis labels
+      ctx.textAlign = 'center';
+      [1, 4, 8, 12, 16, 18].forEach(hr => {
+        const x = padL + ((hr - 1) / 17) * plotW;
+        ctx.fillText(hr + 'h', x, h - 10);
+      });
+
+      // Draw helper function for line
+      function drawLine(key, color, fillGrad) {
+        ctx.beginPath();
+        points.forEach((p, idx) => {
+          const x = padL + ((p.hr - 1) / 17) * plotW;
+          const y = padT + plotH - (p[key] / maxRev) * plotH;
+          if (idx === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        if (fillGrad) {
+          ctx.lineTo(padL + plotW, padT + plotH);
+          ctx.lineTo(padL, padT + plotH);
+          ctx.closePath();
+          ctx.fillStyle = fillGrad;
+          ctx.fill();
+        }
+      }
+
+      // Gradients
+      const blueGrad = ctx.createLinearGradient(0, padT, 0, padT + plotH);
+      blueGrad.addColorStop(0, 'rgba(59, 130, 246, 0.25)');
+      blueGrad.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+      drawLine('smallWan', '#22d3ee', null);
+      drawLine('largeWan', '#a855f7', null);
+      drawLine('totalWan', '#3b82f6', blueGrad);
+
+      // Current operating point vertical reference marker
+      const curX = padL + ((state.smallHours - 1) / 17) * plotW;
+      if (curX >= padL && curX <= padL + plotW) {
+        ctx.beginPath();
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = '#eab308';
+        ctx.lineWidth = 1.5;
+        ctx.moveTo(curX, padT);
+        ctx.lineTo(curX, padT + plotH);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Dot at current total
+        const curTotals = calculateTotals();
+        const curY = padT + plotH - ((curTotals.totalAnnual / 10000) / maxRev) * plotH;
+        ctx.beginPath();
+        ctx.arc(curX, curY, 5, 0, Math.PI * 2);
+        ctx.fillStyle = '#eab308';
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+
+    function renderTopStationsChart() {
+      const canvas = document.getElementById('topStationsChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+
+      const w = rect.width;
+      const h = rect.height;
+      const padL = 75, padR = 45, padT = 15, padB = 25;
+      const plotW = w - padL - padR;
+      const plotH = h - padT - padB;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Rank stations by current annual revenue
+      const stationCalcs = RAW_METRO_DATA.stations.map(st => {
+        const res = calcStation(st);
+        return { name: st.name, annualWan: res.annual / 10000, totalLockers: st.total };
+      }).sort((a, b) => b.annualWan - a.annualWan).slice(0, 8);
+
+      const maxVal = stationCalcs[0].annualWan * 1.1;
+      const barH = (plotH / stationCalcs.length) * 0.65;
+      const gap = (plotH / stationCalcs.length) * 0.35;
+
+      stationCalcs.forEach((st, idx) => {
+        const y = padT + idx * (barH + gap);
+        const barW = (st.annualWan / maxVal) * plotW;
+
+        // Label
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '11px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(st.name, padL - 8, y + barH * 0.75);
+
+        // Bar background
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.1)';
+        ctx.beginPath();
+        ctx.roundRect(padL, y, plotW, barH, 4);
+        ctx.fill();
+
+        // Bar fill
+        const barGrad = ctx.createLinearGradient(padL, 0, padL + barW, 0);
+        barGrad.addColorStop(0, '#3b82f6');
+        barGrad.addColorStop(1, '#60a5fa');
+        ctx.fillStyle = barGrad;
+        ctx.beginPath();
+        ctx.roundRect(padL, y, Math.max(barW, 6), barH, 4);
+        ctx.fill();
+
+        // Value text
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(st.annualWan.toFixed(0) + '萬', padL + barW + 6, y + barH * 0.75);
+      });
+    }
+
+    // Populate District Filter options
+    function initDistrictFilter() {
+      const select = elements.districtFilterSelect;
+      select.innerHTML = '<option value="all">所有行政區 (全部 110 站)</option>';
+      RAW_METRO_DATA.districts.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.district;
+        opt.textContent = `${d.district} (${d.stations}站 / ${d.total}格)`;
+        select.appendChild(opt);
+      });
+    }
+
+    // Render Station Table with sorting and filtering
+    function renderStationsTable() {
+      const query = elements.stationSearchInput.value.trim().toLowerCase();
+      const district = elements.districtFilterSelect.value;
+      const totals = calculateTotals();
+
+      // Filter
+      let list = RAW_METRO_DATA.stations.map((st, origIdx) => {
+        const res = calcStation(st);
+        return {
+          ...st,
+          origIndex: origIdx + 1,
+          estDaily: res.dailyAvg,
+          estAnnual: res.annual,
+          maxAnnual: res.maxAnnual,
+          share: (res.annual / totals.totalAnnual) * 100
+        };
+      }).filter(st => {
+        const matchDistrict = (district === 'all') || (`${st.county} ${st.district}` === district);
+        const matchQuery = !query || 
+                           st.name.toLowerCase().includes(query) || 
+                           st.county.toLowerCase().includes(query) || 
+                           st.district.toLowerCase().includes(query);
+        return matchDistrict && matchQuery;
+      });
+
+      // Sort
+      list.sort((a, b) => {
+        let vA = a[state.sortField];
+        let vB = b[state.sortField];
+        if (state.sortField === 'rank') {
+          vA = a.origIndex;
+          vB = b.origIndex;
+        }
+        if (typeof vA === 'string') return state.sortAsc ? vA.localeCompare(vB) : vB.localeCompare(vA);
+        return state.sortAsc ? (vA - vB) : (vB - vA);
+      });
+
+      // Render rows
+      let html = '';
+      list.forEach((st, idx) => {
+        const isTourism = state.tourismBoost && state.tourismStations.includes(st.name);
+        const tourismTag = isTourism ? '<span class="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-semibold border border-amber-500/30">觀光樞紐</span>' : '';
+        
+        html += `<tr class="hover:bg-[var(--card-muted)]/50 transition">
+          <td class="p-3 text-[var(--muted-foreground)] font-mono text-[11px]">${idx + 1}</td>
+          <td class="p-3 font-bold text-[var(--foreground)] flex items-center">
+            ${st.name}
+            ${tourismTag}
+          </td>
+          <td class="p-3 text-[var(--muted-foreground)]">${st.county} ${st.district}</td>
+          <td class="p-3 text-right text-blue-400 font-mono">${st.small}</td>
+          <td class="p-3 text-right text-purple-400 font-mono">${st.large}</td>
+          <td class="p-3 text-right font-bold text-[var(--foreground)] font-mono">${st.total}</td>
+          <td class="p-3 text-right text-cyan-400 font-mono font-medium">NT$ ${fmt(st.estDaily)}</td>
+          <td class="p-3 text-right text-emerald-400 font-mono font-bold">NT$ ${fmt(st.estAnnual)}</td>
+          <td class="p-3 text-right text-[var(--muted-foreground)] font-mono">NT$ ${fmt(st.maxAnnual)}</td>
+          <td class="p-3 text-right font-mono font-semibold text-[var(--foreground)]">
+            ${st.share.toFixed(2)}%
+          </td>
+        </tr>`;
+      });
+
+      elements.stationTableBody.innerHTML = html || `<tr><td colspan="10" class="p-8 text-center text-[var(--muted-foreground)]">無符合條件之捷運站點</td></tr>`;
+      elements.stationTableSummary.textContent = `共 ${list.length} 個站點符合條件 (全網共 ${RAW_METRO_DATA.stations.length} 站)`;
+    }
+
+    function sortStations(field) {
+      if (state.sortField === field) {
+        state.sortAsc = !state.sortAsc;
+      } else {
+        state.sortField = field;
+        state.sortAsc = false;
+      }
+      renderStationsTable();
+    }
+
+    // Export CSV of current calculation
+    function exportCSV() {
+      const totals = calculateTotals();
+      let csv = "\uFEFF"; // UTF-8 BOM
+      csv += "臺北捷運置物櫃 年營收敏感度分析報表\n";
+      csv += `產出時間,${new Date().toLocaleString()}\n`;
+      csv += `小格收費(元/時),${state.smallRate},小格每日使用時數(時),${state.smallHours}\n`;
+      csv += `大格收費(元/時),${state.largeRate},大格每日使用時數(時),${state.largeHours}\n`;
+      csv += `營業時數基準(時),${state.operatingHours},假日加成倍數,${state.weekendMultiplier}\n`;
+      csv += `預估全系統年營收(NT$),${Math.round(totals.totalAnnual)},預估捷運局權利金(NT$),${Math.round(totals.royaltyAnnual)}\n\n`;
+      
+      csv += "排名,站點名稱,縣市,行政區,小格數量($10),大格數量($20),總置物櫃數量,平日預估日營收(NT$),假日預估日營收(NT$),年均日營收(NT$),預估年營收(NT$),18h滿載年營收(NT$),營收佔比(%)\n";
+
+      const list = RAW_METRO_DATA.stations.map(st => {
+        const res = calcStation(st);
+        return { ...st, ...res, share: (res.annual / totals.totalAnnual) * 100 };
+      }).sort((a, b) => b.annual - a.annual);
+
+      list.forEach((st, idx) => {
+        csv += `${idx + 1},"${st.name}","${st.county}","${st.district}",${st.small},${st.large},${st.total},${Math.round(st.weekdayDaily)},${Math.round(st.weekendDaily)},${Math.round(st.dailyAvg)},${Math.round(st.annual)},${Math.round(st.maxAnnual)},${st.share.toFixed(2)}%\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute('download', `捷運置物櫃年營收敏感度分析_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Theme Toggle
+    function toggleTheme() {
+      const htmlEl = document.documentElement;
+      const isLight = htmlEl.classList.toggle('light');
+      elements.themeText.textContent = isLight ? '切換深色' : '切換淺色';
+      renderCharts();
+    }
+    elements.themeToggleBtn.addEventListener('click', toggleTheme);
+
+    // Window resize handler for charts
+    window.addEventListener('resize', () => {
+      renderCharts();
+    });
+
+    // Initialize
+    initDistrictFilter();
+    updateCalculations();
+  </script>
+
+</body>
+</html>
